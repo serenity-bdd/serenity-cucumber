@@ -43,7 +43,7 @@ class WhenInstantiatingStepLibraries extends Specification {
         def sampleStepDefinitions = new SampleStepDefinitions()
         when: "we inject the step libraries"
         Thucydides.initialize(sampleStepDefinitions)
-        then: "the step library field should be initialized"
+        then: "the page object field in the step library should be initialized"
         sampleStepDefinitions.stepLibrary.pageObject != null
     }
 }
