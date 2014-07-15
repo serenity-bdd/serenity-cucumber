@@ -1,4 +1,4 @@
-package net.thucydides.cucumber.e2e.steps;
+package net.thucydides.cucumber.integration.steps;
 
 import cucumber.api.java.en.When;
 

@@ -1,10 +1,9 @@
-package net.thucydides.cucumber.e2e.steps;
+package net.thucydides.cucumber.integration.steps;
 
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import net.thucydides.core.annotations.Steps;
-import net.thucydides.cucumber.e2e.steps.thucydides.SamplePageObject;
-import net.thucydides.cucumber.e2e.steps.thucydides.SampleSteps;
+import net.thucydides.cucumber.integration.steps.thucydides.SampleSteps;
 
 import static org.fest.assertions.Assertions.assertThat;
 

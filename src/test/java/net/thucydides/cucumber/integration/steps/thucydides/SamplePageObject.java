@@ -1,4 +1,4 @@
-package net.thucydides.cucumber.e2e.steps.thucydides;
+package net.thucydides.cucumber.integration.steps.thucydides;
 
 import net.thucydides.core.pages.PageObject;
 
