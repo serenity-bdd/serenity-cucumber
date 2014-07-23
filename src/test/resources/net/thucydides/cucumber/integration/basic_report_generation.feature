@@ -1,4 +1,4 @@
-Feature: Using Cucumber with Thucydides
+Feature: Generating Thucydides Reports
 
   Scenario: Running a Cucumber scenario with Thucydides
     Given I have a Cucumber feature file
