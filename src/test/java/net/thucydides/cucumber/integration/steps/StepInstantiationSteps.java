@@ -16,7 +16,8 @@ public class StepInstantiationSteps {
     SampleSteps sampleSteps;
 
     @Given("I have a Cucumber feature file containing Thucydides @Steps fields")
-    public void featureFileContainsStepsFields() {}
+    public void featureFileContainsStepsFields() {
+    }
 
     @Then("the step fields should be instantiated")
     public void theStepFieldsShouldBeInstantiated() {
