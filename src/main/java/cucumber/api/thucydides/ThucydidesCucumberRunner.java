@@ -30,11 +30,21 @@ public class ThucydidesCucumberRunner extends Cucumber {
      */
     protected cucumber.runtime.Runtime createRuntime(ResourceLoader resourceLoader, ClassLoader classLoader,
                                                      RuntimeOptions runtimeOptions) throws InitializationError, IOException {
-        ClassFinder classFinder = new ResourceLoaderClassFinder(resourceLoader, classLoader);
-        Configuration systemConfiguration = Injectors.getInjector().getInstance(net.thucydides.core.webdriver.Configuration.class);
+        Runtime runtime = doCreateRuntime(resourceLoader, classLoader, runtimeOptions);
+        return runtime;
+    }
+
+    private Runtime doCreateRuntime(ResourceLoader resourceLoader, ClassLoader classLoader, RuntimeOptions runtimeOptions) {
+        Configuration systemConfiguration = Injectors.getInjector().getInstance(Configuration.class);
         ThucydidesReporter reporter = new ThucydidesReporter(systemConfiguration);
         runtimeOptions.addFormatter(reporter);
-        Runtime runtime = new Runtime(resourceLoader, classFinder, classLoader, runtimeOptions);
-        return runtime;
+        return doCreateRuntime(resourceLoader, classLoader, runtimeOptions ,systemConfiguration);
+    }
+
+    public static Runtime doCreateRuntime(ResourceLoader resourceLoader, ClassLoader classLoader, RuntimeOptions runtimeOptions, Configuration systemConfiguration) {
+        ClassFinder classFinder = new ResourceLoaderClassFinder(resourceLoader, classLoader);
+        ThucydidesReporter reporter = new ThucydidesReporter(systemConfiguration);
+        runtimeOptions.addFormatter(reporter);
+        return new Runtime(resourceLoader, classFinder, classLoader, runtimeOptions);
     }
 }
