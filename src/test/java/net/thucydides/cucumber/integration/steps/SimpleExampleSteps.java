@@ -1,10 +1,17 @@
 package net.thucydides.cucumber.integration.steps;
 
-import cucumber.api.PendingException;
+
+import cucumber.api.java.Before;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
+import org.junit.Rule;
+import org.junit.rules.TemporaryFolder;
+
+import java.io.File;
+import java.io.IOException;
 
 public class SimpleExampleSteps {
+
 
     public SimpleExampleSteps() {
     }
