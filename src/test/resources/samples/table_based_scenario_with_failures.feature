@@ -10,7 +10,6 @@ Feature: Buying things
   | amount | cost | total |
   | 0      | 10   | 0     |
   | 1      | 10   | 10    |
-  | 2      | 10   | 20    |
-  | 3      | 10   | 30    |
+  | 2      | 10   | 50    |
   | 2      | 0    | 0     |
 
