@@ -3,6 +3,7 @@ package net.thucydides.cucumber.reports
 import com.github.goldin.spock.extensions.tempdir.TempDir
 import net.thucydides.core.model.TestResult
 import net.thucydides.core.model.TestStep
+import net.thucydides.core.model.TestTag
 import net.thucydides.core.reports.OutcomeFormat
 import net.thucydides.core.reports.TestOutcomeLoader
 import net.thucydides.cucumber.integration.FailingScenario
@@ -94,5 +95,19 @@ class WhenGeneratingThucydidesReports extends Specification {
         stepResults == [TestResult.SUCCESS,TestResult.SUCCESS,TestResult.SUCCESS,TestResult.FAILURE]
         and:
         stepResults[3].errorMessage.contains("expected:<[2]0> but was:<[1]0>")
+    }
+
+    def "should record a feature tag based on the name of the feature"() {
+        given:
+        def runtime = thucydidesRunnerForCucumberTestRunner(SimpleScenario.class, outputDirectory);
+
+        when:
+        runtime.run();
+        def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory);
+        def testOutcome = recordedTestOutcomes[0]
+        def stepResults = testOutcome.testSteps.collect { step -> step.result }
+
+        then:
+        testOutcome.tags.contains(TestTag.withName("A simple feature").andType("feature"))
     }
 }
