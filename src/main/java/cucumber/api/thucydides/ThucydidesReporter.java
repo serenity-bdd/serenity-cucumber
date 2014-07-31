@@ -43,8 +43,6 @@ public class ThucydidesReporter implements Formatter, Reporter {
 
     private ThreadLocal<ThucydidesListeners> thucydidesListenersThreadLocal;
 
-    private ThreadLocal<ReportService> reportServiceThreadLocal;
-
     private final List<BaseStepListener> baseStepListeners;
 
     private Feature currentFeature;
@@ -54,15 +52,9 @@ public class ThucydidesReporter implements Formatter, Reporter {
     {
         this.systemConfiguration = systemConfiguration;
         this.stepQueue = new LinkedList<>();
-        thucydidesListenersThreadLocal = new ThreadLocal<ThucydidesListeners>();
-        reportServiceThreadLocal = new ThreadLocal<ReportService>();
+        thucydidesListenersThreadLocal = new ThreadLocal<>();
         baseStepListeners = Lists.newArrayList();
 
-    }
-
-    protected void clearListeners() {
-        thucydidesListenersThreadLocal.remove();
-        reportServiceThreadLocal.remove();
     }
 
     protected ThucydidesListeners getThucydidesListeners() {
@@ -81,9 +73,7 @@ public class ThucydidesReporter implements Formatter, Reporter {
     }
 
     @Override
-    public void syntaxError(String state, String event, List<String> legalEvents, String uri, Integer line) {
-
-    }
+    public void syntaxError(String state, String event, List<String> legalEvents, String uri, Integer line) {}
 
     @Override
     public void uri(String uri) {
@@ -178,8 +168,7 @@ public class ThucydidesReporter implements Formatter, Reporter {
     }
 
     @Override
-    public void before(Match match, Result result) {
-    }
+    public void before(Match match, Result result) {}
 
     @Override
     public void result(Result result) {
@@ -216,10 +205,7 @@ public class ThucydidesReporter implements Formatter, Reporter {
     }
 
     @Override
-    public void after(Match match, Result result) {
-        System.out.println("AFTER " + match.getClass());
-
-    }
+    public void after(Match match, Result result) {}
 
     @Override
     public void match(Match match) {
@@ -236,13 +222,10 @@ public class ThucydidesReporter implements Formatter, Reporter {
     }
 
     @Override
-    public void embedding(String mimeType, byte[] data) {
-    }
+    public void embedding(String mimeType, byte[] data) {}
 
     @Override
-    public void write(String text) {
-
-    }
+    public void write(String text) {}
 
     private synchronized void generateReports() {
         getReportService().generateReportsFor(getAllTestOutcomes());

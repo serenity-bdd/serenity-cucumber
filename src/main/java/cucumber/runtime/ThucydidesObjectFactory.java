@@ -2,6 +2,8 @@ package cucumber.runtime;
 
 import cucumber.runtime.java.ObjectFactory;
 import net.thucydides.core.Thucydides;
+import net.thucydides.core.pages.Pages;
+import net.thucydides.core.webdriver.ThucydidesWebDriverSupport;
 
 import java.lang.reflect.Constructor;
 import java.util.*;
@@ -50,4 +52,5 @@ public class ThucydidesObjectFactory implements ObjectFactory {
             throw new CucumberException(String.format("Failed to instantiate %s", type), e);
         }
     }
+
 }
