@@ -41,7 +41,7 @@ public class ThucydidesObjectFactory implements ObjectFactory {
         try {
             Constructor<T> constructor = type.getConstructor();
             T instance = constructor.newInstance();
-            Thucydides.initializeWithoutStepListener(instance);
+            Thucydides.initializeWithNoStepListener(instance);
             instances.put(type, instance);
             return instance;
         } catch (NoSuchMethodException e) {

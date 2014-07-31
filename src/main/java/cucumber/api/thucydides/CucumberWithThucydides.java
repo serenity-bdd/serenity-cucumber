@@ -17,10 +17,10 @@ import java.io.IOException;
  *
  * @author L.Carausu (liviu.carausu@gmail.com)
  */
-public class ThucydidesCucumberRunner extends Cucumber {
+public class CucumberWithThucydides extends Cucumber {
 
 
-    public ThucydidesCucumberRunner(Class clazz) throws InitializationError, IOException
+    public CucumberWithThucydides(Class clazz) throws InitializationError, IOException
     {
         super(clazz);
     }
@@ -30,18 +30,17 @@ public class ThucydidesCucumberRunner extends Cucumber {
      */
     protected cucumber.runtime.Runtime createRuntime(ResourceLoader resourceLoader, ClassLoader classLoader,
                                                      RuntimeOptions runtimeOptions) throws InitializationError, IOException {
-        Runtime runtime = doCreateRuntime(resourceLoader, classLoader, runtimeOptions);
-        return runtime;
+        return createThucydidesEnabledRuntime(resourceLoader, classLoader, runtimeOptions);
     }
 
-    private Runtime doCreateRuntime(ResourceLoader resourceLoader, ClassLoader classLoader, RuntimeOptions runtimeOptions) {
+    private Runtime createThucydidesEnabledRuntime(ResourceLoader resourceLoader, ClassLoader classLoader, RuntimeOptions runtimeOptions) {
         Configuration systemConfiguration = Injectors.getInjector().getInstance(Configuration.class);
         ThucydidesReporter reporter = new ThucydidesReporter(systemConfiguration);
         runtimeOptions.addFormatter(reporter);
-        return doCreateRuntime(resourceLoader, classLoader, runtimeOptions ,systemConfiguration);
+        return createThucydidesEnabledRuntime(resourceLoader, classLoader, runtimeOptions, systemConfiguration);
     }
 
-    public static Runtime doCreateRuntime(ResourceLoader resourceLoader, ClassLoader classLoader, RuntimeOptions runtimeOptions, Configuration systemConfiguration) {
+    public static Runtime createThucydidesEnabledRuntime(ResourceLoader resourceLoader, ClassLoader classLoader, RuntimeOptions runtimeOptions, Configuration systemConfiguration) {
         ClassFinder classFinder = new ResourceLoaderClassFinder(resourceLoader, classLoader);
         ThucydidesReporter reporter = new ThucydidesReporter(systemConfiguration);
         runtimeOptions.addFormatter(reporter);

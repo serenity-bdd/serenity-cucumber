@@ -20,9 +20,7 @@ import org.junit.internal.AssumptionViolatedException;
 import java.util.LinkedList;
 import java.util.List;
 
-import static ch.lambdaj.Lambda.extract;
-import static ch.lambdaj.Lambda.flatten;
-import static ch.lambdaj.Lambda.on;
+import static ch.lambdaj.Lambda.*;
 
 /**
  * Generates Thucydides reports.
