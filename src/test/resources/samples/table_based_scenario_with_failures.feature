@@ -1,6 +1,5 @@
 Feature: Buying things
 
-  @shouldPass
   Scenario Outline: Buying lots of widgets
     Given I want to purchase <amount> widgets
     And a widget costs $<cost>
