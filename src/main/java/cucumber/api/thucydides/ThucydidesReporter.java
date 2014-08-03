@@ -8,6 +8,7 @@ import gherkin.formatter.Reporter;
 import gherkin.formatter.model.*;
 import net.thucydides.core.ThucydidesListeners;
 import net.thucydides.core.ThucydidesReports;
+import net.thucydides.core.model.DataTable;
 import net.thucydides.core.model.TestOutcome;
 import net.thucydides.core.model.TestTag;
 import net.thucydides.core.reports.ReportService;
@@ -20,9 +21,7 @@ import net.thucydides.core.webdriver.ThucydidesWebDriverSupport;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.internal.AssumptionViolatedException;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 
 import static ch.lambdaj.Lambda.*;
 
@@ -47,6 +46,18 @@ public class ThucydidesReporter implements Formatter, Reporter {
 
     private Feature currentFeature;
 
+    private int currentExample = 0;
+
+    private boolean examplesRunning;
+
+    private List<Map<String,String>> exampleRows;
+
+    private int exampleCount = 0;
+
+    private DataTable table;
+
+    private boolean firstStep = true;
+
 
     public ThucydidesReporter(Configuration systemConfiguration)
     {
@@ -54,7 +65,6 @@ public class ThucydidesReporter implements Formatter, Reporter {
         this.stepQueue = new LinkedList<>();
         thucydidesListenersThreadLocal = new ThreadLocal<>();
         baseStepListeners = Lists.newArrayList();
-
     }
 
     protected ThucydidesListeners getThucydidesListeners() {
@@ -88,12 +98,10 @@ public class ThucydidesReporter implements Formatter, Reporter {
             StepEventBus.getEventBus().testSuiteFinished();
         }
         currentFeature =  feature;
-        System.out.println("ThucydidesReporter:Feature called " + feature.getName());
         configureDriver(feature);
         getThucydidesListeners().withDriver(ThucydidesWebDriverSupport.getDriver());
         net.thucydides.core.model.Story userStory = net.thucydides.core.model.Story.withId(feature.getName(), feature.getId());
         StepEventBus.getEventBus().testSuiteStarted(userStory);
-
     }
 
     private void configureDriver(Feature feature) {
@@ -113,15 +121,55 @@ public class ThucydidesReporter implements Formatter, Reporter {
 
     @Override
     public void examples(Examples examples) {
+        examplesRunning = true;
+        stepQueue.clear();
+        exampleCount = examples.getRows().size() -1 ;
+        List<ExamplesTableRow> examplesTableRows =  examples.getRows();
+        ExamplesTableRow headerRow = examplesTableRows.get(0);
+        List<String> headers = headerRow.getCells();
+        exampleRows = new ArrayList<>();
+        for(int i= 1; i< examplesTableRows.size(); i++)
+        {
+            ExamplesTableRow currentTableRow = examplesTableRows.get(i);
+            Map<String,String> row = new HashMap<>();
+            for(int j = 0 ; j < headers.size() ; j++)
+            {
+                row.put(headers.get(j),currentTableRow.getCells().get(j));
+            }
+            exampleRows.add(row);
+        }
+        table = thucydidesTableFrom(headers,exampleRows);
+    }
 
+
+
+    private DataTable thucydidesTableFrom(List<String> headers,List<Map<String,String>> rows) {
+
+        return DataTable.withHeaders(headers).andMappedRows(rows).build();
     }
 
     @Override
     public void startOfScenarioLifeCycle(Scenario scenario) {
-         System.out.println("ThucydidesReporter:startofScenarioLifeCycle called " + scenario.getName());
-         StepEventBus.getEventBus().testStarted(scenario.getName());
-         StepEventBus.getEventBus().addTagsToCurrentTest(ImmutableList.of(tagForCurrentFeature()));
-         getThucydidesListeners().withDriver(ThucydidesWebDriverSupport.getDriver());
+         //System.out.println("ThucydidesReporter:startofScenarioLifeCycle called " + scenario.getName());
+         try {
+             if (examplesRunning) {
+
+                 if (firstStep) {
+                     StepEventBus.getEventBus().testStarted(scenario.getName());
+                     StepEventBus.getEventBus().addTagsToCurrentTest(ImmutableList.of(tagForCurrentFeature()));
+                     getThucydidesListeners().withDriver(ThucydidesWebDriverSupport.getDriver());
+                     StepEventBus.getEventBus().useExamplesFrom(table);
+                     firstStep = false;
+                 }
+                 startExample();
+             } else {
+                 StepEventBus.getEventBus().testStarted(scenario.getName());
+                 StepEventBus.getEventBus().addTagsToCurrentTest(ImmutableList.of(tagForCurrentFeature()));
+                 getThucydidesListeners().withDriver(ThucydidesWebDriverSupport.getDriver());
+             }
+         } catch(Exception e) {
+             e.printStackTrace();
+         }
     }
 
     private TestTag tagForCurrentFeature() {
@@ -130,8 +178,33 @@ public class ThucydidesReporter implements Formatter, Reporter {
 
     @Override
     public void endOfScenarioLifeCycle(Scenario scenario) {
-        System.out.println("ThucydidesReporter:endOfScenarioLifecycle called " + scenario.getName());
-        generateReports();
+        //System.out.println("ThucydidesReporter:endOfScenarioLifecycle called " + scenario.getName() + " " + examplesRunning);
+        if(examplesRunning) {
+            finishExample();
+        } else {
+            generateReports();
+        }
+    }
+
+    private void startExample() {
+        try {
+            Map<String, String> data = exampleRows.get(currentExample);
+            //System.out.println("StartExample " + exampleCount + " data " + data);
+            StepEventBus.getEventBus().exampleStarted(data);
+            currentExample++;
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void finishExample() {
+        StepEventBus.getEventBus().exampleFinished();
+        StepEventBus.getEventBus().stepFinished();
+        exampleCount--;
+        if(exampleCount == 0)
+        {
+            generateReports();
+        }
     }
 
     @Override
@@ -145,7 +218,6 @@ public class ThucydidesReporter implements Formatter, Reporter {
     @Override
     public void step(Step step) {
         stepQueue.add(step);
-
     }
 
 
@@ -155,6 +227,7 @@ public class ThucydidesReporter implements Formatter, Reporter {
         {
             StepEventBus.getEventBus().testSuiteFinished();
         }
+        examplesRunning = false;
     }
 
     @Override
@@ -173,7 +246,7 @@ public class ThucydidesReporter implements Formatter, Reporter {
     @Override
     public void result(Result result) {
         Step currentStep = stepQueue.poll();
-        System.out.println("Result " + result.getStatus() + " for step " + currentStep.getName());
+        //System.out.println("Result " + result.getStatus() + " for step " + currentStep.getName());
         if (Result.PASSED.equals(result.getStatus())) {
             StepEventBus.getEventBus().stepFinished();
         } else if (Result.FAILED.equals(result.getStatus())) {
@@ -186,6 +259,9 @@ public class ThucydidesReporter implements Formatter, Reporter {
         }
 
         if (stepQueue.isEmpty()) {
+            if(examplesRunning) { //finish enclosing step because testFinished resets the queue
+                StepEventBus.getEventBus().stepFinished();
+            }
             StepEventBus.getEventBus().testFinished();
         }
     }
