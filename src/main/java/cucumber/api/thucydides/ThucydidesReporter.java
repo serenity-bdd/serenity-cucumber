@@ -9,6 +9,7 @@ import gherkin.formatter.model.*;
 import net.thucydides.core.ThucydidesListeners;
 import net.thucydides.core.ThucydidesReports;
 import net.thucydides.core.model.DataTable;
+import net.thucydides.core.model.Story;
 import net.thucydides.core.model.TestOutcome;
 import net.thucydides.core.model.TestTag;
 import net.thucydides.core.reports.ReportService;
@@ -100,7 +101,10 @@ public class ThucydidesReporter implements Formatter, Reporter {
         currentFeature =  feature;
         configureDriver(feature);
         getThucydidesListeners().withDriver(ThucydidesWebDriverSupport.getDriver());
-        net.thucydides.core.model.Story userStory = net.thucydides.core.model.Story.withId(feature.getName(), feature.getId());
+        Story userStory = Story.withId(feature.getId(), feature.getName())
+                               .asFeature()
+                               .withNarrative(feature.getDescription());
+        System.out.println("USER STORY TYPE: " + userStory.getType());
         StepEventBus.getEventBus().testSuiteStarted(userStory);
     }
 
@@ -156,7 +160,7 @@ public class ThucydidesReporter implements Formatter, Reporter {
 
                  if (firstStep) {
                      StepEventBus.getEventBus().testStarted(scenario.getName());
-                     StepEventBus.getEventBus().addTagsToCurrentTest(ImmutableList.of(tagForCurrentFeature()));
+                     //StepEventBus.getEventBus().addTagsToCurrentTest(ImmutableList.of(tagForCurrentFeature()));
                      getThucydidesListeners().withDriver(ThucydidesWebDriverSupport.getDriver());
                      StepEventBus.getEventBus().useExamplesFrom(table);
                      firstStep = false;
@@ -164,7 +168,7 @@ public class ThucydidesReporter implements Formatter, Reporter {
                  startExample();
              } else {
                  StepEventBus.getEventBus().testStarted(scenario.getName());
-                 StepEventBus.getEventBus().addTagsToCurrentTest(ImmutableList.of(tagForCurrentFeature()));
+                 //StepEventBus.getEventBus().addTagsToCurrentTest(ImmutableList.of(tagForCurrentFeature()));
                  getThucydidesListeners().withDriver(ThucydidesWebDriverSupport.getDriver());
              }
          } catch(Exception e) {
@@ -172,9 +176,9 @@ public class ThucydidesReporter implements Formatter, Reporter {
          }
     }
 
-    private TestTag tagForCurrentFeature() {
-        return TestTag.withName(currentFeature.getName()).andType("feature");
-    }
+//    private TestTag tagForCurrentFeature() {
+//        return TestTag.withName(currentFeature.getName()).andType("feature");
+//    }
 
     @Override
     public void endOfScenarioLifeCycle(Scenario scenario) {

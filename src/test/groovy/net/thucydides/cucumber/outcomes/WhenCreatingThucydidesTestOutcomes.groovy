@@ -95,7 +95,22 @@ class WhenCreatingThucydidesTestOutcomes extends Specification {
         def testOutcome = recordedTestOutcomes[0]
 
         then:
+        testOutcome.tags.size() == 1
+        and:
         testOutcome.tags.contains(TestTag.withName("A simple feature").andType("feature"))
+    }
+
+    def "should record the narrative text"() {
+        given:
+        def runtime = thucydidesRunnerForCucumberTestRunner(SimpleScenario.class, outputDirectory);
+
+        when:
+        runtime.run();
+        def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory);
+        def testOutcome = recordedTestOutcomes[0]
+
+        then:
+        testOutcome.userStory.narrative == "This is about selling widgets"
     }
 
     def "should record pending and skipped steps for a pending scenario"() {

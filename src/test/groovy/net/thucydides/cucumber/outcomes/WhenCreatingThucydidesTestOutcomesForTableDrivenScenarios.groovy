@@ -12,6 +12,7 @@ import net.thucydides.cucumber.integration.MultipleScenarios
 import net.thucydides.cucumber.integration.PendingScenario
 import net.thucydides.cucumber.integration.SimpleScenario
 import net.thucydides.cucumber.integration.SimpleTableScenario
+import net.thucydides.cucumber.integration.SimpleTableScenarioWithFailures
 import spock.lang.Specification
 
 import static net.thucydides.core.model.TestResult.FAILURE
@@ -66,6 +67,28 @@ class WhenCreatingThucydidesTestOutcomesForTableDrivenScenarios extends Specific
         testOutcome.exampleFields == ["amount", "cost","total"]
         testOutcome.dataTable.rows[0].stringValues == ["0","10","0"]
         testOutcome.dataTable.rows[1].stringValues == ["1","10","10"]
+    }
+
+    def "should run table-driven scenarios with failing rows"() {
+        given:
+        def runtime = thucydidesRunnerForCucumberTestRunner(SimpleTableScenarioWithFailures.class, outputDirectory);
+
+        when:
+        runtime.run();
+        def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory);
+        def testOutcome = recordedTestOutcomes[0]
+
+        then:
+        testOutcome.title == "Buying lots of widgets"
+
+        and: "there should be one step for each row in the table"
+        testOutcome.stepCount == 4
+
+        and:
+        testOutcome.dataTable.rows.collect { it.result } == [SUCCESS, SUCCESS, FAILURE, SUCCESS]
+
+        and:
+        testOutcome.errorMessage == "expected:<[5]0> but was:<[2]0>"
     }
 
 
