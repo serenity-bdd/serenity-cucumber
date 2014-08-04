@@ -11,6 +11,7 @@ import net.thucydides.cucumber.integration.FailingScenario
 import net.thucydides.cucumber.integration.MultipleScenarios
 import net.thucydides.cucumber.integration.PendingScenario
 import net.thucydides.cucumber.integration.SimpleScenario
+import net.thucydides.cucumber.integration.SimpleScenarioWithTags
 import spock.lang.Specification
 
 import static net.thucydides.cucumber.util.CucumberRunner.thucydidesRunnerForCucumberTestRunner
@@ -98,6 +99,34 @@ class WhenCreatingThucydidesTestOutcomes extends Specification {
         testOutcome.tags.size() == 1
         and:
         testOutcome.tags.contains(TestTag.withName("A simple feature").andType("feature"))
+    }
+
+/*
+@flavor:strawberry
+Feature: A simple feature with tags
+  This is about selling widgets
+  @shouldPass
+  @color:red
+  @in-progress
+  ...
+ */
+    def "should record any provided tags"() {
+        given:
+        def runtime = thucydidesRunnerForCucumberTestRunner(SimpleScenarioWithTags.class, outputDirectory);
+
+        when:
+        runtime.run();
+        def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory);
+        def testOutcome = recordedTestOutcomes[0]
+
+        then:
+        testOutcome.tags.size() == 5
+        and:
+        testOutcome.tags.contains(TestTag.withName("A simple feature with tags").andType("feature"))
+        testOutcome.tags.contains(TestTag.withName("strawberry").andType("flavor"))
+        testOutcome.tags.contains(TestTag.withName("red").andType("color"))
+        testOutcome.tags.contains(TestTag.withName("shouldPass").andType("tag"))
+        testOutcome.tags.contains(TestTag.withName("in-progress").andType("tag"))
     }
 
     def "should record the narrative text"() {

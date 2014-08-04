@@ -160,7 +160,8 @@ public class ThucydidesReporter implements Formatter, Reporter {
 
                  if (firstStep) {
                      StepEventBus.getEventBus().testStarted(scenario.getName());
-                     //StepEventBus.getEventBus().addTagsToCurrentTest(ImmutableList.of(tagForCurrentFeature()));
+                     StepEventBus.getEventBus().addTagsToCurrentTest(convertCucumberTags(currentFeature.getTags()));
+                     StepEventBus.getEventBus().addTagsToCurrentTest(convertCucumberTags(scenario.getTags()));
                      getThucydidesListeners().withDriver(ThucydidesWebDriverSupport.getDriver());
                      StepEventBus.getEventBus().useExamplesFrom(table);
                      firstStep = false;
@@ -168,7 +169,8 @@ public class ThucydidesReporter implements Formatter, Reporter {
                  startExample();
              } else {
                  StepEventBus.getEventBus().testStarted(scenario.getName());
-                 //StepEventBus.getEventBus().addTagsToCurrentTest(ImmutableList.of(tagForCurrentFeature()));
+                 StepEventBus.getEventBus().addTagsToCurrentTest(convertCucumberTags(currentFeature.getTags()));
+                 StepEventBus.getEventBus().addTagsToCurrentTest(convertCucumberTags(scenario.getTags()));
                  getThucydidesListeners().withDriver(ThucydidesWebDriverSupport.getDriver());
              }
          } catch(Exception e) {
@@ -176,9 +178,13 @@ public class ThucydidesReporter implements Formatter, Reporter {
          }
     }
 
-//    private TestTag tagForCurrentFeature() {
-//        return TestTag.withName(currentFeature.getName()).andType("feature");
-//    }
+    private List<TestTag> convertCucumberTags(List<Tag> cucumberTags) {
+        List<TestTag> tags = Lists.newArrayList();
+        for(Tag tag : cucumberTags) {
+            tags.add(TestTag.withValue(tag.getName().substring(1)));
+        }
+        return ImmutableList.copyOf(tags);
+    }
 
     @Override
     public void endOfScenarioLifeCycle(Scenario scenario) {
