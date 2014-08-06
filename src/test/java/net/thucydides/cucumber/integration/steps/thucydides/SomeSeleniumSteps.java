@@ -62,20 +62,7 @@ public class SomeSeleniumSteps {
         assertThat(pages, is(notNullValue()));
     }
 
-    @Given("I am on the test page")
-    public void givenIAmOnTheTestPage() {
-        page.open();
-    }
 
-    @When("I enter the first name $firstname")
-    public void whenIEnterTheFirstName(String firstname) {
-        page.setFirstName(firstname);
-    }
-
-    @When("I enter the last name $lastname")
-    public void whenIEnterTheLastName(String lastname) {
-        page.setLastName(lastname);
-    }
 
    /* @When("I type in the first name <firstname>")
     public void whenITypeInTheFirstName(String firstname) {
@@ -87,13 +74,7 @@ public class SomeSeleniumSteps {
         the_user.enters_the_last_name(lastname);
     }
 
-    @Then("I should see entered values of <expectedFirstname> and <expectedLastname>")
-    public void thenIShouldSeeInTheNamesFields(String expectedFirstname,
-                                               String expectedLastname) {
-        StaticSitePage indexPage = page;
-        assertThat(page.firstName().getValue(), is(expectedFirstname));
-        assertThat(page.lastName().getValue(), is(expectedLastname));
-    }
+
 
     @Then("I should see first name $expectedFirstname on the screen")
     public void thenIShouldSeeFirstNameOnTheScreen(String $expectedFirstname) {
@@ -118,23 +99,54 @@ public class SomeSeleniumSteps {
 
     //Cucumber
 
-    //@When("^I type in the first name \"(.*)\"$")
+    @Given("^I am on the test page$")
+    public void givenIAmOnTheTestPage() {
+        page.open();
+    }
+
+    @When("^I enter a first name (.*)")
+    public void whenIEnterTheFirstName(String firstname) {
+        page.setFirstName(firstname);
+    }
+
+    @When("^I enter a last name (.*)")
+    public void whenIEnterTheLastName(String lastname) {
+        page.setLastName(lastname);
+    }
+
     @When("^I type in the first name (.*)$")
     public void whenITypeInTheFirstName(String firstname)
     {
         the_user.enters_the_first_name(firstname);
     }
 
-    //@When("^I type in the last name \"(.*)\"$")
     @When("^I type in the last name (.*)$")
     public void i_type_in_the_last_name(String lastname) throws Throwable {
         the_user.enters_the_last_name(lastname);
     }
 
+
+    @Then("^I should see first name (.*) on the screen$")
+    public void i_should_see_entered_values_of_firstName(String expectedFirstName) throws Throwable {
+        assertThat(page.firstName().getValue(), is(expectedFirstName));
+    }
+
+    @Then("^I should see last name (.*) on the screen$")
+    public void i_should_see_entered_values_of_lastName(String expectedLastName) throws Throwable {
+        assertThat(page.lastName().getValue(), is(expectedLastName));
+    }
+
     @Then("^I should see entered values of (.*) and (.*)$")
     public void i_should_see_entered_values_of_firstName_and_lastName(String expectedFirstName,String expectedLastName) throws Throwable {
-        StaticSitePage indexPage = page;
         assertThat(page.firstName().getValue(), is(expectedFirstName));
         assertThat(page.lastName().getValue(), is(expectedLastName));
+    }
+
+    @Then("^I should see the (.*) and (.*) in the names fields$")
+    public void thenIShouldSeeInTheNamesFields(String expectedFirstname,
+                                               String expectedLastname) {
+        StaticSitePage indexPage = page;
+        assertThat(page.firstName().getValue(), is(expectedFirstname));
+        assertThat(page.lastName().getValue(), is(expectedLastname));
     }
 }
