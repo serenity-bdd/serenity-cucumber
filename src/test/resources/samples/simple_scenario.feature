@@ -1,5 +1,4 @@
 Feature: A simple feature
-  This is about selling widgets
   @shouldPass
   Scenario: A simple scenario
     Given I want to purchase 2 widgets

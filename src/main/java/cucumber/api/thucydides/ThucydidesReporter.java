@@ -159,23 +159,25 @@ public class ThucydidesReporter implements Formatter, Reporter {
              if (examplesRunning) {
 
                  if (firstStep) {
-                     StepEventBus.getEventBus().testStarted(scenario.getName());
-                     StepEventBus.getEventBus().addTagsToCurrentTest(convertCucumberTags(currentFeature.getTags()));
-                     StepEventBus.getEventBus().addTagsToCurrentTest(convertCucumberTags(scenario.getTags()));
-                     getThucydidesListeners().withDriver(ThucydidesWebDriverSupport.getDriver());
+                     startScenario(scenario);
                      StepEventBus.getEventBus().useExamplesFrom(table);
                      firstStep = false;
                  }
                  startExample();
              } else {
-                 StepEventBus.getEventBus().testStarted(scenario.getName());
-                 StepEventBus.getEventBus().addTagsToCurrentTest(convertCucumberTags(currentFeature.getTags()));
-                 StepEventBus.getEventBus().addTagsToCurrentTest(convertCucumberTags(scenario.getTags()));
-                 getThucydidesListeners().withDriver(ThucydidesWebDriverSupport.getDriver());
+                 startScenario(scenario);
              }
          } catch(Exception e) {
              e.printStackTrace();
          }
+    }
+
+    private void startScenario(Scenario scenario) {
+        StepEventBus.getEventBus().testStarted(scenario.getName());
+        StepEventBus.getEventBus().addDescriptionToCurrentTest(scenario.getDescription());
+        StepEventBus.getEventBus().addTagsToCurrentTest(convertCucumberTags(currentFeature.getTags()));
+        StepEventBus.getEventBus().addTagsToCurrentTest(convertCucumberTags(scenario.getTags()));
+        getThucydidesListeners().withDriver(ThucydidesWebDriverSupport.getDriver());
     }
 
     private List<TestTag> convertCucumberTags(List<Tag> cucumberTags) {

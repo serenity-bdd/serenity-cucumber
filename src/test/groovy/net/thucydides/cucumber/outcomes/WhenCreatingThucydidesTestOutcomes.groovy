@@ -11,6 +11,7 @@ import net.thucydides.cucumber.integration.FailingScenario
 import net.thucydides.cucumber.integration.MultipleScenarios
 import net.thucydides.cucumber.integration.PendingScenario
 import net.thucydides.cucumber.integration.SimpleScenario
+import net.thucydides.cucumber.integration.SimpleScenarioWithNarrativeTexts
 import net.thucydides.cucumber.integration.SimpleScenarioWithTags
 import spock.lang.Specification
 
@@ -96,8 +97,6 @@ class WhenCreatingThucydidesTestOutcomes extends Specification {
         def testOutcome = recordedTestOutcomes[0]
 
         then:
-        testOutcome.tags.size() == 1
-        and:
         testOutcome.tags.contains(TestTag.withName("A simple feature").andType("feature"))
     }
 
@@ -131,7 +130,7 @@ Feature: A simple feature with tags
 
     def "should record the narrative text"() {
         given:
-        def runtime = thucydidesRunnerForCucumberTestRunner(SimpleScenario.class, outputDirectory);
+        def runtime = thucydidesRunnerForCucumberTestRunner(SimpleScenarioWithNarrativeTexts.class, outputDirectory);
 
         when:
         runtime.run();
@@ -140,6 +139,20 @@ Feature: A simple feature with tags
 
         then:
         testOutcome.userStory.narrative == "This is about selling widgets"
+    }
+
+    def "should record the scenario description text for a scenario"() {
+        given:
+        def runtime = thucydidesRunnerForCucumberTestRunner(SimpleScenarioWithNarrativeTexts.class, outputDirectory);
+
+        when:
+        runtime.run();
+        def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory);
+        def testOutcome = recordedTestOutcomes[0]
+
+        then:
+        testOutcome.description == """A description of this scenario
+It goes for two lines"""
     }
 
     def "should record pending and skipped steps for a pending scenario"() {
