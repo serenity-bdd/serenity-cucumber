@@ -39,18 +39,41 @@ public class ThucydidesObjectFactory implements ObjectFactory {
         return instance;
     }
 
+    /**
+     * Tries to instantiate the type using an empty constructor, if it does not work, tries to instantiate
+     * using a constructor wit a Pages parameter.
+     * @param type
+     * @param <T>
+     * @return
+     */
     private <T> T cacheNewInstance(Class<T> type) {
+        T instance;
         try {
             Constructor<T> constructor = type.getConstructor();
-            T instance = constructor.newInstance();
-            Thucydides.initializeWithNoStepListener(instance);
-            instances.put(type, instance);
-            return instance;
+            instance = constructor.newInstance();
         } catch (NoSuchMethodException e) {
-            throw new CucumberException(String.format("%s doesn't have an empty constructor.", type), e);
+            instance = createNewPageEnabledStepCandidate(type);
         } catch (Exception e) {
             throw new CucumberException(String.format("Failed to instantiate %s", type), e);
         }
+        Thucydides.initializeWithNoStepListener(instance);
+        instances.put(type, instance);
+        return instance;
     }
+
+    private <T> T createNewPageEnabledStepCandidate(final Class<T> type) {
+        T newInstance = null;
+        try {
+            Pages pageFactory = ThucydidesWebDriverSupport.getPages();
+            Class[] constructorArgs = new Class[1];
+            constructorArgs[0] = Pages.class;
+            Constructor<T> constructor = type.getConstructor(constructorArgs);
+            newInstance = constructor.newInstance(pageFactory);
+        } catch (Exception e) {
+            throw new CucumberException(String.format("%s doesn't have an empty or a page enabled constructor.", type), e);
+        }
+        return newInstance;
+    }
+
 
 }
