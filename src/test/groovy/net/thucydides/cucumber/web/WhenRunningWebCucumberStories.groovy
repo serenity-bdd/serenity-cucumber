@@ -1,27 +1,17 @@
 package net.thucydides.cucumber.web
 
-import com.github.goldin.spock.extensions.tempdir.TempDir;
-import net.thucydides.core.model.TestOutcome;
-import net.thucydides.core.model.TestResult;
-import net.thucydides.core.model.TestStep;
-import net.thucydides.core.reports.OutcomeFormat;
+import com.github.goldin.spock.extensions.tempdir.TempDir
+import net.thucydides.core.model.TestResult
+import net.thucydides.core.reports.OutcomeFormat
 import net.thucydides.core.reports.TestOutcomeLoader
-import net.thucydides.cucumber.integration.SimpleSeleniumDifferentBrowserScenario
+import net.thucydides.core.util.MockEnvironmentVariables
 import net.thucydides.cucumber.integration.SimpleSeleniumFailingAndPassingScenario
-import net.thucydides.cucumber.integration.SimpleSeleniumPageObjects;
-import net.thucydides.cucumber.integration.SimpleTableScenario;
-import net.thucydides.cucumber.integration.SimpleSeleniumScenario;
-import net.thucydides.cucumber.integration.SimpleSeleniumFailingScenario;
-import org.junit.Before;
-import org.junit.Test;
-import spock.lang.Specification;
+import net.thucydides.cucumber.integration.SimpleSeleniumFailingScenario
+import net.thucydides.cucumber.integration.SimpleSeleniumPageObjects
+import net.thucydides.cucumber.integration.SimpleSeleniumScenario
+import spock.lang.Specification
 
-import java.util.List;
-
-import static net.thucydides.core.model.TestResult.SUCCESS;
-import static net.thucydides.cucumber.util.CucumberRunner.thucydidesRunnerForCucumberTestRunner;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
+import static net.thucydides.cucumber.util.CucumberRunner.thucydidesRunnerForCucumberTestRunner
 
 public class WhenRunningWebCucumberStories extends Specification {
 
@@ -29,12 +19,12 @@ public class WhenRunningWebCucumberStories extends Specification {
     File outputDirectory
 
     /*@Before
-    public void reset_driver() {
+    public void reset  driver() {
         environmentVariables.setProperty("webdriver.driver", "phantomjs");
     } */
 
    /* @Test
-    public void a_test_should_have_storywide_tags_defined_by_the_tag_meta_field() throws Throwable {
+    public void a  test  should  have  storywide  tags  defined  by  the  tag  meta  field() throws Throwable {
 
         // Given
         ThucydidesJUnitStories story = newStory("aPassingBehaviorWithSelenium.story");
@@ -47,9 +37,15 @@ public class WhenRunningWebCucumberStories extends Specification {
         assertThat(outcomes.get(0).getResult(), is(TestResult.SUCCESS));
     }*/
 
+    def environmentVariables = new MockEnvironmentVariables()
+
+    def setup() {
+        environmentVariables.setProperty("webdriver.driver", "phantomjs");
+    }
+
     def "should run table-driven scenarios successfully"() {
         given:
-        def runtime = thucydidesRunnerForCucumberTestRunner(SimpleSeleniumScenario.class, outputDirectory);
+        def runtime = thucydidesRunnerForCucumberTestRunner(SimpleSeleniumScenario.class, outputDirectory, environmentVariables);
 
         when:
         runtime.run();
@@ -64,9 +60,9 @@ public class WhenRunningWebCucumberStories extends Specification {
     }
 
 
-    def "a_failing_story_should_generate_failure_test_outcome"() throws Throwable {
+    def "a failing story should generate failure test outcome"() throws Throwable {
         given:
-        def runtime = thucydidesRunnerForCucumberTestRunner(SimpleSeleniumFailingScenario.class, outputDirectory);
+        def runtime = thucydidesRunnerForCucumberTestRunner(SimpleSeleniumFailingScenario.class, outputDirectory, environmentVariables);
 
         when:
         runtime.run();
@@ -84,7 +80,7 @@ public class WhenRunningWebCucumberStories extends Specification {
 
 
 
-    /*def "a_test_should_use_a_different_browser_if_requested"()  {
+    /*def "a  test  should  use  a  different  browser  if  requested"()  {
 
         given:
         def runtime = thucydidesRunnerForCucumberTestRunner(SimpleSeleniumDifferentBrowserScenario.class, outputDirectory);
@@ -104,10 +100,10 @@ public class WhenRunningWebCucumberStories extends Specification {
     } */
 
 
-   def "a_cucumber_step_library_can_use_page_objects_directly"()  {
+   def "a  cucumber  step  library  can  use  page  objects  directly"()  {
 
         given:
-        def runtime = thucydidesRunnerForCucumberTestRunner(SimpleSeleniumPageObjects.class, outputDirectory);
+        def runtime = thucydidesRunnerForCucumberTestRunner(SimpleSeleniumPageObjects.class, outputDirectory, environmentVariables);
 
         when:
         runtime.run();
@@ -124,29 +120,25 @@ public class WhenRunningWebCucumberStories extends Specification {
     }
 
 
-    def "stories_with_errors_in_one_scenario_should_still_run_subsequent_scenarios"()  {
+    def "stories with errors in one scenario should still run subsequent scenarios"()  {
 
         given:
-        def runtimeProperties =  new Properties();
-        runtimeProperties.setProperty("restart.browser.each.scenario","true");
-        def runtime = thucydidesRunnerForCucumberTestRunner(SimpleSeleniumFailingAndPassingScenario.class, outputDirectory, runtimeProperties);
+        environmentVariables.setProperty("restart.browser.each.scenario","true");
+        def runtime = thucydidesRunnerForCucumberTestRunner(SimpleSeleniumFailingAndPassingScenario, outputDirectory, environmentVariables);
 
         when:
         runtime.run();
         def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory);
-        //def testOutcome = recordedTestOutcomes[0]
-
 
         then:
-        //testOutcome.title == "A failing scenario that uses selenium"
-        assertThat(recordedTestOutcomes.size(), is(2));
-        assertThat(recordedTestOutcomes.get(0).getResult(), is(TestResult.FAILURE));
-        assertThat(recordedTestOutcomes.get(1).getResult(), is(TestResult.SUCCESS));
+        recordedTestOutcomes.size() == 2
+        recordedTestOutcomes[0].result == TestResult.FAILURE
+        recordedTestOutcomes[1].result == TestResult.SUCCESS
 
     }
 
     /*@Test
-    public void should_be_able_to_specify_the_browser_in_the_base_test() throws Throwable {
+    public void should be  able  to  specify  the  browser  in  the  base  test() throws Throwable {
 
         // Given
         ThucydidesJUnitStories story = new APassingWebTestSampleWithASpecifiedBrowser();
@@ -163,7 +155,7 @@ public class WhenRunningWebCucumberStories extends Specification {
     }
 
     @Test
-    public void should_be_able_to_set_thucydides_properties_in_the_base_test() throws Throwable {
+    public void should  be  able  to  set  thucydides  properties  in  the  base  test() throws Throwable {
 
         // Given
         ThucydidesJUnitStories story = new APassingWebTestSampleWithThucydidesPropertiesDefined(systemConfiguration);
@@ -181,7 +173,7 @@ public class WhenRunningWebCucumberStories extends Specification {
 
 
     @Test
-    public void data_driven_steps_should_appear_as_nested_steps() throws Throwable {
+    public void data  driven  steps  should  appear  as  nested  steps() throws Throwable {
 
         // Given
         ThucydidesJUnitStories story = newStory("dataDrivenBehavior.story");
@@ -202,7 +194,7 @@ public class WhenRunningWebCucumberStories extends Specification {
     }
 
     @Test
-    public void browser_should_not_closed_between_given_stories_and_scenario_steps() throws Throwable {
+    public void browser  should  not  closed  between  given  stories  and  scenario  steps() throws Throwable {
 
         // Given
         ThucydidesJUnitStories story = newStory("aBehaviorWithGivenStories.story");
@@ -216,7 +208,7 @@ public class WhenRunningWebCucumberStories extends Specification {
     }
 
     @Test
-    public void two_scenarii_using_the_same_given_story_should_return_two_test_outcomes() throws Throwable {
+    public void two  scenarii  using  the  same  given  story  should  return  two  test  outcomes() throws Throwable {
         ThucydidesJUnitStories story = newStory("LookupADefinitionSuite.story");
         run(story);
         List<TestOutcome> outcomes = loadTestOutcomes();

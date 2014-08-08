@@ -1,3 +1,4 @@
+@driver:phantomjs
 Feature: A scenario that uses selenium
 
 Scenario Outline: A scenario that uses selenium

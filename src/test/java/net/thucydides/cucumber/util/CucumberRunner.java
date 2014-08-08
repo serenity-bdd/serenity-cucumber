@@ -26,12 +26,16 @@ public class CucumberRunner {
     }
 
     public static cucumber.runtime.Runtime thucydidesRunnerForCucumberTestRunner(Class testClass, File outputDirectory) {
+        return thucydidesRunnerForCucumberTestRunner(testClass, outputDirectory, new SystemEnvironmentVariables());
+    }
+
+    public static cucumber.runtime.Runtime thucydidesRunnerForCucumberTestRunner(Class testClass, File outputDirectory,
+                                                                                 EnvironmentVariables environmentVariables) {
         ClassLoader classLoader = testClass.getClassLoader();
         ResourceLoader resourceLoader = new MultiLoader(classLoader);
         RuntimeOptionsFactory runtimeOptionsFactory = new RuntimeOptionsFactory(testClass, new Class[]{CucumberOptions.class});
         RuntimeOptions runtimeOptions = runtimeOptionsFactory.create();
 
-        EnvironmentVariables environmentVariables = new SystemEnvironmentVariables();
         Configuration systemConfiguration = new SystemPropertiesConfiguration(environmentVariables);
         systemConfiguration.setOutputDirectory(outputDirectory);
         return CucumberWithThucydides.createThucydidesEnabledRuntime(resourceLoader, classLoader, runtimeOptions, systemConfiguration);

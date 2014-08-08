@@ -6,6 +6,7 @@ import cucumber.runtime.StepDefinitionMatch;
 import gherkin.formatter.Formatter;
 import gherkin.formatter.Reporter;
 import gherkin.formatter.model.*;
+import net.thucydides.core.Thucydides;
 import net.thucydides.core.ThucydidesListeners;
 import net.thucydides.core.ThucydidesReports;
 import net.thucydides.core.model.DataTable;
@@ -110,12 +111,23 @@ public class ThucydidesReporter implements Formatter, Reporter {
 
     private void configureDriver(Feature feature) {
         StepEventBus.getEventBus().setUniqueSession(systemConfiguration.getUseUniqueBrowser());
-        String requestedDriver = null; // TODO get from Feature eventually
+        String requestedDriver = getDriverFrom(feature);
         if (StringUtils.isNotEmpty(requestedDriver)) {
             ThucydidesWebDriverSupport.initialize(requestedDriver);
         } else {
             ThucydidesWebDriverSupport.initialize();
         }
+    }
+
+    private String getDriverFrom(Feature feature) {
+        List<Tag> tags = feature.getTags();
+        String requestedDriver = null;
+        for (Tag tag : tags) {
+            if (tag.getName().startsWith("@driver:")) {
+                requestedDriver = tag.getName().substring(8);
+            }
+        }
+        return requestedDriver;
     }
 
 
@@ -238,6 +250,7 @@ public class ThucydidesReporter implements Formatter, Reporter {
         if(currentFeature != null)
         {
             StepEventBus.getEventBus().testSuiteFinished();
+            Thucydides.done();
         }
         examplesRunning = false;
     }
