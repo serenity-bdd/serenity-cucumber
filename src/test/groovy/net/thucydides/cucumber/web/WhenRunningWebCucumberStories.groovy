@@ -5,6 +5,7 @@ import net.thucydides.core.model.TestResult
 import net.thucydides.core.reports.OutcomeFormat
 import net.thucydides.core.reports.TestOutcomeLoader
 import net.thucydides.core.util.MockEnvironmentVariables
+import net.thucydides.cucumber.integration.SimpleSeleniumDifferentBrowserScenario
 import net.thucydides.cucumber.integration.SimpleSeleniumFailingAndPassingScenario
 import net.thucydides.cucumber.integration.SimpleSeleniumFailingScenario
 import net.thucydides.cucumber.integration.SimpleSeleniumPageObjects
@@ -80,7 +81,7 @@ public class WhenRunningWebCucumberStories extends Specification {
 
 
 
-    /*def "a  test  should  use  a  different  browser  if  requested"()  {
+    def "a  test  should  use  a  different  browser  if  requested"()  {
 
         given:
         def runtime = thucydidesRunnerForCucumberTestRunner(SimpleSeleniumDifferentBrowserScenario.class, outputDirectory);
@@ -92,12 +93,12 @@ public class WhenRunningWebCucumberStories extends Specification {
 
 
         then:
-        testOutcome.title == "A failing scenario that uses selenium"
+        testOutcome.title == "A scenario that uses selenium"
         testOutcome.isSuccess();
 
         and: "there should be one step for each row in the table"
         testOutcome.stepCount == 2
-    } */
+    }
 
 
    def "a  cucumber  step  library  can  use  page  objects  directly"()  {
