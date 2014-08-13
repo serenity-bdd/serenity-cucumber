@@ -1,10 +1,17 @@
 package net.thucydides.cucumber.web
 
 import com.github.goldin.spock.extensions.tempdir.TempDir
+import net.thucydides.core.ThucydidesSystemProperty
 import net.thucydides.core.model.TestResult
+import net.thucydides.core.model.TestStep
 import net.thucydides.core.reports.OutcomeFormat
 import net.thucydides.core.reports.TestOutcomeLoader
 import net.thucydides.core.util.MockEnvironmentVariables
+import net.thucydides.core.webdriver.Configuration
+import net.thucydides.core.webdriver.SystemPropertiesConfiguration
+import net.thucydides.cucumber.integration.DataDrivenScenario
+import net.thucydides.cucumber.integration.ScenarioSuite
+import net.thucydides.cucumber.integration.SimpleSeleniumDifferentBrowserScenario
 import net.thucydides.cucumber.integration.SimpleSeleniumFailingAndPassingScenario
 import net.thucydides.cucumber.integration.SimpleSeleniumFailingScenario
 import net.thucydides.cucumber.integration.SimpleSeleniumPageObjects
@@ -17,25 +24,6 @@ public class WhenRunningWebCucumberStories extends Specification {
 
     @TempDir
     File outputDirectory
-
-    /*@Before
-    public void reset  driver() {
-        environmentVariables.setProperty("webdriver.driver", "phantomjs");
-    } */
-
-   /* @Test
-    public void a  test  should  have  storywide  tags  defined  by  the  tag  meta  field() throws Throwable {
-
-        // Given
-        ThucydidesJUnitStories story = newStory("aPassingBehaviorWithSelenium.story");
-
-        // When
-        run(story);
-
-        // Then
-        List<TestOutcome> outcomes = loadTestOutcomes();
-        assertThat(outcomes.get(0).getResult(), is(TestResult.SUCCESS));
-    }*/
 
     def environmentVariables = new MockEnvironmentVariables()
 
@@ -80,8 +68,7 @@ public class WhenRunningWebCucumberStories extends Specification {
 
 
 
-    /*def "a  test  should  use  a  different  browser  if  requested"()  {
-
+    def "a  test  should  use  a  different  browser  if  requested"()  {
         given:
         def runtime = thucydidesRunnerForCucumberTestRunner(SimpleSeleniumDifferentBrowserScenario.class, outputDirectory);
 
@@ -90,18 +77,16 @@ public class WhenRunningWebCucumberStories extends Specification {
         def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory);
         def testOutcome = recordedTestOutcomes[0]
 
-
         then:
-        testOutcome.title == "A failing scenario that uses selenium"
+        testOutcome.title == "A scenario that uses selenium"
         testOutcome.isSuccess();
 
         and: "there should be one step for each row in the table"
         testOutcome.stepCount == 2
-    } */
+    }
 
 
    def "a  cucumber  step  library  can  use  page  objects  directly"()  {
-
         given:
         def runtime = thucydidesRunnerForCucumberTestRunner(SimpleSeleniumPageObjects.class, outputDirectory, environmentVariables);
 
@@ -109,7 +94,6 @@ public class WhenRunningWebCucumberStories extends Specification {
         runtime.run();
         def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory);
         def testOutcome = recordedTestOutcomes[0]
-
 
         then:
         testOutcome.title == "A scenario that uses selenium"
@@ -121,7 +105,6 @@ public class WhenRunningWebCucumberStories extends Specification {
 
 
     def "stories with errors in one scenario should still run subsequent scenarios"()  {
-
         given:
         environmentVariables.setProperty("restart.browser.each.scenario","true");
         def runtime = thucydidesRunnerForCucumberTestRunner(SimpleSeleniumFailingAndPassingScenario, outputDirectory, environmentVariables);
@@ -134,84 +117,74 @@ public class WhenRunningWebCucumberStories extends Specification {
         recordedTestOutcomes.size() == 2
         recordedTestOutcomes[0].result == TestResult.FAILURE
         recordedTestOutcomes[1].result == TestResult.SUCCESS
-
-    }
-
-    /*@Test
-    public void should be  able  to  specify  the  browser  in  the  base  test() throws Throwable {
-
-        // Given
-        ThucydidesJUnitStories story = new APassingWebTestSampleWithASpecifiedBrowser();
-        story.setEnvironmentVariables(environmentVariables);
-
-        System.out.println("Output dir = " + outputDirectory.getAbsolutePath());
-        // When
-        run(story);
-
-        // Then
-        System.out.println("Loading from output dir = " + outputDirectory.getAbsolutePath());
-        List<TestOutcome> outcomes = loadTestOutcomes();
-        assertThat(outcomes.get(0).getResult(), is(TestResult.SUCCESS));
-    }
-
-    @Test
-    public void should  be  able  to  set  thucydides  properties  in  the  base  test() throws Throwable {
-
-        // Given
-        ThucydidesJUnitStories story = new APassingWebTestSampleWithThucydidesPropertiesDefined(systemConfiguration);
-        story.setEnvironmentVariables(environmentVariables);
-
-        // When
-        run(story);
-
-        // Then
-
-        assertThat(story.getSystemConfiguration().getBaseUrl(), is("some-base-url"));
-        assertThat(story.getSystemConfiguration().getElementTimeout(), is(5));
-        assertThat(story.getSystemConfiguration().getUseUniqueBrowser(), is(true));
     }
 
 
-    @Test
-    public void data  driven  steps  should  appear  as  nested  steps() throws Throwable {
+    def "should be  able  to  specify  the  browser  in  the  base  test"() {
+        given:
+        environmentVariables.setProperty(ThucydidesSystemProperty.DRIVER.getPropertyName(), "htmlunit");
+        environmentVariables.setProperty(ThucydidesSystemProperty.THUCYDIDES_USE_UNIQUE_BROWSER.getPropertyName(),"true");
+        def runtime = thucydidesRunnerForCucumberTestRunner(SimpleSeleniumFailingAndPassingScenario, outputDirectory, environmentVariables);
 
-        // Given
-        ThucydidesJUnitStories story = newStory("dataDrivenBehavior.story");
+        when:
+        runtime.run();
+        def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory);
 
-        // When
-        run(story);
+        then:
+        recordedTestOutcomes[0].result == TestResult.FAILURE
+    }
 
-        // Then
-        List<TestOutcome> allOutcomes = loadTestOutcomes();
-        assertThat(allOutcomes.size(), is(1));
 
-        List<TestStep> topLevelSteps = allOutcomes.get(0).getTestSteps();
-        assertThat(topLevelSteps.size(), is(3));
+    def "should  be  able  to  set  thucydides  properties  in the  base  test"() {
+        given:
+        environmentVariables.setProperty(ThucydidesSystemProperty.DRIVER.getPropertyName(), "htmlunit");
+        environmentVariables.setProperty(ThucydidesSystemProperty.THUCYDIDES_USE_UNIQUE_BROWSER.getPropertyName(),"true");
+        environmentVariables.setProperty(ThucydidesSystemProperty.WEBDRIVER_BASE_URL.getPropertyName(),"some-base-url")
+        environmentVariables.setProperty(ThucydidesSystemProperty.THUCYDIDES_TIMEOUT.getPropertyName(),"5")
+        Configuration systemConfiguration = new SystemPropertiesConfiguration(environmentVariables);
+        systemConfiguration.setOutputDirectory(outputDirectory);
+        def runtime = thucydidesRunnerForCucumberTestRunner(SimpleSeleniumFailingAndPassingScenario, systemConfiguration)
 
-        List<TestStep> nestedDataDrivenSteps = topLevelSteps.get(2).getChildren().get(0).getChildren();
-        assertThat(nestedDataDrivenSteps.size(), is(3));
+        when:
+        runtime.run();
+
+        then:
+        systemConfiguration.getBaseUrl() == "some-base-url"
+        systemConfiguration.getElementTimeout() == 5
+        systemConfiguration.getUseUniqueBrowser() == true
 
     }
 
-    @Test
-    public void browser  should  not  closed  between  given  stories  and  scenario  steps() throws Throwable {
 
-        // Given
-        ThucydidesJUnitStories story = newStory("aBehaviorWithGivenStories.story");
 
-        // When
-        run(story);
+    def  "data  driven  steps  should  appear  as  nested  steps"()  {
+        given:
+        def runtime = thucydidesRunnerForCucumberTestRunner(DataDrivenScenario.class, outputDirectory);
 
-        // Then
-        List<TestOutcome> outcomes = loadTestOutcomes();
-        assertThat(outcomes.get(0).getResult(), is(TestResult.SUCCESS));
+        when:
+        runtime.run();
+        def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory);
+
+        then:
+        recordedTestOutcomes.size() == 1
+        def topLevelSteps = recordedTestOutcomes.get(0).getTestSteps()
+        topLevelSteps.size() == 3
+
+        def nestedDataDrivenSteps = topLevelSteps.get(2).getChildren().get(0).getChildren();
+        nestedDataDrivenSteps.size() == 3;
     }
 
-    @Test
-    public void two  scenarii  using  the  same  given  story  should  return  two  test  outcomes() throws Throwable {
-        ThucydidesJUnitStories story = newStory("LookupADefinitionSuite.story");
-        run(story);
-        List<TestOutcome> outcomes = loadTestOutcomes();
-        assertThat(outcomes.size(), is(2));
-    } */
+
+
+    def "two  scenarios  using  the  same  given  story  should  return  two  test  outcomes"() {
+        given:
+        def runtime = thucydidesRunnerForCucumberTestRunner(ScenarioSuite.class, outputDirectory);
+
+        when:
+        runtime.run();
+        def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory);
+
+        then:
+        recordedTestOutcomes.size() == 2
+    }
 }
