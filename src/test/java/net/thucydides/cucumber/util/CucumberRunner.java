@@ -41,4 +41,13 @@ public class CucumberRunner {
         return CucumberWithThucydides.createThucydidesEnabledRuntime(resourceLoader, classLoader, runtimeOptions, systemConfiguration);
     }
 
+    public static cucumber.runtime.Runtime thucydidesRunnerForCucumberTestRunner(Class testClass, Configuration systemConfiguration) {
+        ClassLoader classLoader = testClass.getClassLoader();
+        ResourceLoader resourceLoader = new MultiLoader(classLoader);
+        RuntimeOptionsFactory runtimeOptionsFactory = new RuntimeOptionsFactory(testClass, new Class[]{CucumberOptions.class});
+        RuntimeOptions runtimeOptions = runtimeOptionsFactory.create();
+
+        return CucumberWithThucydides.createThucydidesEnabledRuntime(resourceLoader, classLoader, runtimeOptions, systemConfiguration);
+    }
+
 }
