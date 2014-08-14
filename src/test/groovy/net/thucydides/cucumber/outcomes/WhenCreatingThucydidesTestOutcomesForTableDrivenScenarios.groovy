@@ -61,7 +61,7 @@ class WhenCreatingThucydidesTestOutcomesForTableDrivenScenarios extends Specific
 
         and: "each of these steps should contain the scenario steps as children"
         def childSteps = testOutcome.testSteps[0].children.collect { step -> step.description }
-        childSteps == ['Given I want to purchase 0 widgets', 'And a widget costs $10', 'When I buy the widgets', 'Then I should be billed $0']
+        childSteps == ['Given I want to purchase <amount> widgets', 'And a widget costs $<cost>', 'When I buy the widgets', 'Then I should be billed $<total>']
 
         and:
         testOutcome.dataTable.rows.collect { it.result } == [SUCCESS, SUCCESS, SUCCESS, SUCCESS, SUCCESS]

@@ -68,7 +68,7 @@ public class WhenRunningWebCucumberStories extends Specification {
 
 
 
-    def "a  test  should  use  a  different  browser  if  requested"()  {
+    def "a test should use a different browser if requested"()  {
         given:
         def runtime = thucydidesRunnerForCucumberTestRunner(SimpleSeleniumDifferentBrowserScenario.class, outputDirectory);
 
@@ -120,7 +120,7 @@ public class WhenRunningWebCucumberStories extends Specification {
     }
 
 
-    def "should be  able  to  specify  the  browser  in  the  base  test"() {
+    def "should be able to specify the browser in the base test"() {
         given:
         environmentVariables.setProperty(ThucydidesSystemProperty.DRIVER.getPropertyName(), "htmlunit");
         environmentVariables.setProperty(ThucydidesSystemProperty.THUCYDIDES_USE_UNIQUE_BROWSER.getPropertyName(),"true");
@@ -135,7 +135,7 @@ public class WhenRunningWebCucumberStories extends Specification {
     }
 
 
-    def "should  be  able  to  set  thucydides  properties  in the  base  test"() {
+    def "should be able to set thucydides properties in the base test"() {
         given:
         environmentVariables.setProperty(ThucydidesSystemProperty.DRIVER.getPropertyName(), "htmlunit");
         environmentVariables.setProperty(ThucydidesSystemProperty.THUCYDIDES_USE_UNIQUE_BROWSER.getPropertyName(),"true");

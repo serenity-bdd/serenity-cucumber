@@ -261,6 +261,7 @@ public class ThucydidesReporter implements Formatter, Reporter {
 
     private void startExample() {
         Map<String, String> data = exampleRows.get(currentExample);
+        StepEventBus.getEventBus().clearStepFailures();
         StepEventBus.getEventBus().exampleStarted(data);
         currentExample++;
     }
