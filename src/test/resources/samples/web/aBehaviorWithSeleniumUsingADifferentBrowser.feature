@@ -1,5 +1,4 @@
-#Meta:
-#@driver htmlunit
+@driver:phantomjs
 Feature: Use other browser
 
 Scenario Outline: A scenario that uses selenium

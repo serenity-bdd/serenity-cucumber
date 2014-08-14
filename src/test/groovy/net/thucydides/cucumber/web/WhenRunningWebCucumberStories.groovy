@@ -100,7 +100,7 @@ public class WhenRunningWebCucumberStories extends Specification {
     } */
 
 
-   def "a  cucumber  step  library  can  use  page  objects  directly"()  {
+   def "a cucumber step library can use page objects directly"()  {
 
         given:
         def runtime = thucydidesRunnerForCucumberTestRunner(SimpleSeleniumPageObjects.class, outputDirectory, environmentVariables);

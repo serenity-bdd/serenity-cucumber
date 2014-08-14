@@ -1,5 +1,6 @@
 package cucumber.runtime;
 
+import cucumber.runtime.CucumberException;
 import cucumber.runtime.java.ObjectFactory;
 import net.thucydides.core.Thucydides;
 import net.thucydides.core.pages.Pages;

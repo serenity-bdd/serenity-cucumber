@@ -1,5 +1,4 @@
-#Meta:
-#@driver htmlunit
+@driver:htmlunit
 Feature: A failing scenario that uses selenium
 
 Scenario Outline: A failing scenario that uses selenium

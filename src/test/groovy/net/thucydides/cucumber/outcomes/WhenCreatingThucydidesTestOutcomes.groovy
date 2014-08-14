@@ -7,6 +7,7 @@ import net.thucydides.core.model.TestStep
 import net.thucydides.core.model.TestTag
 import net.thucydides.core.reports.OutcomeFormat
 import net.thucydides.core.reports.TestOutcomeLoader
+import net.thucydides.cucumber.integration.BasicArithemticScenario
 import net.thucydides.cucumber.integration.FailingScenario
 import net.thucydides.cucumber.integration.MultipleScenarios
 import net.thucydides.cucumber.integration.PendingScenario
@@ -200,6 +201,25 @@ It goes for two lines"""
         and:
         steps1 == ['Given I want to purchase 2 widgets', 'And a widget costs $5', 'When I buy the widgets', 'Then I should be billed $50']
         steps2 == ['Given I want to purchase 4 widgets', 'And a widget costs $3', 'When I buy the widgets', 'Then I should be billed $12']
+    }
+
+    def "should generate outcomes for scenarios with a background section"() {
+        given:
+        def runtime = thucydidesRunnerForCucumberTestRunner(BasicArithemticScenario.class, outputDirectory);
+
+        when:
+        runtime.run();
+        def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory)
+
+        then:
+        recordedTestOutcomes.size() == 2
+
+        and:
+        recordedTestOutcomes.collect { it.methodName } == ["Addition", "Another Addition"]
+
+        and:
+        recordedTestOutcomes[0].stepCount == 3
+        recordedTestOutcomes[1].stepCount == 3
     }
 
 }

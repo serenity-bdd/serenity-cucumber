@@ -7,12 +7,15 @@ import net.thucydides.core.model.TestStep
 import net.thucydides.core.model.TestTag
 import net.thucydides.core.reports.OutcomeFormat
 import net.thucydides.core.reports.TestOutcomeLoader
+import net.thucydides.cucumber.integration.BasicArithemticWithTablesAndBackgroundScenario
+import net.thucydides.cucumber.integration.BasicArithemticWithTablesScenario
 import net.thucydides.cucumber.integration.FailingScenario
 import net.thucydides.cucumber.integration.MultipleScenarios
 import net.thucydides.cucumber.integration.PendingScenario
 import net.thucydides.cucumber.integration.SimpleScenario
 import net.thucydides.cucumber.integration.SimpleTableScenario
 import net.thucydides.cucumber.integration.SimpleTableScenarioWithFailures
+import spock.lang.Ignore
 import spock.lang.Specification
 
 import static net.thucydides.core.model.TestResult.FAILURE
@@ -90,6 +93,64 @@ class WhenCreatingThucydidesTestOutcomesForTableDrivenScenarios extends Specific
         and:
         testOutcome.errorMessage == "expected:<[5]0> but was:<[2]0>"
     }
+
+
+
+    def "should handle multiple example tables"() {
+        given:
+        def runtime = thucydidesRunnerForCucumberTestRunner(BasicArithemticWithTablesScenario.class, outputDirectory);
+
+        when:
+        runtime.run();
+        def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory);
+        def testOutcome = recordedTestOutcomes[0]
+
+        then:
+        testOutcome.title == "Many additions"
+
+        and:
+        testOutcome.dataTable.dataSets.size() == 2
+
+        and:
+        testOutcome.dataTable.dataSets[0].name == "Single digits"
+        testOutcome.dataTable.dataSets[0].description == "With just one digit"
+        testOutcome.dataTable.dataSets[0].rows.size() == 2
+
+        and:
+        testOutcome.dataTable.dataSets[1].name == "Double digits"
+        testOutcome.dataTable.dataSets[1].description == "With more digits than one"
+        testOutcome.dataTable.dataSets[1].rows.size() == 3
+
+    }
+
+    @Ignore
+    def "should handle multiple example tables with backgrounds"() {
+        given:
+        def runtime = thucydidesRunnerForCucumberTestRunner(BasicArithemticWithTablesAndBackgroundScenario.class, outputDirectory);
+
+        when:
+        runtime.run();
+        def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory);
+        def testOutcome = recordedTestOutcomes[0]
+
+        then:
+        testOutcome.title == "Many additions"
+
+        and:
+        testOutcome.dataTable.dataSets.size() == 2
+
+        and:
+        testOutcome.dataTable.dataSets[0].name == "Single digits"
+        testOutcome.dataTable.dataSets[0].description == "With just one digit"
+        testOutcome.dataTable.dataSets[0].rows.size() == 2
+
+        and:
+        testOutcome.dataTable.dataSets[1].name == "Double digits"
+        testOutcome.dataTable.dataSets[1].description == "With more digits than one"
+        testOutcome.dataTable.dataSets[1].rows.size() == 3
+
+    }
+
 
 
 }

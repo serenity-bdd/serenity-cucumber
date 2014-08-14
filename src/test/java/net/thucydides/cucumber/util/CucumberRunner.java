@@ -1,7 +1,7 @@
 package net.thucydides.cucumber.util;
 
 import cucumber.api.CucumberOptions;
-import cucumber.api.thucydides.CucumberWithThucydides;
+import net.thucydides.cucumber.CucumberWithThucydides;
 import cucumber.runtime.RuntimeOptions;
 import cucumber.runtime.RuntimeOptionsFactory;
 import cucumber.runtime.io.MultiLoader;

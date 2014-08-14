@@ -34,11 +34,6 @@ public class SomeSeleniumSteps {
 
     StaticSitePage page;
 
-    public SomeSeleniumSteps(Pages pages) {
-        this.pages = pages;
-        page = pages.get(StaticSitePage.class);
-    }
-
     @Given("I have an implemented JBehave scenario that uses selenium")
     public void givenIHaveAnImplementedJBehaveScenarioThatUsesSelenium() {
     }
@@ -145,7 +140,6 @@ public class SomeSeleniumSteps {
     @Then("^I should see the (.*) and (.*) in the names fields$")
     public void thenIShouldSeeInTheNamesFields(String expectedFirstname,
                                                String expectedLastname) {
-        StaticSitePage indexPage = page;
         assertThat(page.firstName().getValue(), is(expectedFirstname));
         assertThat(page.lastName().getValue(), is(expectedLastname));
     }

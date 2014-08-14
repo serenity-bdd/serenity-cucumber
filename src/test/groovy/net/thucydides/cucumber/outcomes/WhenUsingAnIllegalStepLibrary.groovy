@@ -37,7 +37,7 @@ class WhenUsingAnIllegalStepLibrary extends Specification {
         runtime.errors
 
         and:
-        runtime.errors[0].message.contains("IllegalStepInstantiationSteps doesn't have an empty constructor")
+        runtime.errors[0].message.contains("IllegalStepInstantiationSteps doesn't have an empty or a page enabled constructor")
     }
 
     def "should throw a meaningful exception if a step library if the step library could not be instantiated"() {
