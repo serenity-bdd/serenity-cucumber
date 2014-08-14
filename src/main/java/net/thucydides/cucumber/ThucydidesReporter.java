@@ -4,6 +4,7 @@ import com.beust.jcommander.internal.Maps;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import cucumber.runtime.StepDefinitionMatch;
 import gherkin.formatter.Formatter;
 import gherkin.formatter.Reporter;
@@ -140,7 +141,6 @@ public class ThucydidesReporter implements Formatter, Reporter {
     @Override
     public void examples(Examples examples) {
         examplesRunning = true;
-        stepQueue.clear();
         List<ExamplesTableRow> examplesTableRows = examples.getRows();
         List<String> headers = getHeadersFrom(examplesTableRows);
         List<Map<String,String>> rows = getValuesFrom(examplesTableRows, headers);
