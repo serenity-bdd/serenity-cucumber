@@ -8,19 +8,15 @@ import org.openqa.selenium.WebDriver;
 
 public class SomeNestedSeleniumSteps {
 
-    @Managed
-    public WebDriver webDriver;
-
-    @ManagedPages
-    public Pages pages;
+    StaticSitePage page;
 
     @Step
     public void enters_the_first_name(String firstname) {
-        pages.get(StaticSitePage.class).setFirstName(firstname);
+        page.setFirstName(firstname);
     }
 
     @Step
     public void enters_the_last_name(String lastname) {
-        pages.get(StaticSitePage.class).setLastName(lastname);
+        page.setLastName(lastname);
     }
 }
