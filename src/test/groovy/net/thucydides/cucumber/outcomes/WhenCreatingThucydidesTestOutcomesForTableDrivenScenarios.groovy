@@ -123,7 +123,7 @@ class WhenCreatingThucydidesTestOutcomesForTableDrivenScenarios extends Specific
 
     }
 
-    // TODO: Make this work
+
     def "should handle multiple example tables with backgrounds"() {
         given:
         def runtime = thucydidesRunnerForCucumberTestRunner(BasicArithemticWithTablesAndBackgroundScenario.class, outputDirectory);
