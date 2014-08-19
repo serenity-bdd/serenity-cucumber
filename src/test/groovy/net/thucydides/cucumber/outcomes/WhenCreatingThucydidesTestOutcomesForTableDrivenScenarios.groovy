@@ -140,6 +140,12 @@ class WhenCreatingThucydidesTestOutcomesForTableDrivenScenarios extends Specific
         testOutcome.dataTable.dataSets.size() == 2
 
         and:
+        recordedTestOutcomes.size() == 1
+        testOutcome.stepCount == 5
+
+        and:
+        testOutcome.backgroundDescription == "The calculator should be set up and all that"
+        and:
         testOutcome.dataTable.dataSets[0].name == "Single digits"
         testOutcome.dataTable.dataSets[0].description == "With just one digit"
         testOutcome.dataTable.dataSets[0].rows.size() == 2

@@ -42,6 +42,8 @@ public class ThucydidesReporter implements Formatter, Reporter {
     private static final String OPEN_PARAM_CHAR = "\uff5f";
     private static final String CLOSE_PARAM_CHAR = "\uff60";
 
+    private static final List<String> PENDING_TAGS = ImmutableList.of("@wip","@pending");
+
     private final Queue<Step> stepQueue;
 
     private Configuration systemConfiguration;
@@ -63,6 +65,8 @@ public class ThucydidesReporter implements Formatter, Reporter {
     private DataTable table;
 
     private boolean firstStep = true;
+
+    private boolean isPendingFeature = false;
 
 
     public ThucydidesReporter(Configuration systemConfiguration) {
@@ -110,6 +114,7 @@ public class ThucydidesReporter implements Formatter, Reporter {
             userStory = userStory.withNarrative(feature.getDescription());
         }
         StepEventBus.getEventBus().testSuiteStarted(userStory);
+        isPendingFeature = isTaggedAsPending(feature.getTags());
     }
 
     private void configureDriver(Feature feature) {
@@ -239,7 +244,19 @@ public class ThucydidesReporter implements Formatter, Reporter {
         StepEventBus.getEventBus().addDescriptionToCurrentTest(scenario.getDescription());
         StepEventBus.getEventBus().addTagsToCurrentTest(convertCucumberTags(currentFeature.getTags()));
         StepEventBus.getEventBus().addTagsToCurrentTest(convertCucumberTags(scenario.getTags()));
+        if (isPendingFeature || isTaggedAsPending(scenario.getTags())) {
+            StepEventBus.getEventBus().testIgnored();
+        }
         getThucydidesListeners().withDriver(ThucydidesWebDriverSupport.getDriver());
+    }
+
+    private boolean isTaggedAsPending(List<Tag> tags) {
+        for(Tag tag : tags) {
+            if (PENDING_TAGS.contains(tag.getName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private List<TestTag> convertCucumberTags(List<Tag> cucumberTags) {
@@ -277,6 +294,7 @@ public class ThucydidesReporter implements Formatter, Reporter {
 
     @Override
     public void background(Background background) {
+        StepEventBus.getEventBus().setBackgroundDescription(background.getDescription());
     }
 
     @Override

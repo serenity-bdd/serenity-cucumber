@@ -14,6 +14,8 @@ import net.thucydides.cucumber.integration.PendingScenario
 import net.thucydides.cucumber.integration.SimpleScenario
 import net.thucydides.cucumber.integration.SimpleScenarioWithNarrativeTexts
 import net.thucydides.cucumber.integration.SimpleScenarioWithTags
+import net.thucydides.cucumber.integration.SimpleTaggedPendingFeature
+import net.thucydides.cucumber.integration.SimpleTaggedPendingScenario
 import spock.lang.Specification
 
 import static net.thucydides.cucumber.util.CucumberRunner.thucydidesRunnerForCucumberTestRunner
@@ -170,6 +172,37 @@ It goes for two lines"""
         testOutcome.result == TestResult.PENDING
         and:
         stepResults == [TestResult.SUCCESS,TestResult.SUCCESS,TestResult.PENDING,TestResult.IGNORED]
+    }
+
+    def "should record a @wip scenario as ignored"() {
+        given:
+        def runtime = thucydidesRunnerForCucumberTestRunner(SimpleTaggedPendingScenario.class, outputDirectory);
+
+        when:
+        runtime.run();
+        List<TestOutcome>  recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory);
+        TestOutcome testOutcome = recordedTestOutcomes[0]
+
+        then:
+        recordedTestOutcomes[0].result == TestResult.IGNORED
+        and:
+        recordedTestOutcomes[1].result == TestResult.SUCCESS
+    }
+
+    def "should record a @wip feature as ignored"() {
+        given:
+        def runtime = thucydidesRunnerForCucumberTestRunner(SimpleTaggedPendingFeature.class, outputDirectory);
+
+        when:
+        runtime.run();
+        List<TestOutcome>  recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory);
+        TestOutcome testOutcome = recordedTestOutcomes[0]
+
+        then:
+        then:
+        recordedTestOutcomes[0].result == TestResult.IGNORED
+        and:
+        recordedTestOutcomes[1].result == TestResult.IGNORED
     }
 
     def "should generate a well-structured Thucydides test outcome for feature files with several Cucumber scenario"() {

@@ -3,6 +3,7 @@ Feature: Basic Arithmetic
   Calculing additions
 
   Background: A Calculator
+    The calculator should be set up and all that
     Given a calculator I just turned on
     Given the previous entries:
       | first | second | operation |
