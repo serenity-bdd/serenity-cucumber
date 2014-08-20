@@ -39,12 +39,10 @@ public class RpnCalculatorStepdefs {
 
     @Before({"~@foo"})
     public void before() {
-        System.out.println("Runs before scenarios *not* tagged with @foo");
     }
 
     @After
     public void after(Scenario scenario) {
-        // result.write("HELLLLOO");
     }
 
     @Given("^the previous entries:$")

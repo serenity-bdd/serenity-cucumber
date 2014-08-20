@@ -10,7 +10,11 @@ import net.thucydides.core.reports.TestOutcomeLoader
 import net.thucydides.cucumber.integration.BasicArithemticScenario
 import net.thucydides.cucumber.integration.FailingScenario
 import net.thucydides.cucumber.integration.MultipleScenarios
+import net.thucydides.cucumber.integration.MultipleScenariosWithPendingTag
+import net.thucydides.cucumber.integration.MultipleScenariosWithSkippedTag
 import net.thucydides.cucumber.integration.PendingScenario
+import net.thucydides.cucumber.integration.ScenariosWithPendingTag
+import net.thucydides.cucumber.integration.ScenariosWithSkippedTag
 import net.thucydides.cucumber.integration.SimpleScenario
 import net.thucydides.cucumber.integration.SimpleScenarioWithNarrativeTexts
 import net.thucydides.cucumber.integration.SimpleScenarioWithTags
@@ -174,37 +178,6 @@ It goes for two lines"""
         stepResults == [TestResult.SUCCESS,TestResult.SUCCESS,TestResult.PENDING,TestResult.IGNORED]
     }
 
-    def "should record a @wip scenario as ignored"() {
-        given:
-        def runtime = thucydidesRunnerForCucumberTestRunner(SimpleTaggedPendingScenario.class, outputDirectory);
-
-        when:
-        runtime.run();
-        List<TestOutcome>  recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory);
-        TestOutcome testOutcome = recordedTestOutcomes[0]
-
-        then:
-        recordedTestOutcomes[0].result == TestResult.IGNORED
-        and:
-        recordedTestOutcomes[1].result == TestResult.SUCCESS
-    }
-
-    def "should record a @wip feature as ignored"() {
-        given:
-        def runtime = thucydidesRunnerForCucumberTestRunner(SimpleTaggedPendingFeature.class, outputDirectory);
-
-        when:
-        runtime.run();
-        List<TestOutcome>  recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory);
-        TestOutcome testOutcome = recordedTestOutcomes[0]
-
-        then:
-        then:
-        recordedTestOutcomes[0].result == TestResult.IGNORED
-        and:
-        recordedTestOutcomes[1].result == TestResult.IGNORED
-    }
-
     def "should generate a well-structured Thucydides test outcome for feature files with several Cucumber scenario"() {
         given:
         def runtime = thucydidesRunnerForCucumberTestRunner(MultipleScenarios.class, outputDirectory);
@@ -253,6 +226,111 @@ It goes for two lines"""
         and:
         recordedTestOutcomes[0].stepCount == 3
         recordedTestOutcomes[1].stepCount == 3
+    }
+
+    def "scenarios with the @pending tag should be reported as Pending"() {
+        given:
+        def runtime = thucydidesRunnerForCucumberTestRunner(MultipleScenariosWithPendingTag.class, outputDirectory);
+
+        when:
+        runtime.run();
+        def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory)
+
+        then:
+
+        recordedTestOutcomes.size() == 2
+
+        def testOutcome1 = recordedTestOutcomes[0]
+        def steps1 = testOutcome1.testSteps.collect { step -> step.description }
+
+        def testOutcome2 = recordedTestOutcomes[1]
+        def steps2 = testOutcome2.testSteps.collect { step -> step.description }
+
+        and:
+        testOutcome1.title == "Simple scenario 1"
+        testOutcome1.result == TestResult.PENDING
+
+        and:
+        testOutcome2.title == "Simple scenario 2"
+        testOutcome2.result == TestResult.PENDING
+
+        and:
+        steps1 == ['Given I want to purchase 2 widgets', 'And a widget costs $5', 'When I buy the widgets', 'Then I should be billed $50']
+        steps2 == ['Given I want to purchase 4 widgets', 'And a widget costs $3', 'When I buy the widgets', 'Then I should be billed $12']
+    }
+
+
+    def "individual scenarios with the @pending tag should be reported as Pending"() {
+        given:
+        def runtime = thucydidesRunnerForCucumberTestRunner(ScenariosWithPendingTag.class, outputDirectory);
+
+        when:
+        runtime.run();
+        def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory)
+
+        then:
+
+        recordedTestOutcomes.size() == 3
+        def testOutcome1 = recordedTestOutcomes[0]
+        def testOutcome2 = recordedTestOutcomes[1]
+        def testOutcome3 = recordedTestOutcomes[2]
+
+        and:
+        testOutcome1.result == TestResult.SUCCESS
+        testOutcome2.result == TestResult.PENDING
+        testOutcome3.result == TestResult.SUCCESS
+    }
+
+    def "individual scenarios with the @wip tag should be reported as Skipped"() {
+        given:
+        def runtime = thucydidesRunnerForCucumberTestRunner(ScenariosWithSkippedTag.class, outputDirectory);
+
+        when:
+        runtime.run();
+        def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory)
+
+        then:
+
+        recordedTestOutcomes.size() == 3
+        def testOutcome1 = recordedTestOutcomes[0]
+        def testOutcome2 = recordedTestOutcomes[1]
+        def testOutcome3 = recordedTestOutcomes[2]
+
+        and:
+        testOutcome1.result == TestResult.SUCCESS
+        testOutcome2.result == TestResult.SKIPPED
+        testOutcome3.result == TestResult.SUCCESS
+    }
+
+    def "scenarios with the @wip tag should be reported as skipped"() {
+        given:
+        def runtime = thucydidesRunnerForCucumberTestRunner(MultipleScenariosWithSkippedTag.class, outputDirectory);
+
+        when:
+        runtime.run();
+        def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory)
+
+        then:
+
+        recordedTestOutcomes.size() == 2
+
+        def testOutcome1 = recordedTestOutcomes[0]
+        def steps1 = testOutcome1.testSteps.collect { step -> step.description }
+
+        def testOutcome2 = recordedTestOutcomes[1]
+        def steps2 = testOutcome2.testSteps.collect { step -> step.description }
+
+        and:
+        testOutcome1.title == "Simple scenario 1"
+        testOutcome1.result == TestResult.SKIPPED
+
+        and:
+        testOutcome2.title == "Simple scenario 2"
+        testOutcome2.result == TestResult.SKIPPED
+
+        and:
+        steps1 == ['Given I want to purchase 2 widgets', 'And a widget costs $5', 'When I buy the widgets', 'Then I should be billed $50']
+        steps2 == ['Given I want to purchase 4 widgets', 'And a widget costs $3', 'When I buy the widgets', 'Then I should be billed $12']
     }
 
 }

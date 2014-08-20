@@ -1,6 +1,7 @@
 package net.thucydides.cucumber;
 
 import com.beust.jcommander.internal.Maps;
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -12,10 +13,7 @@ import gherkin.formatter.model.*;
 import net.thucydides.core.Thucydides;
 import net.thucydides.core.ThucydidesListeners;
 import net.thucydides.core.ThucydidesReports;
-import net.thucydides.core.model.DataTable;
-import net.thucydides.core.model.Story;
-import net.thucydides.core.model.TestOutcome;
-import net.thucydides.core.model.TestTag;
+import net.thucydides.core.model.*;
 import net.thucydides.core.reports.ReportService;
 import net.thucydides.core.steps.BaseStepListener;
 import net.thucydides.core.steps.ExecutedStepDescription;
@@ -42,7 +40,7 @@ public class ThucydidesReporter implements Formatter, Reporter {
     private static final String OPEN_PARAM_CHAR = "\uff5f";
     private static final String CLOSE_PARAM_CHAR = "\uff60";
 
-    private static final List<String> PENDING_TAGS = ImmutableList.of("@wip","@pending");
+    private static final List<String> SKIPPED_TAGS = ImmutableList.of("@skip","@wip");
 
     private final Queue<Step> stepQueue;
 
@@ -66,14 +64,35 @@ public class ThucydidesReporter implements Formatter, Reporter {
 
     private boolean firstStep = true;
 
-    private boolean isPendingFeature = false;
 
+    private static Optional<TestResult> forcedStoryResult;
+    private static Optional<TestResult> forcedScenarioResult;
+
+    private void clearStoryResult() {
+        forcedStoryResult = Optional.absent();
+    }
+
+    private void clearScenarioResult() {
+        forcedScenarioResult = Optional.absent();
+    }
+
+
+    private boolean isPendingStory() {
+        return ((forcedStoryResult.or(TestResult.UNDEFINED) == TestResult.PENDING)
+                || (forcedScenarioResult.or(TestResult.UNDEFINED) == TestResult.PENDING));
+    }
+
+    private boolean isSkippedStory() {
+        return ((forcedStoryResult.or(TestResult.UNDEFINED) == TestResult.SKIPPED)
+                || (forcedScenarioResult.or(TestResult.UNDEFINED) == TestResult.SKIPPED));
+    }
 
     public ThucydidesReporter(Configuration systemConfiguration) {
         this.systemConfiguration = systemConfiguration;
         this.stepQueue = new LinkedList<>();
         thucydidesListenersThreadLocal = new ThreadLocal<>();
         baseStepListeners = Lists.newArrayList();
+        clearStoryResult();
     }
 
     protected ThucydidesListeners getThucydidesListeners() {
@@ -114,7 +133,59 @@ public class ThucydidesReporter implements Formatter, Reporter {
             userStory = userStory.withNarrative(feature.getDescription());
         }
         StepEventBus.getEventBus().testSuiteStarted(userStory);
-        isPendingFeature = isTaggedAsPending(feature.getTags());
+
+        checkForPending(feature);
+        checkForSkipped(feature);
+    }
+
+    private void checkForPending(Feature feature) {
+        if (isPending(feature.getTags())) {
+            forcedStoryResult = Optional.of(TestResult.PENDING);
+            StepEventBus.getEventBus().suspendTest();
+        }
+    }
+
+    private void checkForSkipped(Feature feature) {
+        if (isSkippedOrWIP(feature.getTags())) {
+            forcedStoryResult = Optional.of(TestResult.SKIPPED);
+            StepEventBus.getEventBus().suspendTest();
+        }
+    }
+
+    private void checkForPending(Scenario scenario) {
+        if (isPending(scenario.getTags())) {
+            forcedScenarioResult = Optional.of(TestResult.PENDING);
+            StepEventBus.getEventBus().suspendTest();
+        }
+    }
+
+    private void checkForSkipped(Scenario scenario) {
+        if (isSkippedOrWIP(scenario.getTags())) {
+            forcedScenarioResult = Optional.of(TestResult.SKIPPED);
+            StepEventBus.getEventBus().suspendTest();
+        }
+    }
+
+    private boolean isPending(List<Tag> tags) {
+        return hasTag("@pending", tags);
+    }
+
+    private boolean isSkippedOrWIP(List<Tag> tags) {
+        for(Tag tag : tags) {
+            if (SKIPPED_TAGS.contains(tag.getName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean hasTag(String tagName, List<Tag> tags) {
+        for(Tag tag :tags) {
+            if (tag.getName().equals(tagName)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void configureDriver(Feature feature) {
@@ -244,20 +315,9 @@ public class ThucydidesReporter implements Formatter, Reporter {
         StepEventBus.getEventBus().addDescriptionToCurrentTest(scenario.getDescription());
         StepEventBus.getEventBus().addTagsToCurrentTest(convertCucumberTags(currentFeature.getTags()));
         StepEventBus.getEventBus().addTagsToCurrentTest(convertCucumberTags(scenario.getTags()));
-        if (isPendingFeature || isTaggedAsPending(scenario.getTags())) {
-            StepEventBus.getEventBus().testIgnored();
-        }
         getThucydidesListeners().withDriver(ThucydidesWebDriverSupport.getDriver());
     }
 
-    private boolean isTaggedAsPending(List<Tag> tags) {
-        for(Tag tag : tags) {
-            if (PENDING_TAGS.contains(tag.getName())) {
-                return true;
-            }
-        }
-        return false;
-    }
 
     private List<TestTag> convertCucumberTags(List<Tag> cucumberTags) {
         List<TestTag> tags = Lists.newArrayList();
@@ -299,6 +359,9 @@ public class ThucydidesReporter implements Formatter, Reporter {
 
     @Override
     public void scenario(Scenario scenario) {
+        clearScenarioResult();
+        checkForPending(scenario);
+        checkForSkipped(scenario);
     }
 
     @Override
@@ -349,9 +412,24 @@ public class ThucydidesReporter implements Formatter, Reporter {
             if (examplesRunning) { //finish enclosing step because testFinished resets the queue
                 StepEventBus.getEventBus().stepFinished();
             }
+            updatePendingResults();
+            updateSkippedResults();
             StepEventBus.getEventBus().testFinished();
         }
     }
+
+    private void updatePendingResults() {
+        if (isPendingStory()) {
+            StepEventBus.getEventBus().setAllStepsTo(TestResult.PENDING);
+        }
+    }
+
+    private void updateSkippedResults() {
+        if (isSkippedStory()) {
+            StepEventBus.getEventBus().setAllStepsTo(TestResult.SKIPPED);
+        }
+    }
+
 
     public void failed(String stepTitle, Throwable cause) {
         Throwable rootCause = cause.getCause() != null ? cause.getCause() : cause;
