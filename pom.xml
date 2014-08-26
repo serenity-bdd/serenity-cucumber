@@ -8,7 +8,7 @@
     </parent>
     <groupId>net.thucydides</groupId>
     <artifactId>thucydides-cucumber-plugin</artifactId>
-    <version>0.9.269-alpha1</version>
+    <version>0.9.x-SNAPSHOT</version>
     <name>thucydides-cucumber-plugin</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
