@@ -4,7 +4,7 @@
     <parent>
         <artifactId>thucydides</artifactId>
         <groupId>net.thucydides</groupId>
-        <version>0.9.268</version>
+        <version>0.9.269</version>
     </parent>
     <groupId>net.thucydides</groupId>
     <artifactId>thucydides-cucumber-plugin</artifactId>
@@ -13,7 +13,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <cucumber.jvm.version>1.1.8</cucumber.jvm.version>
-        <thucydides.version>0.9.268</thucydides.version>
+        <thucydides.version>0.9.269</thucydides.version>
     </properties>
     <scm>
         <connection>scm:git:git@gtomithub.com:thucydides-webtests/thucydides-cucumber.git</connection>
