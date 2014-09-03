@@ -35,8 +35,6 @@ public class CucumberWithThucydides extends Cucumber {
 
     private Runtime createThucydidesEnabledRuntime(ResourceLoader resourceLoader, ClassLoader classLoader, RuntimeOptions runtimeOptions) {
         Configuration systemConfiguration = Injectors.getInjector().getInstance(Configuration.class);
-        ThucydidesReporter reporter = new ThucydidesReporter(systemConfiguration);
-        runtimeOptions.addFormatter(reporter);
         return createThucydidesEnabledRuntime(resourceLoader, classLoader, runtimeOptions, systemConfiguration);
     }
 
