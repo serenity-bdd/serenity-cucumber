@@ -230,7 +230,6 @@ public class ThucydidesReporter implements Formatter, Reporter {
 
     private void reinitializeExamples() {
         examplesRunning = true;
-        firstStep = true;
         currentExample = 0;
         exampleRows = new ArrayList();
     }
@@ -392,6 +391,7 @@ public class ThucydidesReporter implements Formatter, Reporter {
             StepEventBus.getEventBus().clear();
             Thucydides.done();
             table = null;
+            firstStep = true;
         }
     }
 
@@ -492,5 +492,4 @@ public class ThucydidesReporter implements Formatter, Reporter {
     private String normalized(String value) {
         return value.replaceAll(OPEN_PARAM_CHAR, "{").replaceAll(CLOSE_PARAM_CHAR, "}");
     }
-
 }
