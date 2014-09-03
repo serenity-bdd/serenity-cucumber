@@ -39,7 +39,7 @@ public class ThucydidesReporter implements Formatter, Reporter {
     private static final String OPEN_PARAM_CHAR = "\uff5f";
     private static final String CLOSE_PARAM_CHAR = "\uff60";
 
-    private static final List<String> SKIPPED_TAGS = ImmutableList.of("@skip","@wip");
+    private static final List<String> SKIPPED_TAGS = ImmutableList.of("@skip", "@wip");
 
     private final Queue<Step> stepQueue;
 
@@ -120,9 +120,8 @@ public class ThucydidesReporter implements Formatter, Reporter {
 
     @Override
     public void feature(Feature feature) {
-        if (currentFeature != null) {
-            StepEventBus.getEventBus().testSuiteFinished();
-        }
+        assureTestSuiteFinished();
+
         currentFeature = feature;
         configureDriver(feature);
         getThucydidesListeners().withDriver(ThucydidesWebDriverSupport.getDriver());
@@ -170,7 +169,7 @@ public class ThucydidesReporter implements Formatter, Reporter {
     }
 
     private boolean isSkippedOrWIP(List<Tag> tags) {
-        for(Tag tag : tags) {
+        for (Tag tag : tags) {
             if (SKIPPED_TAGS.contains(tag.getName())) {
                 return true;
             }
@@ -179,7 +178,7 @@ public class ThucydidesReporter implements Formatter, Reporter {
     }
 
     private boolean hasTag(String tagName, List<Tag> tags) {
-        for(Tag tag :tags) {
+        for (Tag tag : tags) {
             if (tag.getName().equals(tagName)) {
                 return true;
             }
@@ -215,25 +214,25 @@ public class ThucydidesReporter implements Formatter, Reporter {
 
     @Override
     public void examples(Examples examples) {
-        examplesRunning = true;
+        reinitializeExamples();
         List<ExamplesTableRow> examplesTableRows = examples.getRows();
         List<String> headers = getHeadersFrom(examplesTableRows);
-        List<Map<String,String>> rows = getValuesFrom(examplesTableRows, headers);
+        List<Map<String, String>> rows = getValuesFrom(examplesTableRows, headers);
 
-        initializeExampleRows();
         for (int i = 1; i < examplesTableRows.size(); i++) {
             addRow(exampleRows, headers, examplesTableRows.get(i));
         }
         table = (table == null) ?
-                thucydidesTableFrom(headers, rows, examples.getName(),examples.getDescription())
-                : addTableRowsTo(table, headers, rows, examples.getName(),examples.getDescription());
+                thucydidesTableFrom(headers, rows, examples.getName(), examples.getDescription())
+                : addTableRowsTo(table, headers, rows, examples.getName(), examples.getDescription());
         exampleCount = examples.getRows().size() - 1;// table.getSize();
     }
 
-    private void initializeExampleRows() {
-        if (exampleRows == null) {
-            exampleRows = new ArrayList<>();
-        }
+    private void reinitializeExamples() {
+        examplesRunning = true;
+        firstStep = true;
+        currentExample = 0;
+        exampleRows = new ArrayList();
     }
 
     private List<String> getHeadersFrom(List<ExamplesTableRow> examplesTableRows) {
@@ -241,14 +240,14 @@ public class ThucydidesReporter implements Formatter, Reporter {
         return headerRow.getCells();
     }
 
-    private List<Map<String,String>> getValuesFrom(List<ExamplesTableRow> examplesTableRows, List<String> headers) {
+    private List<Map<String, String>> getValuesFrom(List<ExamplesTableRow> examplesTableRows, List<String> headers) {
 
-        List<Map<String,String>> rows = Lists.newArrayList();
+        List<Map<String, String>> rows = Lists.newArrayList();
 
-        for(int row = 1; row < examplesTableRows.size(); row++) {
+        for (int row = 1; row < examplesTableRows.size(); row++) {
             Map<String, String> rowValues = Maps.newHashMap();
             int column = 0;
-            for(String cellValue : examplesTableRows.get(row).getCells()) {
+            for (String cellValue : examplesTableRows.get(row).getCells()) {
                 String columnName = headers.get(column++);
                 rowValues.put(columnName, cellValue);
             }
@@ -257,7 +256,7 @@ public class ThucydidesReporter implements Formatter, Reporter {
         return rows;
     }
 
-    private void addRow(List<Map<String,String>> exampleRows,
+    private void addRow(List<Map<String, String>> exampleRows,
                         List<String> headers,
                         ExamplesTableRow currentTableRow) {
         Map<String, String> row = new HashMap<>();
@@ -344,9 +343,10 @@ public class ThucydidesReporter implements Formatter, Reporter {
 
     private void finishExample() {
         StepEventBus.getEventBus().exampleFinished();
-        StepEventBus.getEventBus().stepFinished();
+//        StepEventBus.getEventBus().stepFinished();
         exampleCount--;
         if (exampleCount == 0) {
+            examplesRunning = false;
             generateReports();
         }
     }
@@ -371,17 +371,28 @@ public class ThucydidesReporter implements Formatter, Reporter {
 
     @Override
     public void done() {
-
-        if (currentFeature != null) {
-            StepEventBus.getEventBus().testSuiteFinished();
-            Thucydides.done();
-        }
-        examplesRunning = false;
+//
+//        if (currentFeature != null) {
+//            StepEventBus.getEventBus().testSuiteFinished();
+//            Thucydides.done();
+//        }
+//        examplesRunning = false;
+        assureTestSuiteFinished();
     }
 
     @Override
     public void close() {
+        assureTestSuiteFinished();
+    }
 
+    private void assureTestSuiteFinished() {
+        if (currentFeature != null) {
+            stepQueue.clear();
+            StepEventBus.getEventBus().testSuiteFinished();
+            StepEventBus.getEventBus().clear();
+            Thucydides.done();
+            table = null;
+        }
     }
 
     @Override
