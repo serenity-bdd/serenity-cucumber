@@ -1,9 +1,10 @@
 package net.thucydides.cucumber;
 
-import com.beust.jcommander.internal.Maps;
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import cucumber.runtime.StepDefinitionMatch;
 import gherkin.formatter.Formatter;
 import gherkin.formatter.Reporter;
@@ -11,10 +12,7 @@ import gherkin.formatter.model.*;
 import net.thucydides.core.Thucydides;
 import net.thucydides.core.ThucydidesListeners;
 import net.thucydides.core.ThucydidesReports;
-import net.thucydides.core.model.DataTable;
-import net.thucydides.core.model.Story;
-import net.thucydides.core.model.TestOutcome;
-import net.thucydides.core.model.TestTag;
+import net.thucydides.core.model.*;
 import net.thucydides.core.reports.ReportService;
 import net.thucydides.core.steps.BaseStepListener;
 import net.thucydides.core.steps.ExecutedStepDescription;
@@ -41,6 +39,8 @@ public class ThucydidesReporter implements Formatter, Reporter {
     private static final String OPEN_PARAM_CHAR = "\uff5f";
     private static final String CLOSE_PARAM_CHAR = "\uff60";
 
+    private static final List<String> SKIPPED_TAGS = ImmutableList.of("@skip", "@wip");
+
     private final Queue<Step> stepQueue;
 
     private Configuration systemConfiguration;
@@ -64,11 +64,34 @@ public class ThucydidesReporter implements Formatter, Reporter {
     private boolean firstStep = true;
 
 
+    private static Optional<TestResult> forcedStoryResult;
+    private static Optional<TestResult> forcedScenarioResult;
+
+    private void clearStoryResult() {
+        forcedStoryResult = Optional.absent();
+    }
+
+    private void clearScenarioResult() {
+        forcedScenarioResult = Optional.absent();
+    }
+
+
+    private boolean isPendingStory() {
+        return ((forcedStoryResult.or(TestResult.UNDEFINED) == TestResult.PENDING)
+                || (forcedScenarioResult.or(TestResult.UNDEFINED) == TestResult.PENDING));
+    }
+
+    private boolean isSkippedStory() {
+        return ((forcedStoryResult.or(TestResult.UNDEFINED) == TestResult.SKIPPED)
+                || (forcedScenarioResult.or(TestResult.UNDEFINED) == TestResult.SKIPPED));
+    }
+
     public ThucydidesReporter(Configuration systemConfiguration) {
         this.systemConfiguration = systemConfiguration;
-        this.stepQueue = new LinkedList();
-        thucydidesListenersThreadLocal = new ThreadLocal();
+        this.stepQueue = new LinkedList<>();
+        thucydidesListenersThreadLocal = new ThreadLocal<>();
         baseStepListeners = Lists.newArrayList();
+        clearStoryResult();
     }
 
     protected ThucydidesListeners getThucydidesListeners() {
@@ -98,14 +121,69 @@ public class ThucydidesReporter implements Formatter, Reporter {
     @Override
     public void feature(Feature feature) {
         assureTestSuiteFinished();
+
         currentFeature = feature;
         configureDriver(feature);
         getThucydidesListeners().withDriver(ThucydidesWebDriverSupport.getDriver());
         Story userStory = Story.withId(feature.getId(), feature.getName()).asFeature();
+
         if (!isEmpty(feature.getDescription())) {
             userStory = userStory.withNarrative(feature.getDescription());
         }
         StepEventBus.getEventBus().testSuiteStarted(userStory);
+
+        checkForPending(feature);
+        checkForSkipped(feature);
+    }
+
+    private void checkForPending(Feature feature) {
+        if (isPending(feature.getTags())) {
+            forcedStoryResult = Optional.of(TestResult.PENDING);
+            StepEventBus.getEventBus().suspendTest();
+        }
+    }
+
+    private void checkForSkipped(Feature feature) {
+        if (isSkippedOrWIP(feature.getTags())) {
+            forcedStoryResult = Optional.of(TestResult.SKIPPED);
+            StepEventBus.getEventBus().suspendTest();
+        }
+    }
+
+    private void checkForPending(Scenario scenario) {
+        if (isPending(scenario.getTags())) {
+            forcedScenarioResult = Optional.of(TestResult.PENDING);
+            StepEventBus.getEventBus().suspendTest();
+        }
+    }
+
+    private void checkForSkipped(Scenario scenario) {
+        if (isSkippedOrWIP(scenario.getTags())) {
+            forcedScenarioResult = Optional.of(TestResult.SKIPPED);
+            StepEventBus.getEventBus().suspendTest();
+        }
+    }
+
+    private boolean isPending(List<Tag> tags) {
+        return hasTag("@pending", tags);
+    }
+
+    private boolean isSkippedOrWIP(List<Tag> tags) {
+        for (Tag tag : tags) {
+            if (SKIPPED_TAGS.contains(tag.getName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean hasTag(String tagName, List<Tag> tags) {
+        for (Tag tag : tags) {
+            if (tag.getName().equals(tagName)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void configureDriver(Feature feature) {
@@ -139,19 +217,19 @@ public class ThucydidesReporter implements Formatter, Reporter {
         reinitializeExamples();
         List<ExamplesTableRow> examplesTableRows = examples.getRows();
         List<String> headers = getHeadersFrom(examplesTableRows);
-        List<Map<String,String>> rows = getValuesFrom(examplesTableRows, headers);
+        List<Map<String, String>> rows = getValuesFrom(examplesTableRows, headers);
+
         for (int i = 1; i < examplesTableRows.size(); i++) {
             addRow(exampleRows, headers, examplesTableRows.get(i));
         }
         table = (table == null) ?
-                thucydidesTableFrom(headers, rows, examples.getName(),examples.getDescription())
-                : addTableRowsTo(table, headers, rows, examples.getName(),examples.getDescription());
-        exampleCount = examples.getRows().size() - 1;
+                thucydidesTableFrom(headers, rows, examples.getName(), examples.getDescription())
+                : addTableRowsTo(table, headers, rows, examples.getName(), examples.getDescription());
+        exampleCount = examples.getRows().size() - 1;// table.getSize();
     }
 
     private void reinitializeExamples() {
         examplesRunning = true;
-        firstStep = true;
         currentExample = 0;
         exampleRows = new ArrayList();
     }
@@ -161,14 +239,14 @@ public class ThucydidesReporter implements Formatter, Reporter {
         return headerRow.getCells();
     }
 
-    private List<Map<String,String>> getValuesFrom(List<ExamplesTableRow> examplesTableRows, List<String> headers) {
+    private List<Map<String, String>> getValuesFrom(List<ExamplesTableRow> examplesTableRows, List<String> headers) {
 
-        List<Map<String,String>> rows = Lists.newArrayList();
+        List<Map<String, String>> rows = Lists.newArrayList();
 
-        for(int row = 1; row < examplesTableRows.size(); row++) {
+        for (int row = 1; row < examplesTableRows.size(); row++) {
             Map<String, String> rowValues = Maps.newHashMap();
             int column = 0;
-            for(String cellValue : examplesTableRows.get(row).getCells()) {
+            for (String cellValue : examplesTableRows.get(row).getCells()) {
                 String columnName = headers.get(column++);
                 rowValues.put(columnName, cellValue);
             }
@@ -177,10 +255,10 @@ public class ThucydidesReporter implements Formatter, Reporter {
         return rows;
     }
 
-    private void addRow(List<Map<String,String>> exampleRows,
+    private void addRow(List<Map<String, String>> exampleRows,
                         List<String> headers,
                         ExamplesTableRow currentTableRow) {
-        Map<String, String> row = new HashMap();
+        Map<String, String> row = new HashMap<>();
         for (int j = 0; j < headers.size(); j++) {
             row.put(headers.get(j), currentTableRow.getCells().get(j));
         }
@@ -217,6 +295,7 @@ public class ThucydidesReporter implements Formatter, Reporter {
     @Override
     public void startOfScenarioLifeCycle(Scenario scenario) {
         if (examplesRunning) {
+
             if (firstStep) {
                 startScenario(scenario);
                 StepEventBus.getEventBus().useExamplesFrom(table);
@@ -235,6 +314,7 @@ public class ThucydidesReporter implements Formatter, Reporter {
         StepEventBus.getEventBus().addTagsToCurrentTest(convertCucumberTags(scenario.getTags()));
         getThucydidesListeners().withDriver(ThucydidesWebDriverSupport.getDriver());
     }
+
 
     private List<TestTag> convertCucumberTags(List<Tag> cucumberTags) {
         List<TestTag> tags = Lists.newArrayList();
@@ -262,7 +342,7 @@ public class ThucydidesReporter implements Formatter, Reporter {
 
     private void finishExample() {
         StepEventBus.getEventBus().exampleFinished();
-        //StepEventBus.getEventBus().stepFinished();
+//        StepEventBus.getEventBus().stepFinished();
         exampleCount--;
         if (exampleCount == 0) {
             examplesRunning = false;
@@ -272,11 +352,14 @@ public class ThucydidesReporter implements Formatter, Reporter {
 
     @Override
     public void background(Background background) {
+        StepEventBus.getEventBus().setBackgroundDescription(background.getDescription());
     }
 
     @Override
     public void scenario(Scenario scenario) {
-
+        clearScenarioResult();
+        checkForPending(scenario);
+        checkForSkipped(scenario);
     }
 
     @Override
@@ -287,6 +370,12 @@ public class ThucydidesReporter implements Formatter, Reporter {
 
     @Override
     public void done() {
+//
+//        if (currentFeature != null) {
+//            StepEventBus.getEventBus().testSuiteFinished();
+//            Thucydides.done();
+//        }
+//        examplesRunning = false;
         assureTestSuiteFinished();
     }
 
@@ -295,14 +384,14 @@ public class ThucydidesReporter implements Formatter, Reporter {
         assureTestSuiteFinished();
     }
 
-    private void assureTestSuiteFinished()
-    {
+    private void assureTestSuiteFinished() {
         if (currentFeature != null) {
             stepQueue.clear();
             StepEventBus.getEventBus().testSuiteFinished();
             StepEventBus.getEventBus().clear();
             Thucydides.done();
             table = null;
+            firstStep = true;
         }
     }
 
@@ -333,9 +422,24 @@ public class ThucydidesReporter implements Formatter, Reporter {
             if (examplesRunning) { //finish enclosing step because testFinished resets the queue
                 StepEventBus.getEventBus().stepFinished();
             }
+            updatePendingResults();
+            updateSkippedResults();
             StepEventBus.getEventBus().testFinished();
         }
     }
+
+    private void updatePendingResults() {
+        if (isPendingStory()) {
+            StepEventBus.getEventBus().setAllStepsTo(TestResult.PENDING);
+        }
+    }
+
+    private void updateSkippedResults() {
+        if (isSkippedStory()) {
+            StepEventBus.getEventBus().setAllStepsTo(TestResult.SKIPPED);
+        }
+    }
+
 
     public void failed(String stepTitle, Throwable cause) {
         Throwable rootCause = cause.getCause() != null ? cause.getCause() : cause;
@@ -382,7 +486,7 @@ public class ThucydidesReporter implements Formatter, Reporter {
     }
 
     public List<TestOutcome> getAllTestOutcomes() {
-        return flatten(extract(baseStepListeners, on(BaseStepListener.class).getTestOutcomes())) ;
+        return flatten(extract(baseStepListeners, on(BaseStepListener.class).getTestOutcomes()));
     }
 
     private String normalized(String value) {
