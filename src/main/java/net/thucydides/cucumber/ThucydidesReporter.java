@@ -14,15 +14,21 @@ import net.thucydides.core.ThucydidesListeners;
 import net.thucydides.core.ThucydidesReports;
 import net.thucydides.core.model.*;
 import net.thucydides.core.reports.ReportService;
+import net.thucydides.core.requirements.FileSystemRequirementsTagProvider;
 import net.thucydides.core.steps.BaseStepListener;
 import net.thucydides.core.steps.ExecutedStepDescription;
 import net.thucydides.core.steps.StepEventBus;
 import net.thucydides.core.steps.StepFailure;
 import net.thucydides.core.webdriver.Configuration;
 import net.thucydides.core.webdriver.ThucydidesWebDriverSupport;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.IOFileFilter;
+import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.internal.AssumptionViolatedException;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 import static ch.lambdaj.Lambda.*;
@@ -62,6 +68,8 @@ public class ThucydidesReporter implements Formatter, Reporter {
     private DataTable table;
 
     private boolean firstStep = true;
+
+    private String currentUri;
 
 
     private static Optional<TestResult> forcedStoryResult;
@@ -115,17 +123,55 @@ public class ThucydidesReporter implements Formatter, Reporter {
 
     @Override
     public void uri(String uri) {
+        currentUri = uri;
+        //Cucumber reports only the feature file name but thucydides needs the whole directory structure
+        //starting from the root path of the features or stories , that's why i have to complete the uri
+        //currently it works only for features with different names - for more we need a complete uri from cucuber
+        FileSystemRequirementsTagProvider tagProvider = new FileSystemRequirementsTagProvider();
+        try {
+            Optional<String> rootDirectoryPath = tagProvider.getRootDirectoryPath();
+            File rootDirectory =  new File(rootDirectoryPath.get());
+            if ( (rootDirectoryPath.isPresent()) && (rootDirectory.exists()))
+            {
+                Collection<File> files = FileUtils.listFiles(rootDirectory, new FeatureFileFilter(uri) , TrueFileFilter.INSTANCE);
+                if(files.size() > 0) {
+                    File firstMatch = files.iterator().next();
+                    currentUri = firstMatch.getAbsolutePath().substring(rootDirectoryPath.get().length() + 1);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
+    private class FeatureFileFilter implements IOFileFilter {
+
+        private String featureFileName;
+        public FeatureFileFilter(String featureFileName){
+            this.featureFileName = featureFileName;
+        }
+
+        @Override
+        public boolean accept(File file) {
+            return file.getName().equals(featureFileName);
+        }
+
+        @Override
+        public boolean accept(File dir, String name) {
+            return name.equals(featureFileName);
+        }
     }
 
     @Override
     public void feature(Feature feature) {
+
         assureTestSuiteFinished();
 
         currentFeature = feature;
+
         configureDriver(feature);
         getThucydidesListeners().withDriver(ThucydidesWebDriverSupport.getDriver());
-        Story userStory = Story.withId(feature.getId(), feature.getName()).asFeature();
+        Story userStory = Story.withIdAndPath(feature.getId(), feature.getName(), currentUri);
 
         if (!isEmpty(feature.getDescription())) {
             userStory = userStory.withNarrative(feature.getDescription());
@@ -231,7 +277,7 @@ public class ThucydidesReporter implements Formatter, Reporter {
     private void reinitializeExamples() {
         examplesRunning = true;
         currentExample = 0;
-        exampleRows = new ArrayList();
+        exampleRows = new ArrayList<>();
     }
 
     private List<String> getHeadersFrom(List<ExamplesTableRow> examplesTableRows) {
@@ -342,7 +388,6 @@ public class ThucydidesReporter implements Formatter, Reporter {
 
     private void finishExample() {
         StepEventBus.getEventBus().exampleFinished();
-//        StepEventBus.getEventBus().stepFinished();
         exampleCount--;
         if (exampleCount == 0) {
             examplesRunning = false;
@@ -370,12 +415,6 @@ public class ThucydidesReporter implements Formatter, Reporter {
 
     @Override
     public void done() {
-//
-//        if (currentFeature != null) {
-//            StepEventBus.getEventBus().testSuiteFinished();
-//            Thucydides.done();
-//        }
-//        examplesRunning = false;
         assureTestSuiteFinished();
     }
 
