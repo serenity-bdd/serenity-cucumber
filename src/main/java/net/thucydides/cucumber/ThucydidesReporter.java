@@ -172,7 +172,7 @@ public class ThucydidesReporter implements Formatter, Reporter {
 
         configureDriver(feature);
         getThucydidesListeners().withDriver(ThucydidesWebDriverSupport.getDriver());
-        Story userStory = Story.withIdAndPath(feature.getId(), feature.getName(), currentUri);
+        Story userStory = Story.withIdAndPath(feature.getId(), feature.getName(), currentUri).asFeature();
 
         if (!isEmpty(feature.getDescription())) {
             userStory = userStory.withNarrative(feature.getDescription());
