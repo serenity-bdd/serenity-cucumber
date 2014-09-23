@@ -130,13 +130,14 @@ public class ThucydidesReporter implements Formatter, Reporter {
         FileSystemRequirementsTagProvider tagProvider = new FileSystemRequirementsTagProvider();
         try {
             Optional<String> rootDirectoryPath = tagProvider.getRootDirectoryPath();
-            File rootDirectory =  new File(rootDirectoryPath.get());
-            if ( (rootDirectoryPath.isPresent()) && (rootDirectory.exists()))
-            {
-                Collection<File> files = FileUtils.listFiles(rootDirectory, new FeatureFileFilter(uri) , TrueFileFilter.INSTANCE);
-                if(files.size() > 0) {
-                    File firstMatch = files.iterator().next();
-                    currentUri = firstMatch.getAbsolutePath().substring(rootDirectoryPath.get().length() + 1);
+            if(rootDirectoryPath.isPresent()) {
+                File rootDirectory = new File(rootDirectoryPath.get());
+                if (rootDirectory.exists()) {
+                    Collection<File> files = FileUtils.listFiles(rootDirectory, new FeatureFileFilter(uri), TrueFileFilter.INSTANCE);
+                    if (files.size() > 0) {
+                        File firstMatch = files.iterator().next();
+                        currentUri = firstMatch.getAbsolutePath().substring(rootDirectoryPath.get().length() + 1);
+                    }
                 }
             }
         } catch (IOException e) {
