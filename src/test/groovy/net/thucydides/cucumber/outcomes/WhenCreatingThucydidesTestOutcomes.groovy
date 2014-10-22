@@ -229,6 +229,22 @@ It goes for two lines"""
         recordedTestOutcomes[1].stepCount == 3
     }
 
+    def "should read @issue tags"() {
+        given:
+        def runtime = thucydidesRunnerForCucumberTestRunner(BasicArithemticScenario.class, outputDirectory);
+
+        when:
+        runtime.run();
+        def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory)
+
+        then:
+        recordedTestOutcomes.each { outcome ->
+            outcome.tags.contains(TestTag.withName("ISSUE-123").andType("issue"))
+        }
+        and:
+        recordedTestOutcomes[0].tags.contains(TestTag.withName("ISSUE-456").andType("issue"))
+    }
+
     def "scenarios with the @pending tag should be reported as Pending"() {
         given:
         def runtime = thucydidesRunnerForCucumberTestRunner(MultipleScenariosWithPendingTag.class, outputDirectory);

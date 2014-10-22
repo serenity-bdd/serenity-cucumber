@@ -4,16 +4,16 @@
     <parent>
         <artifactId>thucydides</artifactId>
         <groupId>net.thucydides</groupId>
-        <version>0.9.271</version>
+        <version>0.9.275</version>
     </parent>
     <groupId>net.thucydides</groupId>
     <artifactId>thucydides-cucumber-plugin</artifactId>
-    <version>0.9.271-SNAPSHOT</version>
+    <version>0.9.275-SNAPSHOT</version>
     <name>thucydides-cucumber-plugin</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <cucumber.jvm.version>1.1.8</cucumber.jvm.version>
-        <thucydides.version>0.9.271</thucydides.version>
+        <thucydides.version>0.9.275</thucydides.version>
     </properties>
     <scm>
         <connection>scm:git:git@gtomithub.com:thucydides-webtests/thucydides-cucumber.git</connection>
@@ -78,15 +78,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.16</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
-            <version>1.6.4</version>
+            <version>1.7.7</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

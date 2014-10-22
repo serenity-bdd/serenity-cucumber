@@ -72,8 +72,8 @@ public class ThucydidesReporter implements Formatter, Reporter {
     private String currentUri;
 
 
-    private static Optional<TestResult> forcedStoryResult;
-    private static Optional<TestResult> forcedScenarioResult;
+    private static Optional<TestResult> forcedStoryResult = Optional.absent();
+    private static Optional<TestResult> forcedScenarioResult = Optional.absent();
 
     private void clearStoryResult() {
         forcedStoryResult = Optional.absent();
