@@ -1,0 +1,50 @@
+apply plugin: 'java'
+apply plugin: 'groovy'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'maven'
+
+//    apply plugin: 'maven-publish'
+//    apply plugin: 'com.jfrog.bintray'
+//    apply plugin: 'release'
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+version = '0.9.276-SNAPSHOT'
+
+repositories {
+    mavenLocal()
+    jcenter()
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.1'
+}
+
+test {
+    include '**/When*'
+    exclude '**/*$*'
+    exclude '**/integration/**'
+    exclude '**/samples/**'
+    exclude '**/*Sample*'
+    maxParallelForks = 4
+}
+
+dependencies {
+    compile 'net.thucydides:thucydides-core:0.9.275'
+    compile 'info.cukes:cucumber-java:1.1.8'
+    compile 'info.cukes:cucumber-junit:1.1.8'
+    compile "junit:junit:4.11"
+    compile 'org.reflections:reflections:0.9.8'
+
+    testCompile "ch.qos.logback:logback-classic:1.0.13"
+    testCompile 'org.easytesting:fest-assert:1.4'
+    testCompile 'org.slf4j:slf4j-log4j12:1.7.7'
+    testCompile 'org.codehaus.groovy:groovy-all:2.3.3'
+    testCompile("org.spockframework:spock-core:0.7-groovy-2.0") {
+        exclude group: "junit"
+    }
+    testCompile("com.github.goldin:spock-extensions:0.1.4") {
+        exclude module: "spock-core"
+    }
+}
