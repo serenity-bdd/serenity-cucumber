@@ -1,8 +1,13 @@
-thucydides-cucumber
-===================
+## Serenity Cucumber Integration
 
-Thucydides integration with Cucumber-JVM.
+This module lets you produce Serenity reports using Cucumber. You run your tests as normal, 
+but using the *CucumberWithSerenity* runner, e.g.:
 
-This project is in progress, and is not ready for production use.
+```java
+@RunWith(CucumberWithSerenity.class)
+@CucumberOptions(features="src/test/resources/samples/myfeature.feature")
+public class SimpleTableScenario {}
+```
 
-[ ![Codeship Status for thucydides-webtests/thucydides-cucumber](https://www.codeship.io/projects/3aa14760-3ec1-0132-04ed-165c463f3e79/status)](https://www.codeship.io/projects/43547)
+
+
