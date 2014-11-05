@@ -1,6 +1,5 @@
 package cucumber.runtime;
 
-import cucumber.runtime.CucumberException;
 import cucumber.runtime.java.ObjectFactory;
 import net.thucydides.core.Thucydides;
 import net.thucydides.core.pages.Pages;
@@ -15,7 +14,7 @@ import java.util.*;
  * @author Liviu Carausu (liviu.carausu@gmail.com).
  */
 
-public class ThucydidesObjectFactory implements ObjectFactory {
+public class SerenityObjectFactory implements ObjectFactory {
 
     private final Set<Class<?>> classes = Collections.synchronizedSet(new HashSet<Class<?>>());
 
@@ -42,10 +41,7 @@ public class ThucydidesObjectFactory implements ObjectFactory {
 
     /**
      * Tries to instantiate the type using an empty constructor, if it does not work, tries to instantiate
-     * using a constructor wit a Pages parameter.
-     * @param type
-     * @param <T>
-     * @return
+     * using a constructor with a Pages parameter.
      */
     private <T> T cacheNewInstance(Class<T> type) {
         T instance;
@@ -63,7 +59,7 @@ public class ThucydidesObjectFactory implements ObjectFactory {
     }
 
     private <T> T createNewPageEnabledStepCandidate(final Class<T> type) {
-        T newInstance = null;
+        T newInstance;
         try {
             Pages pageFactory = ThucydidesWebDriverSupport.getPages();
             Class[] constructorArgs = new Class[1];

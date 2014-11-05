@@ -1,20 +1,47 @@
+buildscript {
+    repositories {
+        jcenter()
+        maven {
+            url 'https://geonet.artifactoryonline.com/geonet/public-releases'
+        }
+    }
+    dependencies {
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:0.6'
+        classpath 'nz.org.geonet:gradle-build-version-plugin:1.0.4'
+    }
+}
+
 apply plugin: 'java'
 apply plugin: 'groovy'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply plugin: 'maven'
+apply plugin: 'maven-publish'
+apply plugin: 'com.jfrog.bintray'
+apply plugin: 'build-version'
 
-//    apply plugin: 'maven-publish'
-//    apply plugin: 'com.jfrog.bintray'
-//    apply plugin: 'release'
+buildVersion {
+    releaseTagPattern = "^v(\\d+\\.\\d+\\.\\d+)"
+}
 
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
-version = '0.9.276-SNAPSHOT'
+group = 'net.serenity-bdd'
+version = buildVersion.version
+
 
 repositories {
     mavenLocal()
     jcenter()
+}
+
+ext {
+    if (!project.hasProperty("bintrayUsername")) {
+        bintrayUsername = 'wakaleo'
+    }
+    if (!project.hasProperty("bintrayApiKey")) {
+        bintrayApiKey = ''
+    }
 }
 
 task wrapper(type: Wrapper) {
@@ -31,7 +58,7 @@ test {
 }
 
 dependencies {
-    compile 'net.thucydides:thucydides-core:0.9.275'
+    compile 'net.serenity-bdd:core:1.0.13'
     compile 'info.cukes:cucumber-java:1.1.8'
     compile 'info.cukes:cucumber-junit:1.1.8'
     compile "junit:junit:4.11"
@@ -46,5 +73,105 @@ dependencies {
     }
     testCompile("com.github.goldin:spock-extensions:0.1.4") {
         exclude module: "spock-core"
+    }
+}
+
+jar {
+    manifest {
+        attributes("Implementation-Title": "Serenity Cucumber Plugin",
+                   "Implementation-Version": project.version.toString())
+    }
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives sourcesJar, javadocJar
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+
+            println "Publishing $project.name:$project.group:$project.version"
+
+            from components.java
+
+            artifact sourcesJar {
+                classifier "sources"
+            }
+
+            artifact javadocJar {
+                classifier "javadoc"
+            }
+
+            pom.withXml {
+                asNode().children().last() + {
+                    resolveStrategy = Closure.DELEGATE_FIRST
+                    name 'serenity-cucumber'
+                    description 'Serenity Cucumber Integration'
+
+                    url 'https://github.com/serenity-bdd/serenity-cucumber'
+                    scm {
+                        url 'scm:git:git@github.com:serenity-bdd/serenity-cucumber.git'
+                        connection 'scm:git:git@github.com:serenity-bdd/serenity-cucumber.git'
+                        developerConnection 'scm:git:git@github.com:serenity-bdd/serenity-cucumber.git'
+                    }
+                    licenses {
+                        license {
+                            name 'The Apache Software License, Version 2.0'
+                            url 'http://www.apache.org/license/LICENSE-2.0.txt'
+                            distribution 'repo'
+                        }
+                    }
+                    developers {
+                        developer {
+                            id 'cliviu'
+                            name 'Liviu Carausu'
+                            email 'liviu.carausu@gmail.com'
+                        }
+                        developer {
+                            id 'johnsmart'
+                            name 'John Ferguson Smart'
+                            email 'john.smart@wakaleo.com'
+                        }
+                    }
+                }
+                // Preserve compile-scope dependencies
+                asNode().dependencies.'*'.findAll() {
+                    it.scope.text() == 'runtime' && project.configurations.compile.allDependencies.find { dep ->
+                        dep.name == it.artifactId.text()
+                    }
+                }.each() {
+                    it.scope*.value = 'compile'
+                }
+            }
+        }
+    }
+}
+
+tasks.withType(JavaCompile) {
+    options.compilerArgs << "-Xlint:-options"
+}
+
+bintray {
+    user = bintrayUsername //this usually comes form gradle.properties file in ~/.gradle
+    key = bintrayApiKey //this usually comes form gradle.properties file in ~/.gradle
+    publications = ['mavenJava'] // see publications closure
+    pkg {
+        repo = 'maven'
+        userOrg = 'serenity'
+        name = 'serenity-cucumber'
+        desc = 'Serenity Cucumber integration'
+        licenses = ['Apache-2.0']
+        labels = ['serenity','bdd','cucumber']
     }
 }

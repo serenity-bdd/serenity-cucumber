@@ -1,8 +1,9 @@
-package net.thucydides.cucumber;
+package net.serenitybdd.cucumber;
 
 import cucumber.api.junit.Cucumber;
-import cucumber.runtime.*;
+import cucumber.runtime.ClassFinder;
 import cucumber.runtime.Runtime;
+import cucumber.runtime.RuntimeOptions;
 import cucumber.runtime.io.ResourceLoader;
 import cucumber.runtime.io.ResourceLoaderClassFinder;
 import net.thucydides.core.guice.Injectors;
@@ -17,10 +18,10 @@ import java.io.IOException;
  *
  * @author L.Carausu (liviu.carausu@gmail.com)
  */
-public class CucumberWithThucydides extends Cucumber {
+public class CucumberWithSerenity extends Cucumber {
 
 
-    public CucumberWithThucydides(Class clazz) throws InitializationError, IOException
+    public CucumberWithSerenity(Class clazz) throws InitializationError, IOException
     {
         super(clazz);
     }
@@ -40,7 +41,7 @@ public class CucumberWithThucydides extends Cucumber {
 
     public static Runtime createThucydidesEnabledRuntime(ResourceLoader resourceLoader, ClassLoader classLoader, RuntimeOptions runtimeOptions, Configuration systemConfiguration) {
         ClassFinder classFinder = new ResourceLoaderClassFinder(resourceLoader, classLoader);
-        ThucydidesReporter reporter = new ThucydidesReporter(systemConfiguration);
+        SerenityReporter reporter = new SerenityReporter(systemConfiguration);
         runtimeOptions.addFormatter(reporter);
         return new Runtime(resourceLoader, classFinder, classLoader, runtimeOptions);
     }

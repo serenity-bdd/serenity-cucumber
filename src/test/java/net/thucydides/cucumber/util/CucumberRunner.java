@@ -1,7 +1,7 @@
 package net.thucydides.cucumber.util;
 
 import cucumber.api.CucumberOptions;
-import net.thucydides.cucumber.CucumberWithThucydides;
+import net.serenitybdd.cucumber.CucumberWithSerenity;
 import cucumber.runtime.RuntimeOptions;
 import cucumber.runtime.RuntimeOptionsFactory;
 import cucumber.runtime.io.MultiLoader;
@@ -38,7 +38,7 @@ public class CucumberRunner {
 
         Configuration systemConfiguration = new SystemPropertiesConfiguration(environmentVariables);
         systemConfiguration.setOutputDirectory(outputDirectory);
-        return CucumberWithThucydides.createThucydidesEnabledRuntime(resourceLoader, classLoader, runtimeOptions, systemConfiguration);
+        return CucumberWithSerenity.createThucydidesEnabledRuntime(resourceLoader, classLoader, runtimeOptions, systemConfiguration);
     }
 
     public static cucumber.runtime.Runtime thucydidesRunnerForCucumberTestRunner(Class testClass, Configuration systemConfiguration) {
@@ -47,7 +47,7 @@ public class CucumberRunner {
         RuntimeOptionsFactory runtimeOptionsFactory = new RuntimeOptionsFactory(testClass, new Class[]{CucumberOptions.class});
         RuntimeOptions runtimeOptions = runtimeOptionsFactory.create();
 
-        return CucumberWithThucydides.createThucydidesEnabledRuntime(resourceLoader, classLoader, runtimeOptions, systemConfiguration);
+        return CucumberWithSerenity.createThucydidesEnabledRuntime(resourceLoader, classLoader, runtimeOptions, systemConfiguration);
     }
 
 }

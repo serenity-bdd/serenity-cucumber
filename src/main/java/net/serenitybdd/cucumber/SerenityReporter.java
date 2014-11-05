@@ -1,4 +1,4 @@
-package net.thucydides.cucumber;
+package net.serenitybdd.cucumber;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
@@ -39,7 +39,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
  *
  * @author L.Carausu (liviu.carausu@gmail.com)
  */
-public class ThucydidesReporter implements Formatter, Reporter {
+public class SerenityReporter implements Formatter, Reporter {
 
 
     private static final String OPEN_PARAM_CHAR = "\uff5f";
@@ -94,7 +94,7 @@ public class ThucydidesReporter implements Formatter, Reporter {
                 || (forcedScenarioResult.or(TestResult.UNDEFINED) == TestResult.SKIPPED));
     }
 
-    public ThucydidesReporter(Configuration systemConfiguration) {
+    public SerenityReporter(Configuration systemConfiguration) {
         this.systemConfiguration = systemConfiguration;
         this.stepQueue = new LinkedList<>();
         thucydidesListenersThreadLocal = new ThreadLocal<>();
@@ -129,14 +129,14 @@ public class ThucydidesReporter implements Formatter, Reporter {
         //currently it works only for features with different names - for more we need a complete uri from cucuber
         FileSystemRequirementsTagProvider tagProvider = new FileSystemRequirementsTagProvider();
         try {
-            Optional<String> rootDirectoryPath = tagProvider.getRootDirectoryPath();
-            if(rootDirectoryPath.isPresent()) {
-                File rootDirectory = new File(rootDirectoryPath.get());
+            for(String rootDirectoryPath : tagProvider.getRootDirectoryPaths()) {
+                File rootDirectory = new File(rootDirectoryPath);
                 if (rootDirectory.exists()) {
                     Collection<File> files = FileUtils.listFiles(rootDirectory, new FeatureFileFilter(uri), TrueFileFilter.INSTANCE);
                     if (files.size() > 0) {
                         File firstMatch = files.iterator().next();
-                        currentUri = firstMatch.getAbsolutePath().substring(rootDirectoryPath.get().length() + 1);
+                        currentUri = firstMatch.getAbsolutePath().substring(rootDirectoryPath.length() + 1);
+                        break;
                     }
                 }
             }
