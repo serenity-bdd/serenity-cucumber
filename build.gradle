@@ -1,3 +1,5 @@
+import net.serenitybdd.builds.ProjectVersionCounter
+
 buildscript {
     repositories {
         jcenter()
@@ -7,7 +9,6 @@ buildscript {
     }
     dependencies {
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:0.6'
-        classpath 'nz.org.geonet:gradle-build-version-plugin:1.0.4'
     }
 }
 
@@ -18,17 +19,9 @@ apply plugin: 'idea'
 apply plugin: 'maven'
 apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.bintray'
-apply plugin: 'build-version'
-
-buildVersion {
-    releaseTagPattern = "^v(\\d+\\.\\d+\\.\\d+)"
-}
 
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
-group = 'net.serenity-bdd'
-version = buildVersion.version
-
 
 repositories {
     mavenLocal()
@@ -36,12 +29,40 @@ repositories {
 }
 
 ext {
+    bintrayBaseUrl = 'https://api.bintray.com/maven'
+    bintrayRepository = 'maven'
+    bintrayPackage = 'serenity-cucumber'
+    projectDescription = 'Serenity Cucumber integration'
+
     if (!project.hasProperty("bintrayUsername")) {
         bintrayUsername = 'wakaleo'
     }
     if (!project.hasProperty("bintrayApiKey")) {
         bintrayApiKey = ''
     }
+    serenityCoreVersion = '1.0.3'
+    cucumberJVMVersion = '1.1.8'
+
+    versionCounter = new ProjectVersionCounter(isRelease: project.hasProperty("releaseBuild"))
+
+}
+
+group = 'net.serenity-bdd'
+version = versionCounter.nextVersion
+
+
+task createNewVersionTag(type: Exec) {
+    executable "sh"
+    args "-c", "git tag -f -a v$version -m'release tag'"
+}
+
+task pushVersionTag(type: Exec, dependsOn: 'createNewVersionTag') {
+    executable "sh"
+    args "-c", "git push -f origin v$version"
+}
+
+task tagNewVersion() {
+    dependsOn pushVersionTag
 }
 
 task wrapper(type: Wrapper) {
@@ -58,9 +79,9 @@ test {
 }
 
 dependencies {
-    compile 'net.serenity-bdd:core:1.0.13'
-    compile 'info.cukes:cucumber-java:1.1.8'
-    compile 'info.cukes:cucumber-junit:1.1.8'
+    compile "net.serenity-bdd:core:${serenityCoreVersion}"
+    compile "info.cukes:cucumber-java:${cucumberJVMVersion}"
+    compile "info.cukes:cucumber-junit:${cucumberJVMVersion}"
     compile "junit:junit:4.11"
     compile 'org.reflections:reflections:0.9.8'
 
