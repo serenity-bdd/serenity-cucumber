@@ -26,6 +26,9 @@ targetCompatibility = 1.7
 repositories {
     mavenLocal()
     jcenter()
+    maven() {
+        url "http://dl.bintray.com/serenity/maven/"
+    }
 }
 
 ext {
@@ -40,8 +43,8 @@ ext {
     if (!project.hasProperty("bintrayApiKey")) {
         bintrayApiKey = ''
     }
-    serenityCoreVersion = '1.0.3'
-    cucumberJVMVersion = '1.1.8'
+    serenityCoreVersion = '1.0.4'
+    cucumberJVMVersion = '1.2.0-SNAPSHOT'
 
     versionCounter = new ProjectVersionCounter(isRelease: project.hasProperty("releaseBuild"))
 
