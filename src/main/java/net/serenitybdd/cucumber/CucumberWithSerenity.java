@@ -42,7 +42,7 @@ public class CucumberWithSerenity extends Cucumber {
     public static Runtime createThucydidesEnabledRuntime(ResourceLoader resourceLoader, ClassLoader classLoader, RuntimeOptions runtimeOptions, Configuration systemConfiguration) {
         ClassFinder classFinder = new ResourceLoaderClassFinder(resourceLoader, classLoader);
         SerenityReporter reporter = new SerenityReporter(systemConfiguration);
-        runtimeOptions.addFormatter(reporter);
+        runtimeOptions.addPlugin(reporter);
         return new Runtime(resourceLoader, classFinder, classLoader, runtimeOptions);
     }
 }
