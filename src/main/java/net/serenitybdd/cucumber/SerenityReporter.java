@@ -14,21 +14,16 @@ import net.thucydides.core.ThucydidesListeners;
 import net.thucydides.core.ThucydidesReports;
 import net.thucydides.core.model.*;
 import net.thucydides.core.reports.ReportService;
-import net.thucydides.core.requirements.FileSystemRequirementsTagProvider;
 import net.thucydides.core.steps.BaseStepListener;
 import net.thucydides.core.steps.ExecutedStepDescription;
 import net.thucydides.core.steps.StepEventBus;
 import net.thucydides.core.steps.StepFailure;
 import net.thucydides.core.webdriver.Configuration;
 import net.thucydides.core.webdriver.ThucydidesWebDriverSupport;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.IOFileFilter;
-import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.internal.AssumptionViolatedException;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
 
 import static ch.lambdaj.Lambda.*;
@@ -70,6 +65,8 @@ public class SerenityReporter implements Formatter, Reporter {
     private boolean firstStep = true;
 
     private String currentUri;
+
+    private final static String FEATURES_ROOT_PATH = "features";
 
 
     private static Optional<TestResult> forcedStoryResult = Optional.absent();
@@ -124,44 +121,12 @@ public class SerenityReporter implements Formatter, Reporter {
     @Override
     public void uri(String uri) {
         currentUri = uri;
-        //Cucumber reports only the feature file name but thucydides needs the whole directory structure
-        //starting from the root path of the features or stories , that's why i have to complete the uri
-        //currently it works only for features with different names - for more we need a complete uri from cucuber
-        FileSystemRequirementsTagProvider tagProvider = new FileSystemRequirementsTagProvider();
-        try {
-            for(String rootDirectoryPath : tagProvider.getRootDirectoryPaths()) {
-                File rootDirectory = new File(rootDirectoryPath);
-                if (rootDirectory.exists()) {
-                    Collection<File> files = FileUtils.listFiles(rootDirectory, new FeatureFileFilter(uri), TrueFileFilter.INSTANCE);
-                    if (files.size() > 0) {
-                        File firstMatch = files.iterator().next();
-                        currentUri = firstMatch.getAbsolutePath().substring(rootDirectoryPath.length() + 1);
-                        break;
-                    }
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+        String featuresRoot = File.separatorChar + FEATURES_ROOT_PATH + File.separatorChar;
+        if(uri.contains(featuresRoot)) {
+            currentUri = uri.substring(uri.lastIndexOf(featuresRoot) + FEATURES_ROOT_PATH.length() + 2);
         }
     }
 
-    private class FeatureFileFilter implements IOFileFilter {
-
-        private String featureFileName;
-        public FeatureFileFilter(String featureFileName){
-            this.featureFileName = featureFileName;
-        }
-
-        @Override
-        public boolean accept(File file) {
-            return file.getName().equals(featureFileName);
-        }
-
-        @Override
-        public boolean accept(File dir, String name) {
-            return name.equals(featureFileName);
-        }
-    }
 
     @Override
     public void feature(Feature feature) {
