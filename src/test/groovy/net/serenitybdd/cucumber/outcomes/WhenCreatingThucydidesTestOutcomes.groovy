@@ -1,6 +1,7 @@
 package net.serenitybdd.cucumber.outcomes
 
 import com.github.goldin.spock.extensions.tempdir.TempDir
+import net.serenitybdd.cucumber.integration.FeatureWithNoName
 import net.thucydides.core.model.TestOutcome
 import net.thucydides.core.model.TestResult
 import net.thucydides.core.model.TestStep
@@ -103,6 +104,19 @@ class WhenCreatingThucydidesTestOutcomes extends Specification {
 
         then:
         testOutcome.tags.contains(TestTag.withName("A simple feature").andType("feature"))
+    }
+
+    def "should default to the filename if the feature name is not specified in the feature file"() {
+        given:
+        def runtime = thucydidesRunnerForCucumberTestRunner(FeatureWithNoName.class, outputDirectory);
+
+        when:
+        runtime.run();
+        def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory);
+        def testOutcome = recordedTestOutcomes[0]
+
+        then:
+        testOutcome.tags.contains(TestTag.withName("Feature with no name").andType("feature"))
     }
 
 /*

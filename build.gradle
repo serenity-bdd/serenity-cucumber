@@ -44,7 +44,7 @@ ext {
         bintrayApiKey = ''
     }
     serenityCoreVersion = '1.0.6'
-    cucumberJVMVersion = '1.2.0'
+    cucumberJVMVersion = '1.2.1-SNAPSHOT'
 
     versionCounter = new ProjectVersionCounter(isRelease: project.hasProperty("releaseBuild"))
 

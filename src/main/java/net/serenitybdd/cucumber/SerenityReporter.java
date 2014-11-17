@@ -18,6 +18,7 @@ import net.thucydides.core.steps.BaseStepListener;
 import net.thucydides.core.steps.ExecutedStepDescription;
 import net.thucydides.core.steps.StepEventBus;
 import net.thucydides.core.steps.StepFailure;
+import net.thucydides.core.util.Inflector;
 import net.thucydides.core.webdriver.Configuration;
 import net.thucydides.core.webdriver.ThucydidesWebDriverSupport;
 import org.apache.commons.lang3.StringUtils;
@@ -65,6 +66,9 @@ public class SerenityReporter implements Formatter, Reporter {
     private boolean firstStep = true;
 
     private String currentUri;
+
+    private String defaultFeatureName;
+    private String defaultFeatureId;
 
     private final static String FEATURES_ROOT_PATH = "features";
 
@@ -122,9 +126,11 @@ public class SerenityReporter implements Formatter, Reporter {
     public void uri(String uri) {
         currentUri = uri;
         String featuresRoot = File.separatorChar + FEATURES_ROOT_PATH + File.separatorChar;
-        if(uri.contains(featuresRoot)) {
+        if (uri.contains(featuresRoot)) {
             currentUri = uri.substring(uri.lastIndexOf(featuresRoot) + FEATURES_ROOT_PATH.length() + 2);
         }
+        defaultFeatureId = new File(currentUri).getName().replace(".feature","");
+        defaultFeatureName = Inflector.getInstance().humanize(defaultFeatureId);
     }
 
 
@@ -132,6 +138,9 @@ public class SerenityReporter implements Formatter, Reporter {
     public void feature(Feature feature) {
 
         assureTestSuiteFinished();
+        if (feature.getName().isEmpty()) {
+            feature = featureWithDefaultName(feature, defaultFeatureName, defaultFeatureId);
+        }
 
         currentFeature = feature;
 
@@ -146,6 +155,16 @@ public class SerenityReporter implements Formatter, Reporter {
 
         checkForPending(feature);
         checkForSkipped(feature);
+    }
+
+    private Feature featureWithDefaultName(Feature feature, String defaultName, String id) {
+        return new Feature(feature.getComments(),
+                feature.getTags(),
+                feature.getKeyword(),
+                defaultName,
+                feature.getDescription(),
+                feature.getLine(),
+                id);
     }
 
     private void checkForPending(Feature feature) {
