@@ -9,9 +9,9 @@ import cucumber.runtime.StepDefinitionMatch;
 import gherkin.formatter.Formatter;
 import gherkin.formatter.Reporter;
 import gherkin.formatter.model.*;
-import net.thucydides.core.Thucydides;
-import net.thucydides.core.ThucydidesListeners;
-import net.thucydides.core.ThucydidesReports;
+import net.serenity_bdd.core.Serenity;
+import net.serenity_bdd.core.SerenityListeners;
+import net.serenity_bdd.core.SerenityReports;
 import net.thucydides.core.model.*;
 import net.thucydides.core.reports.ReportService;
 import net.thucydides.core.steps.BaseStepListener;
@@ -47,7 +47,7 @@ public class SerenityReporter implements Formatter, Reporter {
 
     private Configuration systemConfiguration;
 
-    private ThreadLocal<ThucydidesListeners> thucydidesListenersThreadLocal;
+    private ThreadLocal<SerenityListeners> thucydidesListenersThreadLocal;
 
     private final List<BaseStepListener> baseStepListeners;
 
@@ -103,9 +103,9 @@ public class SerenityReporter implements Formatter, Reporter {
         clearStoryResult();
     }
 
-    protected ThucydidesListeners getThucydidesListeners() {
+    protected SerenityListeners getThucydidesListeners() {
         if (thucydidesListenersThreadLocal.get() == null) {
-            ThucydidesListeners listeners = ThucydidesReports.setupListeners(systemConfiguration);
+            SerenityListeners listeners = SerenityReports.setupListeners(systemConfiguration);
             thucydidesListenersThreadLocal.set(listeners);
             synchronized (baseStepListeners) {
                 baseStepListeners.add(listeners.getBaseStepListener());
@@ -115,7 +115,7 @@ public class SerenityReporter implements Formatter, Reporter {
     }
 
     protected ReportService getReportService() {
-        return ThucydidesReports.getReportService(systemConfiguration);
+        return SerenityReports.getReportService(systemConfiguration);
     }
 
     @Override
@@ -413,7 +413,7 @@ public class SerenityReporter implements Formatter, Reporter {
             stepQueue.clear();
             StepEventBus.getEventBus().testSuiteFinished();
             StepEventBus.getEventBus().clear();
-            Thucydides.done();
+            Serenity.done();
             table = null;
             firstStep = true;
         }
