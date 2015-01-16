@@ -6,7 +6,7 @@ import net.thucydides.core.reports.TestOutcomeLoader
 import net.serenitybdd.cucumber.integration.SimpleScenario
 import spock.lang.Specification
 
-import static net.serenitybdd.cucumber.util.CucumberRunner.thucydidesRunnerForCucumberTestRunner
+import static net.serenitybdd.cucumber.util.CucumberRunner.serenityRunnerForCucumberTestRunner
 
 /**
  * Created by john on 23/07/2014.
@@ -18,7 +18,7 @@ class WhenGeneratingThucydidesReports extends Specification {
 
     def "should generate a Thucydides report for each executed Cucumber scenario"() {
         given:
-        def runtime = thucydidesRunnerForCucumberTestRunner(SimpleScenario.class, outputDirectory);
+        def runtime = serenityRunnerForCucumberTestRunner(SimpleScenario.class, outputDirectory);
 
         when:
         runtime.run();

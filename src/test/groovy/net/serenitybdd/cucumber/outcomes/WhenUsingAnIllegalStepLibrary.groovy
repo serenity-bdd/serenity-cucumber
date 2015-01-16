@@ -5,7 +5,7 @@ import net.serenitybdd.cucumber.integration.BrokenStepLibraryScenario
 import net.serenitybdd.cucumber.integration.IllegalStepLibraryScenario
 import spock.lang.Specification
 
-import static net.serenitybdd.cucumber.util.CucumberRunner.thucydidesRunnerForCucumberTestRunner
+import static net.serenitybdd.cucumber.util.CucumberRunner.serenityRunnerForCucumberTestRunner
 
 /**
  * Created by john on 23/07/2014.
@@ -17,7 +17,7 @@ class WhenUsingAnIllegalStepLibrary extends Specification {
 
     def "should throw a meaningful exception if a step library with no default constructor is used"() {
         given:
-        def runtime = thucydidesRunnerForCucumberTestRunner(IllegalStepLibraryScenario.class, outputDirectory);
+        def runtime = serenityRunnerForCucumberTestRunner(IllegalStepLibraryScenario.class, outputDirectory);
 
         when:
         runtime.run();
@@ -31,7 +31,7 @@ class WhenUsingAnIllegalStepLibrary extends Specification {
 
     def "should throw a meaningful exception if a step library if the step library could not be instantiated"() {
         given:
-        def runtime = thucydidesRunnerForCucumberTestRunner(BrokenStepLibraryScenario.class, outputDirectory);
+        def runtime = serenityRunnerForCucumberTestRunner(BrokenStepLibraryScenario.class, outputDirectory);
 
         when:
         runtime.run();

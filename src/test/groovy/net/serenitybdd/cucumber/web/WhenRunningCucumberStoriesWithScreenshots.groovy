@@ -11,7 +11,7 @@ import net.serenitybdd.cucumber.integration.SimpleSeleniumFailingAndPassingScena
 import net.serenitybdd.cucumber.integration.SimpleSeleniumSeveralScenarios
 import spock.lang.Specification
 
-import static net.serenitybdd.cucumber.util.CucumberRunner.thucydidesRunnerForCucumberTestRunner
+import static net.serenitybdd.cucumber.util.CucumberRunner.serenityRunnerForCucumberTestRunner
 
 public class WhenRunningCucumberStoriesWithScreenshots extends Specification {
 
@@ -27,7 +27,7 @@ public class WhenRunningCucumberStoriesWithScreenshots extends Specification {
 
     def "web tests should take screenshots"() {
         given:
-        def runtime = thucydidesRunnerForCucumberTestRunner(SimpleSeleniumFailingAndPassingScenario, outputDirectory, environmentVariables);
+        def runtime = serenityRunnerForCucumberTestRunner(SimpleSeleniumFailingAndPassingScenario, outputDirectory, environmentVariables);
 
         when:
         runtime.run();
@@ -41,7 +41,7 @@ public class WhenRunningCucumberStoriesWithScreenshots extends Specification {
     def "web tests should take screenshots with multiple scenarios"() {
 
         given:
-        def runtime = thucydidesRunnerForCucumberTestRunner(SimpleSeleniumSeveralScenarios, outputDirectory, environmentVariables);
+        def runtime = serenityRunnerForCucumberTestRunner(SimpleSeleniumSeveralScenarios, outputDirectory, environmentVariables);
 
         when:
         runtime.run();
@@ -55,7 +55,7 @@ public class WhenRunningCucumberStoriesWithScreenshots extends Specification {
     def "web tests should take screenshots for multiple tests"()  {
 
         given:
-        def runtime = thucydidesRunnerForCucumberTestRunner(SimpleSeleniumSeveralScenarios, outputDirectory, environmentVariables);
+        def runtime = serenityRunnerForCucumberTestRunner(SimpleSeleniumSeveralScenarios, outputDirectory, environmentVariables);
 
         when:
         runtime.run();
@@ -73,7 +73,7 @@ public class WhenRunningCucumberStoriesWithScreenshots extends Specification {
     def "web tests should take screenshots with nested step libraries"()  {
 
         given:
-        def runtime = thucydidesRunnerForCucumberTestRunner(PassingWebTestSampleWithNestedSteps, outputDirectory, environmentVariables);
+        def runtime = serenityRunnerForCucumberTestRunner(PassingWebTestSampleWithNestedSteps, outputDirectory, environmentVariables);
 
         when:
         runtime.run();

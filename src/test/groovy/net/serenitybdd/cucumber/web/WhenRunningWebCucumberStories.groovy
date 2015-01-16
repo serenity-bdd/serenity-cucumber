@@ -17,7 +17,7 @@ import net.serenitybdd.cucumber.integration.SimpleSeleniumPageObjects
 import net.serenitybdd.cucumber.integration.SimpleSeleniumScenario
 import spock.lang.Specification
 
-import static net.serenitybdd.cucumber.util.CucumberRunner.thucydidesRunnerForCucumberTestRunner
+import static net.serenitybdd.cucumber.util.CucumberRunner.serenityRunnerForCucumberTestRunner
 
 public class WhenRunningWebCucumberStories extends Specification {
 
@@ -32,7 +32,7 @@ public class WhenRunningWebCucumberStories extends Specification {
 
     def "should run table-driven scenarios successfully"() {
         given:
-        def runtime = thucydidesRunnerForCucumberTestRunner(SimpleSeleniumScenario.class, outputDirectory, environmentVariables);
+        def runtime = serenityRunnerForCucumberTestRunner(SimpleSeleniumScenario.class, outputDirectory, environmentVariables);
 
         when:
         runtime.run();
@@ -49,7 +49,7 @@ public class WhenRunningWebCucumberStories extends Specification {
 
     def "a failing story should generate failure test outcome"() throws Throwable {
         given:
-        def runtime = thucydidesRunnerForCucumberTestRunner(SimpleSeleniumFailingScenario.class, outputDirectory, environmentVariables);
+        def runtime = serenityRunnerForCucumberTestRunner(SimpleSeleniumFailingScenario.class, outputDirectory, environmentVariables);
 
         when:
         runtime.run();
@@ -69,7 +69,7 @@ public class WhenRunningWebCucumberStories extends Specification {
 
     def "a test should use a different browser if requested"()  {
         given:
-        def runtime = thucydidesRunnerForCucumberTestRunner(SimpleSeleniumDifferentBrowserScenario.class, outputDirectory);
+        def runtime = serenityRunnerForCucumberTestRunner(SimpleSeleniumDifferentBrowserScenario.class, outputDirectory);
 
         when:
         runtime.run();
@@ -87,7 +87,7 @@ public class WhenRunningWebCucumberStories extends Specification {
 
    def "a cucumber step library can use page objects directly"()  {
         given:
-        def runtime = thucydidesRunnerForCucumberTestRunner(SimpleSeleniumPageObjects.class, outputDirectory, environmentVariables);
+        def runtime = serenityRunnerForCucumberTestRunner(SimpleSeleniumPageObjects.class, outputDirectory, environmentVariables);
 
         when:
         runtime.run();
@@ -106,7 +106,7 @@ public class WhenRunningWebCucumberStories extends Specification {
     def "stories with errors in one scenario should still run subsequent scenarios"()  {
         given:
         environmentVariables.setProperty("restart.browser.each.scenario","true");
-        def runtime = thucydidesRunnerForCucumberTestRunner(SimpleSeleniumFailingAndPassingScenario, outputDirectory, environmentVariables);
+        def runtime = serenityRunnerForCucumberTestRunner(SimpleSeleniumFailingAndPassingScenario, outputDirectory, environmentVariables);
 
         when:
         runtime.run();
@@ -123,7 +123,7 @@ public class WhenRunningWebCucumberStories extends Specification {
         given:
         environmentVariables.setProperty(ThucydidesSystemProperty.DRIVER.getPropertyName(), "htmlunit");
         environmentVariables.setProperty(ThucydidesSystemProperty.THUCYDIDES_USE_UNIQUE_BROWSER.getPropertyName(),"true");
-        def runtime = thucydidesRunnerForCucumberTestRunner(SimpleSeleniumFailingAndPassingScenario, outputDirectory, environmentVariables);
+        def runtime = serenityRunnerForCucumberTestRunner(SimpleSeleniumFailingAndPassingScenario, outputDirectory, environmentVariables);
 
         when:
         runtime.run();
@@ -142,7 +142,7 @@ public class WhenRunningWebCucumberStories extends Specification {
         environmentVariables.setProperty(ThucydidesSystemProperty.THUCYDIDES_TIMEOUT.getPropertyName(),"5")
         Configuration systemConfiguration = new SystemPropertiesConfiguration(environmentVariables);
         systemConfiguration.setOutputDirectory(outputDirectory);
-        def runtime = thucydidesRunnerForCucumberTestRunner(SimpleSeleniumFailingAndPassingScenario, systemConfiguration)
+        def runtime = serenityRunnerForCucumberTestRunner(SimpleSeleniumFailingAndPassingScenario, systemConfiguration)
 
         when:
         runtime.run();
@@ -158,7 +158,7 @@ public class WhenRunningWebCucumberStories extends Specification {
 
     def  "data  driven  steps  should  appear  as  nested  steps"()  {
         given:
-        def runtime = thucydidesRunnerForCucumberTestRunner(DataDrivenScenario.class, outputDirectory);
+        def runtime = serenityRunnerForCucumberTestRunner(DataDrivenScenario.class, outputDirectory);
 
         when:
         runtime.run();
@@ -177,7 +177,7 @@ public class WhenRunningWebCucumberStories extends Specification {
 
     def "two  scenarios  using  the  same  given  story  should  return  two  test  outcomes"() {
         given:
-        def runtime = thucydidesRunnerForCucumberTestRunner(ScenarioSuite.class, outputDirectory);
+        def runtime = serenityRunnerForCucumberTestRunner(ScenarioSuite.class, outputDirectory);
 
         when:
         runtime.run();

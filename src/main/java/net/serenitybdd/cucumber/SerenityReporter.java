@@ -9,6 +9,7 @@ import cucumber.runtime.StepDefinitionMatch;
 import gherkin.formatter.Formatter;
 import gherkin.formatter.Reporter;
 import gherkin.formatter.model.*;
+import gherkin.formatter.model.DataTableRow;
 import net.serenitybdd.core.Serenity;
 import net.serenitybdd.core.SerenityListeners;
 import net.serenitybdd.core.SerenityReports;
@@ -36,7 +37,6 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
  * @author L.Carausu (liviu.carausu@gmail.com)
  */
 public class SerenityReporter implements Formatter, Reporter {
-
 
     private static final String OPEN_PARAM_CHAR = "\uff5f";
     private static final String CLOSE_PARAM_CHAR = "\uff60";
@@ -239,12 +239,16 @@ public class SerenityReporter implements Formatter, Reporter {
     }
 
 
+    boolean addingScenarioOutlineSteps = false;
+
     @Override
     public void scenarioOutline(ScenarioOutline scenarioOutline) {
+        addingScenarioOutlineSteps = true;
     }
 
     @Override
     public void examples(Examples examples) {
+        addingScenarioOutlineSteps = false;
         reinitializeExamples();
         List<ExamplesTableRow> examplesTableRows = examples.getRows();
         List<String> headers = getHeadersFrom(examplesTableRows);
@@ -331,6 +335,8 @@ public class SerenityReporter implements Formatter, Reporter {
                 startScenario(scenario);
                 StepEventBus.getEventBus().useExamplesFrom(table);
                 firstStep = false;
+            } else {
+                StepEventBus.getEventBus().addNewExamplesFrom(table);
             }
             startExample();
         } else {
@@ -394,9 +400,13 @@ public class SerenityReporter implements Formatter, Reporter {
 
     @Override
     public void step(Step step) {
-        stepQueue.add(step);
+        if (!addingScenarioOutlineSteps) {
+            stepQueue.add(step);
+        } else {
+            int i = 0;
+            //stepQueue.add(step);
+        }
     }
-
 
     @Override
     public void done() {
@@ -430,6 +440,7 @@ public class SerenityReporter implements Formatter, Reporter {
 
     @Override
     public void result(Result result) {
+        //removeUnnecessaryStepsFrom(stepQueue);
         Step currentStep = stepQueue.poll();
         if (Result.PASSED.equals(result.getStatus())) {
             StepEventBus.getEventBus().stepFinished();
@@ -450,6 +461,34 @@ public class SerenityReporter implements Formatter, Reporter {
             updateSkippedResults();
             StepEventBus.getEventBus().testFinished();
         }
+    }
+
+    private void removeUnnecessaryStepsFrom(Queue<Step> stepQueue) {
+        if (containsExampleSteps(stepQueue)) {
+            removeTemplateStepsIn(stepQueue);
+        }
+    }
+
+    private void removeTemplateStepsIn(Queue<Step> stepQueue) {
+        Queue<Step> steps = new LinkedList<>(stepQueue);
+        for(Step step : steps) {
+            if (!isExampleStep(step)) {
+                stepQueue.remove(step);
+            }
+        }
+    }
+
+    private boolean containsExampleSteps(Queue<Step> steps) {
+        for(Step step : steps) {
+            if (isExampleStep(step)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isExampleStep(Step step) {
+        return step.getClass().toString().contains("ExampleStep");
     }
 
     private void updatePendingResults() {
@@ -494,7 +533,31 @@ public class SerenityReporter implements Formatter, Reporter {
     }
 
     private String stepTitleFrom(Step currentStep) {
-        return currentStep.getKeyword() + currentStep.getName();
+        return currentStep.getKeyword()
+                + currentStep.getName()
+                + embeddedTableDataIn(currentStep);
+    }
+
+    private String embeddedTableDataIn(Step currentStep) {
+        return (currentStep.getRows() == null || currentStep.getRows().isEmpty()) ?
+                "" : convertToTextTable(currentStep.getRows());
+    }
+
+    private String convertToTextTable(List<DataTableRow> rows) {
+        StringBuilder textTable = new StringBuilder();
+        textTable.append(System.lineSeparator());
+        for (DataTableRow row : rows) {
+            textTable.append("|");
+            for (String cell : row.getCells()) {
+                textTable.append(" ");
+                textTable.append(cell);
+                textTable.append(" |");
+            }
+            if (row != rows.get(rows.size() - 1)) {
+                textTable.append(System.lineSeparator());
+            }
+        }
+        return textTable.toString();
     }
 
     @Override

@@ -25,12 +25,13 @@ public class CucumberRunner {
         jUnitCore.run(new Computer(), testClass);
     }
 
-    public static cucumber.runtime.Runtime thucydidesRunnerForCucumberTestRunner(Class testClass, File outputDirectory) {
-        return thucydidesRunnerForCucumberTestRunner(testClass, outputDirectory, new SystemEnvironmentVariables());
+    public static cucumber.runtime.Runtime serenityRunnerForCucumberTestRunner(Class testClass, File outputDirectory) {
+        return serenityRunnerForCucumberTestRunner(testClass, outputDirectory, new SystemEnvironmentVariables());
     }
 
-    public static cucumber.runtime.Runtime thucydidesRunnerForCucumberTestRunner(Class testClass, File outputDirectory,
-                                                                                 EnvironmentVariables environmentVariables) {
+    public static cucumber.runtime.Runtime serenityRunnerForCucumberTestRunner(Class testClass,
+                                                                               File outputDirectory,
+                                                                               EnvironmentVariables environmentVariables) {
         ClassLoader classLoader = testClass.getClassLoader();
         ResourceLoader resourceLoader = new MultiLoader(classLoader);
         RuntimeOptionsFactory runtimeOptionsFactory = new RuntimeOptionsFactory(testClass);
@@ -41,7 +42,7 @@ public class CucumberRunner {
         return CucumberWithSerenity.createThucydidesEnabledRuntime(resourceLoader, classLoader, runtimeOptions, systemConfiguration);
     }
 
-    public static cucumber.runtime.Runtime thucydidesRunnerForCucumberTestRunner(Class testClass, Configuration systemConfiguration) {
+    public static cucumber.runtime.Runtime serenityRunnerForCucumberTestRunner(Class testClass, Configuration systemConfiguration) {
         ClassLoader classLoader = testClass.getClassLoader();
         ResourceLoader resourceLoader = new MultiLoader(classLoader);
         RuntimeOptionsFactory runtimeOptionsFactory = new RuntimeOptionsFactory(testClass);

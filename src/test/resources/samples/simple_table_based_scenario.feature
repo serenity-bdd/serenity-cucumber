@@ -7,10 +7,10 @@ Feature: Buying things
     When I buy the widgets
     Then I should be billed $<total>
   Examples:
-  | amount | cost | total |
-  | 0      | 10   | 0     |
-  | 1      | 10   | 10    |
-  | 2      | 10   | 20    |
-  | 3      | 10   | 30    |
-  | 2      | 0    | 0     |
+    | amount | cost | total |
+    | 0      | 10   | 0     |
+    | 1      | 10   | 10    |
+    | 2      | 10   | 20    |
+    | 3      | 10   | 30    |
+    | 4      | 0    | 0     |
 
