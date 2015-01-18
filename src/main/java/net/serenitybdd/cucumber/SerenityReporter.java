@@ -30,6 +30,7 @@ import java.util.*;
 
 import static ch.lambdaj.Lambda.*;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 /**
  * Generates Thucydides reports.
@@ -63,7 +64,7 @@ public class SerenityReporter implements Formatter, Reporter {
 
     private DataTable table;
 
-    private boolean firstStep = true;
+    private boolean waitingToProcessBackgroundSteps = false;
 
     private String currentUri;
 
@@ -246,6 +247,8 @@ public class SerenityReporter implements Formatter, Reporter {
         addingScenarioOutlineSteps = true;
     }
 
+    String currentScenarioId;
+
     @Override
     public void examples(Examples examples) {
         addingScenarioOutlineSteps = false;
@@ -257,10 +260,21 @@ public class SerenityReporter implements Formatter, Reporter {
         for (int i = 1; i < examplesTableRows.size(); i++) {
             addRow(exampleRows, headers, examplesTableRows.get(i));
         }
-        table = (table == null) ?
+
+        String scenarioId = scenarioIdFrom(examples.getId());
+        boolean newScenario = !scenarioId.equals(currentScenarioId);
+
+         table = (newScenario) ?
                 thucydidesTableFrom(headers, rows, examples.getName(), examples.getDescription())
                 : addTableRowsTo(table, headers, rows, examples.getName(), examples.getDescription());
-        exampleCount = examples.getRows().size() - 1;// table.getSize();
+        exampleCount = examples.getRows().size() - 1;
+
+        currentScenarioId = scenarioId;
+    }
+
+    private String scenarioIdFrom(String scenarioExampleId) {
+        String[] idElements = scenarioExampleId.split(";");
+        return (idElements.length >= 2) ? idElements[1] : "";
     }
 
     private void reinitializeExamples() {
@@ -314,8 +328,9 @@ public class SerenityReporter implements Formatter, Reporter {
                                      String description) {
         table.startNewDataSet(name, description);
         for (Map<String, String> row : rows) {
-            table.addRow(rowValuesFrom(headers, row));
+            table.appendRow(rowValuesFrom(headers, row));
         }
+        table.nextRow();
         return table;
     }
 
@@ -327,14 +342,19 @@ public class SerenityReporter implements Formatter, Reporter {
         return ImmutableMap.copyOf(rowValues);
     }
 
+    String currentScenario;
+
     @Override
     public void startOfScenarioLifeCycle(Scenario scenario) {
+
+        boolean newScenario = !scenario.getName().equals(currentScenario);
+        currentScenario = scenario.getName();
+
         if (examplesRunning) {
 
-            if (firstStep) {
+            if (newScenario) {
                 startScenario(scenario);
                 StepEventBus.getEventBus().useExamplesFrom(table);
-                firstStep = false;
             } else {
                 StepEventBus.getEventBus().addNewExamplesFrom(table);
             }
@@ -383,11 +403,15 @@ public class SerenityReporter implements Formatter, Reporter {
         if (exampleCount == 0) {
             examplesRunning = false;
             generateReports();
+        } else {
+            examplesRunning = true;
         }
     }
 
     @Override
     public void background(Background background) {
+        waitingToProcessBackgroundSteps = true;
+        StepEventBus.getEventBus().setBackgroundTitle(background.getName());
         StepEventBus.getEventBus().setBackgroundDescription(background.getDescription());
     }
 
@@ -402,9 +426,6 @@ public class SerenityReporter implements Formatter, Reporter {
     public void step(Step step) {
         if (!addingScenarioOutlineSteps) {
             stepQueue.add(step);
-        } else {
-            int i = 0;
-            //stepQueue.add(step);
         }
     }
 
@@ -425,7 +446,6 @@ public class SerenityReporter implements Formatter, Reporter {
             StepEventBus.getEventBus().clear();
             Serenity.done();
             table = null;
-            firstStep = true;
         }
     }
 
@@ -440,7 +460,6 @@ public class SerenityReporter implements Formatter, Reporter {
 
     @Override
     public void result(Result result) {
-        //removeUnnecessaryStepsFrom(stepQueue);
         Step currentStep = stepQueue.poll();
         if (Result.PASSED.equals(result.getStatus())) {
             StepEventBus.getEventBus().stepFinished();
@@ -454,41 +473,17 @@ public class SerenityReporter implements Formatter, Reporter {
         }
 
         if (stepQueue.isEmpty()) {
-            if (examplesRunning) { //finish enclosing step because testFinished resets the queue
-                StepEventBus.getEventBus().stepFinished();
-            }
-            updatePendingResults();
-            updateSkippedResults();
-            StepEventBus.getEventBus().testFinished();
-        }
-    }
-
-    private void removeUnnecessaryStepsFrom(Queue<Step> stepQueue) {
-        if (containsExampleSteps(stepQueue)) {
-            removeTemplateStepsIn(stepQueue);
-        }
-    }
-
-    private void removeTemplateStepsIn(Queue<Step> stepQueue) {
-        Queue<Step> steps = new LinkedList<>(stepQueue);
-        for(Step step : steps) {
-            if (!isExampleStep(step)) {
-                stepQueue.remove(step);
+            if (waitingToProcessBackgroundSteps) {
+                waitingToProcessBackgroundSteps = false;
+            } else {
+                if (examplesRunning) { //finish enclosing step because testFinished resets the queue
+                    StepEventBus.getEventBus().stepFinished();
+                }
+                updatePendingResults();
+                updateSkippedResults();
+                StepEventBus.getEventBus().testFinished();
             }
         }
-    }
-
-    private boolean containsExampleSteps(Queue<Step> steps) {
-        for(Step step : steps) {
-            if (isExampleStep(step)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean isExampleStep(Step step) {
-        return step.getClass().toString().contains("ExampleStep");
     }
 
     private void updatePendingResults() {
@@ -502,7 +497,6 @@ public class SerenityReporter implements Formatter, Reporter {
             StepEventBus.getEventBus().setAllStepsTo(TestResult.SKIPPED);
         }
     }
-
 
     public void failed(String stepTitle, Throwable cause) {
         Throwable rootCause = cause.getCause() != null ? cause.getCause() : cause;

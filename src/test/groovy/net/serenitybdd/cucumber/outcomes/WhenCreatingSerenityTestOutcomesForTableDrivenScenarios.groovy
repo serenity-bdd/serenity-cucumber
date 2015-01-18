@@ -41,25 +41,29 @@ class WhenCreatingSerenityTestOutcomesForTableDrivenScenarios extends Specificat
         when:
         runtime.run();
         def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory);
-        def testOutcome = recordedTestOutcomes[0]
 
-        then:
+        then: "there should a test outcome for each scenario"
+        recordedTestOutcomes.size() == 2
+
+        and:
+        def testOutcome = recordedTestOutcomes[0]
         testOutcome.title == "Buying lots of widgets"
 
         and: "there should be one step for each row in the table"
-        testOutcome.stepCount == 5
+        testOutcome.stepCount == 7
 
         and: "each of these steps should contain the scenario steps as children"
         def childSteps1 = testOutcome.testSteps[0].children.collect { step -> step.description }
         def childSteps2 = testOutcome.testSteps[1].children.collect { step -> step.description }
         def childSteps3 = testOutcome.testSteps[2].children.collect { step -> step.description }
 
-        childSteps1 == ['Given I want to purchase 0 widgets', 'And a widget costs $10', 'When I buy the widgets', 'Then I should be billed $0']
-        childSteps2 == ['Given I want to purchase 1 widgets', 'And a widget costs $10', 'When I buy the widgets', 'Then I should be billed $10']
-        childSteps3 == ['Given I want to purchase 2 widgets', 'And a widget costs $10', 'When I buy the widgets', 'Then I should be billed $20']
+        childSteps1 == ['Given I have $100','Given I want to purchase 0 widgets', 'And a widget costs $10', 'When I buy the widgets', 'Then I should be billed $0']
+        childSteps2 == ['Given I have $100','Given I want to purchase 1 widgets', 'And a widget costs $10', 'When I buy the widgets', 'Then I should be billed $10']
+        childSteps3 == ['Given I have $100','Given I want to purchase 2 widgets', 'And a widget costs $10', 'When I buy the widgets', 'Then I should be billed $20']
 
         and:
-        testOutcome.dataTable.rows.collect { it.result } == [SUCCESS, SUCCESS, SUCCESS, SUCCESS, SUCCESS]
+        recordedTestOutcomes[0].dataTable.rows.collect { it.result } == [SUCCESS, SUCCESS, SUCCESS, SUCCESS, SUCCESS, SUCCESS, SUCCESS]
+        recordedTestOutcomes[1].dataTable.rows.collect { it.result } == [FAILURE, SUCCESS, SUCCESS]
 
         and:
         testOutcome.exampleFields == ["amount", "cost","total"]
@@ -118,39 +122,38 @@ class WhenCreatingSerenityTestOutcomesForTableDrivenScenarios extends Specificat
 
     }
 
-//    TODO:
-//    def "should handle multiple example tables with backgrounds"() {
-//        given:
-//        def runtime = serenityRunnerForCucumberTestRunner(BasicArithemticWithTablesAndBackgroundScenario.class, outputDirectory);
-//
-//        when:
-//        runtime.run();
-//        def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory);
-//        def testOutcome = recordedTestOutcomes[0]
-//
-//        then:
-//        testOutcome.title == "Many additions"
-//
-//        and:
-//        testOutcome.dataTable.dataSets.size() == 2
-//
-//        and:
-//        recordedTestOutcomes.size() == 1
-//        testOutcome.stepCount == 5
-//
-//        and:
-//        testOutcome.backgroundDescription == "The calculator should be set up and all that"
-//        and:
-//        testOutcome.dataTable.dataSets[0].name == "Single digits"
-//        testOutcome.dataTable.dataSets[0].description == "With just one digit"
-//        testOutcome.dataTable.dataSets[0].rows.size() == 2
-//
-//        and:
-//        testOutcome.dataTable.dataSets[1].name == "Double digits"
-//        testOutcome.dataTable.dataSets[1].description == "With more digits than one"
-//        testOutcome.dataTable.dataSets[1].rows.size() == 3
-//
-//    }
+    def "should handle multiple example tables with backgrounds"() {
+        given:
+        def runtime = serenityRunnerForCucumberTestRunner(BasicArithemticWithTablesAndBackgroundScenario.class, outputDirectory);
+
+        when:
+        runtime.run();
+        def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory);
+        def testOutcome = recordedTestOutcomes[0]
+
+        then:
+        testOutcome.title == "Many additions"
+
+        and:
+        testOutcome.dataTable.dataSets.size() == 2
+
+        and:
+        recordedTestOutcomes.size() == 1
+        testOutcome.stepCount == 5
+
+        and:
+        testOutcome.backgroundDescription == "The calculator should be set up and all that"
+        and:
+        testOutcome.dataTable.dataSets[0].name == "Single digits"
+        testOutcome.dataTable.dataSets[0].description == "With just one digit"
+        testOutcome.dataTable.dataSets[0].rows.size() == 2
+
+        and:
+        testOutcome.dataTable.dataSets[1].name == "Double digits"
+        testOutcome.dataTable.dataSets[1].description == "With more digits than one"
+        testOutcome.dataTable.dataSets[1].rows.size() == 3
+
+    }
 
 
 

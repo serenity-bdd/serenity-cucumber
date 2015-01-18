@@ -15,6 +15,11 @@ public class SampleWidgetSteps {
     private int cost;
     private int billedPrice;
 
+    @Given("I have \\$(\\d+)")
+    public void iHaveMoney(int money) {
+
+    }
+
     @Given("I want to purchase (\\d+) widgets")
     public void wantToPurchaseWidgets(int quantity) {
         this.quantity = quantity;
