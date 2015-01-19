@@ -86,7 +86,10 @@ dependencies {
     compile "info.cukes:cucumber-java:${cucumberJVMVersion}"
     compile "info.cukes:cucumber-junit:${cucumberJVMVersion}"
     compile "junit:junit:4.12"
-    compile 'org.reflections:reflections:0.9.8'
+    compile ('org.reflections:reflections:0.9.8') {
+        exclude group: 'com.google.guava', module: 'guava'
+        exclude group: 'xml-apis', module: 'xml-apis'
+    }
 
     testCompile "ch.qos.logback:logback-classic:1.0.13"
     testCompile 'org.easytesting:fest-assert:1.4'
