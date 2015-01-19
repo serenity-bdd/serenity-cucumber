@@ -1,7 +1,7 @@
 package cucumber.runtime;
 
 import cucumber.runtime.java.ObjectFactory;
-import net.thucydides.core.Thucydides;
+import net.serenitybdd.core.Serenity;
 import net.thucydides.core.pages.Pages;
 import net.thucydides.core.webdriver.ThucydidesWebDriverSupport;
 
@@ -9,7 +9,7 @@ import java.lang.reflect.Constructor;
 import java.util.*;
 
 /**
- * Thucydides factory for cucumber tests.
+ * Serenity factory for cucumber tests.
  *
  * @author Liviu Carausu (liviu.carausu@gmail.com).
  */
@@ -53,7 +53,7 @@ public class SerenityObjectFactory implements ObjectFactory {
         } catch (Exception e) {
             throw new CucumberException(String.format("Failed to instantiate %s", type), e);
         }
-        Thucydides.initializeWithNoStepListener(instance);
+        Serenity.initializeWithNoStepListener(instance);
         instances.put(type, instance);
         return instance;
     }

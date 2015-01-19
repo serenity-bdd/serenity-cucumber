@@ -44,7 +44,7 @@ ext {
         bintrayApiKey = ''
     }
     serenityCoreVersion = '1.0.24'
-    cucumberJVMVersion = '1.2.0'
+    cucumberJVMVersion = '1.2.2'
 
     versionCounter = new ProjectVersionCounter(isRelease: project.hasProperty("releaseBuild"))
 
@@ -85,7 +85,7 @@ dependencies {
     compile "net.serenity-bdd:core:${serenityCoreVersion}"
     compile "info.cukes:cucumber-java:${cucumberJVMVersion}"
     compile "info.cukes:cucumber-junit:${cucumberJVMVersion}"
-    compile "junit:junit:4.11"
+    compile "junit:junit:4.12"
     compile 'org.reflections:reflections:0.9.8'
 
     testCompile "ch.qos.logback:logback-classic:1.0.13"
