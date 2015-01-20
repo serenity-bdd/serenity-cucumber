@@ -86,12 +86,15 @@ dependencies {
     compile "info.cukes:cucumber-java:${cucumberJVMVersion}"
     compile "info.cukes:cucumber-junit:${cucumberJVMVersion}"
     compile "junit:junit:4.12"
-    compile 'org.reflections:reflections:0.9.8'
+    compile ('org.reflections:reflections:0.9.8') {
+        exclude group: 'com.google.guava', module: 'guava'
+        exclude group: 'xml-apis', module: 'xml-apis'
+    }
 
     testCompile "ch.qos.logback:logback-classic:1.0.13"
     testCompile 'org.easytesting:fest-assert:1.4'
     testCompile 'org.slf4j:slf4j-log4j12:1.7.7'
-    testCompile 'org.codehaus.groovy:groovy-all:2.3.3'
+    testCompile 'org.codehaus.groovy:groovy-all:2.3.6'
     testCompile("org.spockframework:spock-core:0.7-groovy-2.0") {
         exclude group: "junit"
     }
