@@ -44,6 +44,5 @@ public class SampleWidgetSteps {
     @Then("I should be billed \\$(\\d+)")
     public void shouldBeBilled(int totalPrice) {
         widgetSteps.shouldBeBilled(billedPrice, totalPrice);
-
     }
 }

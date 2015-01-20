@@ -53,7 +53,7 @@ public class SerenityObjectFactory implements ObjectFactory {
         } catch (Exception e) {
             throw new CucumberException(String.format("Failed to instantiate %s", type), e);
         }
-        Serenity.initializeWithNoStepListener(instance);
+        Serenity.initializeWithNoStepListener(instance).throwExceptionsImmediately();
         instances.put(type, instance);
         return instance;
     }

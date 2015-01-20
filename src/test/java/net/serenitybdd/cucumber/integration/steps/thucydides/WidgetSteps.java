@@ -1,5 +1,6 @@
 package net.serenitybdd.cucumber.integration.steps.thucydides;
 
+import cucumber.api.PendingException;
 import cucumber.runtime.CucumberException;
 import net.thucydides.core.annotations.Step;
 
@@ -13,7 +14,6 @@ public class WidgetSteps {
     @Step
     public void shouldBeBilled(int billedPrice, int totalPrice) {
         assertThat(billedPrice).isEqualTo(totalPrice);
-        throw new CucumberException("Oh crap");
     }
 
 }
