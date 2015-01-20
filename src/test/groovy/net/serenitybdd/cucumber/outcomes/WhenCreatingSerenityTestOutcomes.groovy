@@ -89,7 +89,7 @@ class WhenCreatingSerenityTestOutcomes extends Specification {
         then:
         testOutcome.result == TestResult.FAILURE
         and:
-        stepResults == [TestResult.SUCCESS,TestResult.SUCCESS,TestResult.SUCCESS,TestResult.FAILURE]
+        stepResults == [TestResult.SUCCESS,TestResult.SUCCESS,TestResult.SUCCESS,TestResult.FAILURE, TestResult.SKIPPED]
         and:
         testOutcome.testSteps[3].errorMessage.contains("expected:<[2]0> but was:<[1]0>")
     }
