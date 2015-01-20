@@ -3,6 +3,9 @@ package net.serenitybdd.cucumber.integration.steps;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
+import javassist.tools.reflect.Sample;
+import net.serenitybdd.cucumber.integration.steps.thucydides.WidgetSteps;
+import net.thucydides.core.annotations.Steps;
 
 import static org.fest.assertions.Assertions.assertThat;
 
@@ -14,6 +17,9 @@ public class SampleWidgetSteps {
     private int quantity;
     private int cost;
     private int billedPrice;
+
+    @Steps
+    WidgetSteps widgetSteps;
 
     @Given("I have \\$(\\d+)")
     public void iHaveMoney(int money) {
@@ -37,6 +43,7 @@ public class SampleWidgetSteps {
 
     @Then("I should be billed \\$(\\d+)")
     public void shouldBeBilled(int totalPrice) {
-        assertThat(billedPrice).isEqualTo(totalPrice);
+        widgetSteps.shouldBeBilled(billedPrice, totalPrice);
+
     }
 }

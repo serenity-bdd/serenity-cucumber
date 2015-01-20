@@ -27,19 +27,19 @@ public class CucumberWithSerenity extends Cucumber {
     }
 
     /**
-     * Create the Runtime. Sets the Thucydides runtime.
+     * Create the Runtime. Sets the Serenity runtime.
      */
     protected cucumber.runtime.Runtime createRuntime(ResourceLoader resourceLoader, ClassLoader classLoader,
                                                      RuntimeOptions runtimeOptions) throws InitializationError, IOException {
-        return createThucydidesEnabledRuntime(resourceLoader, classLoader, runtimeOptions);
+        return createSerenityEnabledRuntime(resourceLoader, classLoader, runtimeOptions);
     }
 
-    private Runtime createThucydidesEnabledRuntime(ResourceLoader resourceLoader, ClassLoader classLoader, RuntimeOptions runtimeOptions) {
+    private Runtime createSerenityEnabledRuntime(ResourceLoader resourceLoader, ClassLoader classLoader, RuntimeOptions runtimeOptions) {
         Configuration systemConfiguration = Injectors.getInjector().getInstance(Configuration.class);
-        return createThucydidesEnabledRuntime(resourceLoader, classLoader, runtimeOptions, systemConfiguration);
+        return createSerenityEnabledRuntime(resourceLoader, classLoader, runtimeOptions, systemConfiguration);
     }
 
-    public static Runtime createThucydidesEnabledRuntime(ResourceLoader resourceLoader, ClassLoader classLoader, RuntimeOptions runtimeOptions, Configuration systemConfiguration) {
+    public static Runtime createSerenityEnabledRuntime(ResourceLoader resourceLoader, ClassLoader classLoader, RuntimeOptions runtimeOptions, Configuration systemConfiguration) {
         ClassFinder classFinder = new ResourceLoaderClassFinder(resourceLoader, classLoader);
         SerenityReporter reporter = new SerenityReporter(systemConfiguration);
         runtimeOptions.addPlugin(reporter);

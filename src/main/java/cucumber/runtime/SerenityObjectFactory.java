@@ -20,11 +20,11 @@ public class SerenityObjectFactory implements ObjectFactory {
 
     private final Map<Class<?>, Object> instances = Collections.synchronizedMap(new HashMap<Class<?>, Object>());
 
-    public void start() {
-    }
+    public void start() {}
 
     public void stop() {
         instances.clear();
+        Serenity.done();
     }
 
     public void addClass(Class<?> clazz) {

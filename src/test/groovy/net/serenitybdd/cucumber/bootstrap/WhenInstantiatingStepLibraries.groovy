@@ -1,5 +1,6 @@
 package net.serenitybdd.cucumber.bootstrap
 
+import net.serenitybdd.core.Serenity
 import net.thucydides.core.Thucydides
 import net.thucydides.core.annotations.Step
 import net.thucydides.core.annotations.Steps
@@ -33,7 +34,7 @@ class WhenInstantiatingStepLibraries extends Specification {
         given: "a step definition class containing a step library"
         def sampleStepDefinitions = new SampleStepDefinitions()
         when: "we inject the step libraries"
-        Thucydides.initialize(sampleStepDefinitions)
+        Serenity.initialize(sampleStepDefinitions)
         then: "the step library field should be initialized"
         sampleStepDefinitions.stepLibrary != null
     }
@@ -42,7 +43,7 @@ class WhenInstantiatingStepLibraries extends Specification {
         given: "a step definition class containing a step library"
         def sampleStepDefinitions = new SampleStepDefinitions()
         when: "we inject the step libraries"
-        Thucydides.initialize(sampleStepDefinitions)
+        Serenity.initialize(sampleStepDefinitions)
         then: "the page object field in the step library should be initialized"
         sampleStepDefinitions.stepLibrary.pageObject != null
     }

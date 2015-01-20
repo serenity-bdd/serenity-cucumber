@@ -39,7 +39,7 @@ public class CucumberRunner {
 
         Configuration systemConfiguration = new SystemPropertiesConfiguration(environmentVariables);
         systemConfiguration.setOutputDirectory(outputDirectory);
-        return CucumberWithSerenity.createThucydidesEnabledRuntime(resourceLoader, classLoader, runtimeOptions, systemConfiguration);
+        return CucumberWithSerenity.createSerenityEnabledRuntime(resourceLoader, classLoader, runtimeOptions, systemConfiguration);
     }
 
     public static cucumber.runtime.Runtime serenityRunnerForCucumberTestRunner(Class testClass, Configuration systemConfiguration) {
@@ -48,7 +48,7 @@ public class CucumberRunner {
         RuntimeOptionsFactory runtimeOptionsFactory = new RuntimeOptionsFactory(testClass);
         RuntimeOptions runtimeOptions = runtimeOptionsFactory.create();
 
-        return CucumberWithSerenity.createThucydidesEnabledRuntime(resourceLoader, classLoader, runtimeOptions, systemConfiguration);
+        return CucumberWithSerenity.createSerenityEnabledRuntime(resourceLoader, classLoader, runtimeOptions, systemConfiguration);
     }
 
 }

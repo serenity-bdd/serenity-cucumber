@@ -13,6 +13,7 @@ import gherkin.formatter.model.DataTableRow;
 import net.serenitybdd.core.Serenity;
 import net.serenitybdd.core.SerenityListeners;
 import net.serenitybdd.core.SerenityReports;
+import net.serenitybdd.cucumber.util.SerenityResultOverride;
 import net.thucydides.core.model.*;
 import net.thucydides.core.reports.ReportService;
 import net.thucydides.core.steps.BaseStepListener;
@@ -460,6 +461,12 @@ public class SerenityReporter implements Formatter, Reporter {
 
     @Override
     public void result(Result result) {
+
+        Optional<TestResult> nestedStepResult = latestNestedStepResult();
+        if (nestedStepResult.or(TestResult.SUCCESS) != TestResult.SUCCESS) {
+            result = SerenityResultOverride.override(result, latestNestedStep());
+        }
+
         Step currentStep = stepQueue.poll();
         if (Result.PASSED.equals(result.getStatus())) {
             StepEventBus.getEventBus().stepFinished();
@@ -483,6 +490,18 @@ public class SerenityReporter implements Formatter, Reporter {
                 updateSkippedResults();
                 StepEventBus.getEventBus().testFinished();
             }
+        }
+    }
+
+    private TestStep latestNestedStep() {
+        return StepEventBus.getEventBus().getCurrentStep().orNull();
+    }
+
+    private Optional<TestResult> latestNestedStepResult() {
+        if (StepEventBus.getEventBus().getCurrentStep().isPresent()) {
+            return Optional.of(StepEventBus.getEventBus().getCurrentStep().get().getResult());
+        } else {
+            return Optional.absent();
         }
     }
 
