@@ -5,7 +5,7 @@ import cucumber.api.java.en.Then;
 import net.thucydides.core.annotations.Steps;
 import net.serenitybdd.cucumber.integration.steps.thucydides.SampleSteps;
 
-import static org.fest.assertions.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;;
 
 /**
  * Created by john on 15/07/2014.
