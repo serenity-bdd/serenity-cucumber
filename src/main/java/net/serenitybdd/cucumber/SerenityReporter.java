@@ -365,11 +365,11 @@ public class SerenityReporter implements Formatter, Reporter {
     }
 
     private void startScenario(Scenario scenario) {
+        getThucydidesListeners().withDriver(ThucydidesWebDriverSupport.getDriver());
         StepEventBus.getEventBus().testStarted(scenario.getName());
         StepEventBus.getEventBus().addDescriptionToCurrentTest(scenario.getDescription());
         StepEventBus.getEventBus().addTagsToCurrentTest(convertCucumberTags(currentFeature.getTags()));
         StepEventBus.getEventBus().addTagsToCurrentTest(convertCucumberTags(scenario.getTags()));
-        getThucydidesListeners().withDriver(ThucydidesWebDriverSupport.getDriver());
     }
 
 
@@ -392,6 +392,7 @@ public class SerenityReporter implements Formatter, Reporter {
 
     private void startExample() {
         Map<String, String> data = exampleRows.get(currentExample);
+        getThucydidesListeners().withDriver(ThucydidesWebDriverSupport.getDriver());
         StepEventBus.getEventBus().clearStepFailures();
         StepEventBus.getEventBus().exampleStarted(data);
         currentExample++;

@@ -266,7 +266,7 @@ It goes for two lines"""
         recordedTestOutcomes.size() == 2
 
         and:
-        recordedTestOutcomes.collect { it.methodName } == ["Addition", "Another Addition"]
+        recordedTestOutcomes.collect { it.name } == ["Addition", "Another Addition"]
 
         and:
         recordedTestOutcomes[0].stepCount == 3
