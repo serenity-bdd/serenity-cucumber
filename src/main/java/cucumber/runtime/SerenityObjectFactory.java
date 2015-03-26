@@ -24,7 +24,7 @@ public class SerenityObjectFactory implements ObjectFactory {
 
     public void stop() {
         instances.clear();
-        Serenity.done();
+        Serenity.done(false);
     }
 
     public void addClass(Class<?> clazz) {

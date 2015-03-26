@@ -13,6 +13,8 @@ import gherkin.formatter.model.DataTableRow;
 import net.serenitybdd.core.Serenity;
 import net.serenitybdd.core.SerenityListeners;
 import net.serenitybdd.core.SerenityReports;
+import net.thucydides.core.ThucydidesSystemProperty;
+import net.thucydides.core.guice.Injectors;
 import net.thucydides.core.model.*;
 import net.thucydides.core.model.stacktrace.FailureCause;
 import net.thucydides.core.reports.ReportService;
@@ -71,11 +73,14 @@ public class SerenityReporter implements Formatter, Reporter {
     private String defaultFeatureName;
     private String defaultFeatureId;
 
+    private boolean uniqueBrowserTag = false;
+
     private final static String FEATURES_ROOT_PATH = "features";
 
 
     private static Optional<TestResult> forcedStoryResult = Optional.absent();
     private static Optional<TestResult> forcedScenarioResult = Optional.absent();
+
 
     private void clearStoryResult() {
         forcedStoryResult = Optional.absent();
@@ -220,23 +225,43 @@ public class SerenityReporter implements Formatter, Reporter {
 
     private void configureDriver(Feature feature) {
         StepEventBus.getEventBus().setUniqueSession(systemConfiguration.getUseUniqueBrowser());
-        String requestedDriver = getDriverFrom(feature);
+
+        List<String> tags = getTagNamesFrom(feature.getTags());
+
+        String requestedDriver = getDriverFrom(tags);
         if (StringUtils.isNotEmpty(requestedDriver)) {
             ThucydidesWebDriverSupport.initialize(requestedDriver);
         } else {
             ThucydidesWebDriverSupport.initialize();
         }
+        uniqueBrowserTag = getUniqueBrowserTagFrom(tags);
     }
 
-    private String getDriverFrom(Feature feature) {
-        List<Tag> tags = feature.getTags();
-        String requestedDriver = null;
+    private List<String> getTagNamesFrom(List<Tag> tags) {
+        List<String> tagNames = Lists.newArrayList();
         for (Tag tag : tags) {
-            if (tag.getName().startsWith("@driver:")) {
-                requestedDriver = tag.getName().substring(8);
+            tagNames.add(tag.getName());
+        }
+        return tagNames;
+    }
+
+    private String getDriverFrom(List<String> tags) {
+        String requestedDriver = null;
+        for (String tag : tags) {
+            if (tag.startsWith("@driver:")) {
+                requestedDriver = tag.substring(8);
             }
         }
         return requestedDriver;
+    }
+
+    private boolean getUniqueBrowserTagFrom(List<String> tags) {
+        for (String tag : tags) {
+            if (tag.equalsIgnoreCase("@uniqueBrowser")) {
+                return true;
+            }
+        }
+        return false;
     }
 
 
@@ -293,7 +318,7 @@ public class SerenityReporter implements Formatter, Reporter {
         List<Map<String, String>> rows = Lists.newArrayList();
 
         for (int row = 1; row < examplesTableRows.size(); row++) {
-            Map<String, String> rowValues = Maps.newHashMap();
+            Map<String, String> rowValues = Maps.newLinkedHashMap();
             int column = 0;
             for (String cellValue : examplesTableRows.get(row).getCells()) {
                 String columnName = headers.get(column++);
@@ -307,13 +332,12 @@ public class SerenityReporter implements Formatter, Reporter {
     private void addRow(List<Map<String, String>> exampleRows,
                         List<String> headers,
                         ExamplesTableRow currentTableRow) {
-        Map<String, String> row = new HashMap<>();
+        Map<String, String> row = new LinkedHashMap<>();
         for (int j = 0; j < headers.size(); j++) {
             row.put(headers.get(j), currentTableRow.getCells().get(j));
         }
         exampleRows.add(row);
     }
-
 
     private DataTable thucydidesTableFrom(List<String> headers,
                                           List<Map<String, String>> rows,
@@ -370,6 +394,9 @@ public class SerenityReporter implements Formatter, Reporter {
         StepEventBus.getEventBus().addDescriptionToCurrentTest(scenario.getDescription());
         StepEventBus.getEventBus().addTagsToCurrentTest(convertCucumberTags(currentFeature.getTags()));
         StepEventBus.getEventBus().addTagsToCurrentTest(convertCucumberTags(scenario.getTags()));
+
+        checkForSkipped(currentFeature);
+        checkForPending(currentFeature);
     }
 
 
@@ -388,7 +415,21 @@ public class SerenityReporter implements Formatter, Reporter {
         } else {
             generateReports();
         }
+        if (!useUniqueBrowser(scenario)) {
+            ThucydidesWebDriverSupport.closeCurrentDrivers();
+        }
     }
+
+    private boolean useUniqueBrowser(Scenario scenario) {
+        return (uniqueBrowserTag
+                || ThucydidesSystemProperty.THUCYDIDES_USE_UNIQUE_BROWSER.booleanFrom(systemConfiguration.getEnvironmentVariables(), false)
+                || useUniqueBrowserForThisScenario(scenario));
+    }
+
+    private boolean useUniqueBrowserForThisScenario(Scenario scenario) {
+        return getUniqueBrowserTagFrom(getTagNamesFrom(scenario.getTags()));
+    }
+
 
     private void startExample() {
         Map<String, String> data = exampleRows.get(currentExample);
@@ -433,9 +474,6 @@ public class SerenityReporter implements Formatter, Reporter {
     @Override
     public void done() {
         assureTestSuiteFinished();
-//        if (nestedResult != null) {
-//            throw new RuntimeException(nestedResult.toException());
-//        }
     }
 
     @Override
@@ -467,15 +505,6 @@ public class SerenityReporter implements Formatter, Reporter {
 
     @Override
     public void result(Result result) {
-
-//        Optional<TestResult> nestedStepResult = latestNestedStepResult();
-//        if (nestedStepResult.or(TestResult.SUCCESS) != TestResult.SUCCESS) {
-//            result = SerenityResultOverride.override(result, latestNestedStep());
-//            if (latestNestedStep().getNestedException() != null) {
-//                nestedResult = latestNestedStep().getNestedException();
-//            }
-//        }
-
         Step currentStep = stepQueue.poll();
         if (Result.PASSED.equals(result.getStatus())) {
             StepEventBus.getEventBus().stepFinished();
