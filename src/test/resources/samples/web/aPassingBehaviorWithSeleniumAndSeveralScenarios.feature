@@ -1,6 +1,5 @@
 @driver:phantomjs
 @UniqueBrowser
-
 Feature: A feature that uses two selenium scenarios
 
 Scenario: A web scenario that uses selenium

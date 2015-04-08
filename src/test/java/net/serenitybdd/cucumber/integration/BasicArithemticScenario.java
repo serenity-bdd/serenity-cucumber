@@ -8,5 +8,5 @@ import org.junit.runner.RunWith;
  * Created by john on 23/07/2014.
  */
 @RunWith(CucumberWithSerenity.class)
-@CucumberOptions(features="src/test/resources/samples/calculator/basic_arithmetic.feature")
+@CucumberOptions(features="src/test/resources/samples/calculator")
 public class BasicArithemticScenario {}
