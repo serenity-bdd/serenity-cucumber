@@ -270,6 +270,7 @@ public class SerenityReporter implements Formatter, Reporter {
     @Override
     public void scenarioOutline(ScenarioOutline scenarioOutline) {
         addingScenarioOutlineSteps = true;
+        currentScenarioId = "";
     }
 
     String currentScenarioId;
