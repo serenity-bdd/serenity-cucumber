@@ -270,7 +270,6 @@ public class SerenityReporter implements Formatter, Reporter {
     @Override
     public void scenarioOutline(ScenarioOutline scenarioOutline) {
         addingScenarioOutlineSteps = true;
-        currentScenarioId = "";
     }
 
     String currentScenarioId;
@@ -298,9 +297,9 @@ public class SerenityReporter implements Formatter, Reporter {
         currentScenarioId = scenarioId;
     }
 
-    private String scenarioIdFrom(String scenarioExampleId) {
-        String[] idElements = scenarioExampleId.split(";");
-        return (idElements.length >= 2) ? idElements[1] : "";
+    private String scenarioIdFrom(String scenarioIdOrExampleId) {
+        String[] idElements = scenarioIdOrExampleId.split(";");
+        return (idElements.length >= 2) ? String.format("%s;%s", defaultFeatureId, idElements[1]) : "";
     }
 
     private void reinitializeExamples() {
@@ -372,8 +371,8 @@ public class SerenityReporter implements Formatter, Reporter {
     @Override
     public void startOfScenarioLifeCycle(Scenario scenario) {
 
-        boolean newScenario = !scenario.getName().equals(currentScenario);
-        currentScenario = scenario.getName();
+        boolean newScenario = !scenarioIdFrom(scenario.getId()).equals(currentScenario);
+        currentScenario = scenarioIdFrom(scenario.getId());
 
         if (examplesRunning) {
 
