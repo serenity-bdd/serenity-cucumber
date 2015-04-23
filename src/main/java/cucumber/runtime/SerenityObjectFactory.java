@@ -44,6 +44,12 @@ public class SerenityObjectFactory implements ObjectFactory {
      * using a constructor with a Pages parameter.
      */
     private <T> T cacheNewInstance(Class<T> type) {
+        T instance = newInstance(type);
+        instances.put(type, instance);
+        return instance;
+    }
+
+    private <T> T newInstance(Class<T> type) {
         T instance;
         try {
             Constructor<T> constructor = type.getConstructor();
@@ -54,7 +60,6 @@ public class SerenityObjectFactory implements ObjectFactory {
             throw new CucumberException(String.format("Failed to instantiate %s", type), e);
         }
         Serenity.initializeWithNoStepListener(instance).throwExceptionsImmediately();
-        instances.put(type, instance);
         return instance;
     }
 

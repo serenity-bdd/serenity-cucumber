@@ -263,15 +263,15 @@ It goes for two lines"""
         def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory)
 
         then:
-        recordedTestOutcomes.size() == 3
+        recordedTestOutcomes.size() == 4
 
         and:
-        recordedTestOutcomes.collect { it.name } == ["Addition", "Another Addition","Many additions"]
-
+        recordedTestOutcomes.collect { it.name } == ["Addition", "Another Addition","Many additions","Many additions"]
         and:
         recordedTestOutcomes[0].stepCount == 3
         recordedTestOutcomes[1].stepCount == 3
-        recordedTestOutcomes[2].stepCount == 10
+        recordedTestOutcomes[2].stepCount == 5
+        recordedTestOutcomes[3].stepCount == 5
     }
 
     def "should read @issue tags"() {

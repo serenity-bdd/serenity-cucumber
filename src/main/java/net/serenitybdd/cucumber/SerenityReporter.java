@@ -151,7 +151,7 @@ public class SerenityReporter implements Formatter, Reporter {
         currentFeature = feature;
 
         configureDriver(feature);
-        getThucydidesListeners().withDriver(ThucydidesWebDriverSupport.getDriver());
+        getThucydidesListeners();//.withDriver(ThucydidesWebDriverSupport.getDriver());
         Story userStory = Story.withIdAndPath(feature.getId(), feature.getName(), currentUri).asFeature();
 
         if (!isEmpty(feature.getDescription())) {
@@ -389,7 +389,7 @@ public class SerenityReporter implements Formatter, Reporter {
     }
 
     private void startScenario(Scenario scenario) {
-        getThucydidesListeners().withDriver(ThucydidesWebDriverSupport.getDriver());
+        //getThucydidesListeners().withDriver(ThucydidesWebDriverSupport.getDriver());
         StepEventBus.getEventBus().testStarted(scenario.getName());
         StepEventBus.getEventBus().addDescriptionToCurrentTest(scenario.getDescription());
         StepEventBus.getEventBus().addTagsToCurrentTest(convertCucumberTags(currentFeature.getTags()));
@@ -433,7 +433,7 @@ public class SerenityReporter implements Formatter, Reporter {
 
     private void startExample() {
         Map<String, String> data = exampleRows.get(currentExample);
-        getThucydidesListeners().withDriver(ThucydidesWebDriverSupport.getDriver());
+//        getThucydidesListeners().withDriver(ThucydidesWebDriverSupport.getDriver());
         StepEventBus.getEventBus().clearStepFailures();
         StepEventBus.getEventBus().exampleStarted(data);
         currentExample++;
