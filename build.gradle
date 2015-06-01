@@ -2,6 +2,7 @@ import net.serenitybdd.builds.ProjectVersionCounter
 
 buildscript {
     repositories {
+        mavenLocal()
         jcenter()
         maven {
             url 'https://geonet.artifactoryonline.com/geonet/public-releases'
@@ -43,7 +44,7 @@ ext {
     if (!project.hasProperty("bintrayApiKey")) {
         bintrayApiKey = ''
     }
-    serenityCoreVersion = '1.0.47'
+    serenityCoreVersion = '1.0.48'
     cucumberJVMVersion = '1.2.2'
 
     versionCounter = new ProjectVersionCounter(isRelease: project.hasProperty("releaseBuild"))
@@ -91,7 +92,7 @@ configurations.all {
 
 
 dependencies {
-    compile "net.serenity-bdd:core:${serenityCoreVersion}"
+    compile "net.serenity-bdd:serenity-core:${serenityCoreVersion}"
     compile "info.cukes:cucumber-java:${cucumberJVMVersion}"
     compile "info.cukes:cucumber-junit:${cucumberJVMVersion}"
     compile "junit:junit:4.11"

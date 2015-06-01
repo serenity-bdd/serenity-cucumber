@@ -6,6 +6,7 @@ import net.thucydides.core.pages.Pages;
 import net.thucydides.core.webdriver.ThucydidesWebDriverSupport;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
@@ -20,7 +21,8 @@ public class SerenityObjectFactory implements ObjectFactory {
 
     private final Map<Class<?>, Object> instances = Collections.synchronizedMap(new HashMap<Class<?>, Object>());
 
-    public void start() {}
+    public void start() {
+    }
 
     public void stop() {
         instances.clear();
@@ -52,12 +54,14 @@ public class SerenityObjectFactory implements ObjectFactory {
     private <T> T newInstance(Class<T> type) {
         T instance;
         try {
-            Constructor<T> constructor = type.getConstructor();
-            instance = constructor.newInstance();
-        } catch (NoSuchMethodException e) {
-            instance = createNewPageEnabledStepCandidate(type);
-        } catch (Exception e) {
-            throw new CucumberException(String.format("Failed to instantiate %s", type), e);
+            if (hasConstructorWithPagesParameter(type)) {
+                instance = createNewPageEnabledStepCandidate(type);
+            } else {
+                Constructor<T> constructor = type.getConstructor();
+                instance = constructor.newInstance();
+            }
+        } catch (ReflectiveOperationException e) {
+            throw new CucumberException(String.format("Failed to instantiate %s - this class doesn't have an empty or a page enabled constructor\"", type), e);
         }
         Serenity.initializeWithNoStepListener(instance).throwExceptionsImmediately();
         return instance;
@@ -71,10 +75,22 @@ public class SerenityObjectFactory implements ObjectFactory {
             constructorArgs[0] = Pages.class;
             Constructor<T> constructor = type.getConstructor(constructorArgs);
             newInstance = constructor.newInstance(pageFactory);
+            Serenity.initialize(newInstance);
         } catch (Exception e) {
             throw new CucumberException(String.format("%s doesn't have an empty or a page enabled constructor.", type), e);
         }
         return newInstance;
+    }
+
+    private boolean hasConstructorWithPagesParameter(Class<?> type) {
+        Class[] constructorArgs = new Class[1];
+        constructorArgs[0] = Pages.class;
+        try {
+            type.getConstructor(constructorArgs);
+        } catch (NoSuchMethodException e) {
+            return false;
+        }
+        return true;
     }
 
 
