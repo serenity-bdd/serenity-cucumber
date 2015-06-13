@@ -151,7 +151,7 @@ public class SerenityReporter implements Formatter, Reporter {
         currentFeature = feature;
 
         configureDriver(feature);
-        getThucydidesListeners();//.withDriver(ThucydidesWebDriverSupport.getDriver());
+        getThucydidesListeners();
         Story userStory = Story.withIdAndPath(feature.getId(), feature.getName(), currentUri).asFeature();
 
         if (!isEmpty(feature.getDescription())) {

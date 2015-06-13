@@ -41,7 +41,7 @@ public class WhenRunningWebCucumberStories extends Specification {
 
         then:
         testOutcome.title == "A scenario that uses selenium"
-
+        testOutcome.tags
         and: "there should be one step for each row in the table"
         testOutcome.stepCount == 2
     }
