@@ -1,12 +1,11 @@
 package cucumber.runtime;
 
-import cucumber.runtime.java.ObjectFactory;
+import cucumber.api.java.ObjectFactory;
 import net.serenitybdd.core.Serenity;
 import net.thucydides.core.pages.Pages;
 import net.thucydides.core.webdriver.ThucydidesWebDriverSupport;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
@@ -29,8 +28,11 @@ public class SerenityObjectFactory implements ObjectFactory {
         Serenity.done(false);
     }
 
-    public void addClass(Class<?> clazz) {
-        classes.add(clazz);
+
+    @Override
+    public boolean addClass(Class<?> glueClass) {
+        classes.add(glueClass);
+        return true;
     }
 
     public <T> T getInstance(Class<T> type) {
