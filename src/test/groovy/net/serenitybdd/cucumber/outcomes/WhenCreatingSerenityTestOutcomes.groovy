@@ -170,14 +170,13 @@ Feature: A simple feature with tags
         def testOutcome = recordedTestOutcomes[0]
 
         then:
-        testOutcome.tags.size() == 6
+        testOutcome.tags.size() == 5
         and:
         testOutcome.tags.contains(TestTag.withName("A simple feature with tags").andType("feature"))
         testOutcome.tags.contains(TestTag.withName("strawberry").andType("flavor"))
         testOutcome.tags.contains(TestTag.withName("red").andType("color"))
         testOutcome.tags.contains(TestTag.withName("shouldPass").andType("tag"))
         testOutcome.tags.contains(TestTag.withName("in-progress").andType("tag"))
-        testOutcome.tags.contains(TestTag.withName("Samples/Simple scenario with tags").andType("story"))
     }
 
     def "should record the narrative text"() {

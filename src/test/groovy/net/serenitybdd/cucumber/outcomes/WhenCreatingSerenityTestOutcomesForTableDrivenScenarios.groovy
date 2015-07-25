@@ -90,7 +90,7 @@ class WhenCreatingSerenityTestOutcomesForTableDrivenScenarios extends Specificat
         testOutcome.dataTable.rows.collect { it.result } == [SUCCESS, SUCCESS, FAILURE, SUCCESS]
 
         and:
-        testOutcome.errorMessage == "expected:<[5]0> but was:<[2]0>"
+        testOutcome.errorMessage.contains "expected:<[5]0> but was:<[2]0>"
     }
 
 
