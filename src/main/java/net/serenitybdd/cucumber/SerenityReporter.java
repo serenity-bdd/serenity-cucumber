@@ -205,6 +205,10 @@ public class SerenityReporter implements Formatter, Reporter {
         return hasTag("@pending", tags);
     }
 
+    private boolean isManual(List<Tag> tags) {
+        return hasTag("@manual", tags);
+    }
+
     private boolean isSkippedOrWIP(List<Tag> tags) {
         for (Tag tag : tags) {
             if (SKIPPED_TAGS.contains(tag.getName())) {
