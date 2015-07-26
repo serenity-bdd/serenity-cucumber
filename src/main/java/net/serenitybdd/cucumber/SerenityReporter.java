@@ -201,6 +201,13 @@ public class SerenityReporter implements Formatter, Reporter {
         }
     }
 
+    private void checkForManual(Scenario scenario) {
+        if (isManual(scenario.getTags())) {
+            StepEventBus.getEventBus().testIsManual();
+            StepEventBus.getEventBus().suspendTest();
+        }
+    }
+
     private boolean isPending(List<Tag> tags) {
         return hasTag("@pending", tags);
     }
@@ -401,6 +408,7 @@ public class SerenityReporter implements Formatter, Reporter {
 
         checkForSkipped(currentFeature);
         checkForPending(currentFeature);
+        checkForManual(scenario);
     }
 
 
