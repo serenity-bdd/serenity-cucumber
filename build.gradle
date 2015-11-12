@@ -44,7 +44,7 @@ ext {
     if (!project.hasProperty("bintrayApiKey")) {
         bintrayApiKey = ''
     }
-    serenityCoreVersion = '1.1.1'
+    serenityCoreVersion = '1.1.22-rc.3'
     cucumberJVMVersion = '1.2.4'
 
     versionCounter = new ProjectVersionCounter(isRelease: project.hasProperty("releaseBuild"))
@@ -85,7 +85,7 @@ test {
 configurations.all {
     resolutionStrategy {
         // fail fast on dependency convergence problems
-        failOnVersionConflict()
+        //failOnVersionConflict()
     }
 }
 
@@ -93,8 +93,10 @@ configurations.all {
 dependencies {
     compile "net.serenity-bdd:serenity-core:${serenityCoreVersion}"
     compile "info.cukes:cucumber-java:${cucumberJVMVersion}"
-    compile "info.cukes:cucumber-junit:${cucumberJVMVersion}"
-    compile "junit:junit:4.11"
+    compile("info.cukes:cucumber-junit:${cucumberJVMVersion}") {
+            exclude group: "junit"
+}
+    compile "junit:junit:4.12"
 
     testCompile ('ch.qos.logback:logback-classic:1.0.13') {
         exclude module: "slf4j-api"

@@ -14,9 +14,9 @@ import net.serenitybdd.core.Serenity;
 import net.serenitybdd.core.SerenityListeners;
 import net.serenitybdd.core.SerenityReports;
 import net.thucydides.core.ThucydidesSystemProperty;
-import net.thucydides.core.guice.Injectors;
 import net.thucydides.core.model.*;
 import net.thucydides.core.model.stacktrace.FailureCause;
+import net.thucydides.core.model.stacktrace.RootCauseAnalyzer;
 import net.thucydides.core.reports.ReportService;
 import net.thucydides.core.steps.BaseStepListener;
 import net.thucydides.core.steps.ExecutedStepDescription;
@@ -471,6 +471,7 @@ public class SerenityReporter implements Formatter, Reporter {
 
     @Override
     public void scenario(Scenario scenario) {
+        configureDriver(currentFeature);
         clearScenarioResult();
         checkForPending(scenario);
         checkForSkipped(scenario);
@@ -557,7 +558,7 @@ public class SerenityReporter implements Formatter, Reporter {
     }
 
     public void failed(String stepTitle, Throwable cause) {
-        Throwable rootCause = cause.getCause() != null ? cause.getCause() : cause;
+        Throwable rootCause = new RootCauseAnalyzer(cause).getRootCause().toException();
         StepEventBus.getEventBus().updateCurrentStepTitle(stepTitle);
         if (isAssumptionFailure(rootCause)) {
             StepEventBus.getEventBus().assumptionViolated(rootCause.getMessage());

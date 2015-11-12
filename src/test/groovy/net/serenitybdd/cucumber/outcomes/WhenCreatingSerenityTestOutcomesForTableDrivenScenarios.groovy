@@ -1,18 +1,16 @@
 package net.serenitybdd.cucumber.outcomes
-
 import com.github.goldin.spock.extensions.tempdir.TempDir
-import net.thucydides.core.reports.OutcomeFormat
-import net.thucydides.core.reports.TestOutcomeLoader
 import net.serenitybdd.cucumber.integration.BasicArithemticWithTablesAndBackgroundScenario
 import net.serenitybdd.cucumber.integration.BasicArithemticWithTablesScenario
 import net.serenitybdd.cucumber.integration.SimpleTableScenario
 import net.serenitybdd.cucumber.integration.SimpleTableScenarioWithFailures
+import net.thucydides.core.reports.OutcomeFormat
+import net.thucydides.core.reports.TestOutcomeLoader
 import spock.lang.Specification
 
+import static net.serenitybdd.cucumber.util.CucumberRunner.serenityRunnerForCucumberTestRunner
 import static net.thucydides.core.model.TestResult.FAILURE
 import static net.thucydides.core.model.TestResult.SUCCESS
-import static net.serenitybdd.cucumber.util.CucumberRunner.serenityRunnerForCucumberTestRunner
-
 /**
  * Created by john on 23/07/2014.
  */
