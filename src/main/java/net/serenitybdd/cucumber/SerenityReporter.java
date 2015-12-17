@@ -41,6 +41,7 @@ public class SerenityReporter implements Formatter, Reporter {
     private static final String CLOSE_PARAM_CHAR = "\uff60";
 
     private static final List<String> SKIPPED_TAGS = ImmutableList.of("@skip", "@wip");
+    public static final String PENDING_STATUS = "pending";
 
     private final Queue<Step> stepQueue;
 
@@ -418,7 +419,10 @@ public class SerenityReporter implements Formatter, Reporter {
             failed(stepTitleFrom(currentStep), result.getError());
         } else if (Result.SKIPPED.equals(result)) {
             StepEventBus.getEventBus().stepIgnored();
-        } else if (Result.UNDEFINED.equals(result)) {
+        } else if (PENDING_STATUS.equals(result.getStatus())) {
+            StepEventBus.getEventBus().stepPending();
+        }
+        else if (Result.UNDEFINED.equals(result)) {
             StepEventBus.getEventBus().stepStarted(ExecutedStepDescription.withTitle(stepTitleFrom(currentStep)));
             StepEventBus.getEventBus().stepPending();
         }

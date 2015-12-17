@@ -1,6 +1,8 @@
 package net.serenitybdd.cucumber.outcomes
 
 import com.github.goldin.spock.extensions.tempdir.TempDir
+import net.serenitybdd.cucumber.integration.TableScenarioThrowingPendingException
+import net.thucydides.core.model.TestResult
 import net.thucydides.core.reports.OutcomeFormat
 import net.thucydides.core.reports.TestOutcomeLoader
 import net.serenitybdd.cucumber.integration.BasicArithemticWithTablesAndBackgroundScenario
@@ -147,6 +149,34 @@ class WhenCreatingThucydidesTestOutcomesForTableDrivenScenarios extends Specific
 
     }
 
+    def "table scenarios throwing PendingException should be reported as Pending"() {
+        given:
+        def runtime = thucydidesRunnerForCucumberTestRunner(TableScenarioThrowingPendingException.class, outputDirectory);
+
+        when:
+        runtime.run();
+        def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory)
+
+        then:
+
+        recordedTestOutcomes.size() == 1
+        def testOutcome = recordedTestOutcomes[0]
+
+        and:
+        testOutcome.result == TestResult.PENDING
+        testOutcome.stepCount == 2
+
+        and:
+        testOutcome.dataTable.dataSets.size() == 1
+
+        and:
+        testOutcome.dataTable.dataSets[0].rows.size() == 2
+
+        and:
+        testOutcome.dataTable.dataSets[0].rows[0].getResult() == TestResult.PENDING
+        testOutcome.dataTable.dataSets[0].rows[1].getResult() == TestResult.PENDING
+
+    }
 
 
 }

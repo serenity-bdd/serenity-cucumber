@@ -1,6 +1,7 @@
 package net.serenitybdd.cucumber.outcomes
 
 import com.github.goldin.spock.extensions.tempdir.TempDir
+import net.serenitybdd.cucumber.integration.ScenarioThrowingPendingException
 import net.thucydides.core.model.TestOutcome
 import net.thucydides.core.model.TestResult
 import net.thucydides.core.model.TestStep
@@ -348,4 +349,27 @@ It goes for two lines"""
         steps2 == ['Given I want to purchase 4 widgets', 'And a widget costs $3', 'When I buy the widgets', 'Then I should be billed $12']
     }
 
+    def "test throwing PendingException should be reported as Pending"() {
+        given:
+        def runtime = thucydidesRunnerForCucumberTestRunner(ScenarioThrowingPendingException.class, outputDirectory);
+
+        when:
+        runtime.run();
+        def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory)
+
+        then:
+
+        recordedTestOutcomes.size() == 1
+        def testOutcome1 = recordedTestOutcomes[0]
+
+        and:
+        testOutcome1.result == TestResult.PENDING
+        testOutcome1.stepCount == 3
+
+        and:
+        testOutcome1.testSteps.get(0).getResult() == TestResult.PENDING;
+        testOutcome1.testSteps.get(1).getResult() == TestResult.IGNORED;
+        testOutcome1.testSteps.get(2).getResult() == TestResult.IGNORED;
+
+    }
 }
