@@ -401,17 +401,32 @@ public class SerenityReporter implements Formatter, Reporter {
     }
 
     private void startScenario(Scenario scenario) {
-        //getThucydidesListeners().withDriver(ThucydidesWebDriverSupport.getDriver());
         StepEventBus.getEventBus().testStarted(scenario.getName());
         StepEventBus.getEventBus().addDescriptionToCurrentTest(scenario.getDescription());
         StepEventBus.getEventBus().addTagsToCurrentTest(convertCucumberTags(currentFeature.getTags()));
         StepEventBus.getEventBus().addTagsToCurrentTest(convertCucumberTags(scenario.getTags()));
+
+        registerFeatureJiraIssues(currentFeature.getTags());
+        registerScenarioJiraIssues(scenario.getTags());
 
         checkForSkipped(currentFeature);
         checkForPending(currentFeature);
         checkForManual(scenario);
     }
 
+    private void registerFeatureJiraIssues(List<Tag> tags) {
+        List<String> issues = extractJiraIssueTags(tags);
+        if (!issues.isEmpty()) {
+            StepEventBus.getEventBus().addIssuesToCurrentStory(issues);
+        }
+    }
+
+    private void registerScenarioJiraIssues(List<Tag> tags) {
+        List<String> issues = extractJiraIssueTags(tags);
+        if (!issues.isEmpty()) {
+            StepEventBus.getEventBus().addIssuesToCurrentTest(issues);
+        }
+    }
 
     private List<TestTag> convertCucumberTags(List<Tag> cucumberTags) {
         List<TestTag> tags = Lists.newArrayList();
@@ -419,6 +434,21 @@ public class SerenityReporter implements Formatter, Reporter {
             tags.add(TestTag.withValue(tag.getName().substring(1)));
         }
         return ImmutableList.copyOf(tags);
+    }
+
+    private List<String> extractJiraIssueTags(List<Tag> cucumberTags) {
+        List<String> issues = Lists.newArrayList();
+        for (Tag tag : cucumberTags) {
+            if(tag.getName().startsWith("@issue:")) {
+                String tagIssueValue = tag.getName().substring("@issue:".length());
+                issues.add(tagIssueValue);
+            }
+            if(tag.getName().startsWith("@issues:")) {
+                String tagIssuesValues = tag.getName().substring("@issues:".length());
+                issues.addAll(Arrays.asList(tagIssuesValues.split(",")));
+            }
+        }
+        return issues;
     }
 
     @Override
