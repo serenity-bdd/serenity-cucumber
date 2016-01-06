@@ -1,7 +1,6 @@
 package net.serenitybdd.cucumber.outcomes
 
 import com.github.goldin.spock.extensions.tempdir.TempDir
-import net.serenitybdd.cucumber.integration.FeatureWithMoreIssuesTag
 import net.serenitybdd.cucumber.integration.FeatureWithNoName
 import net.serenitybdd.cucumber.integration.ScenariosWithTableInBackgroundSteps
 import net.serenitybdd.cucumber.integration.ScenarioThrowingPendingException
@@ -286,47 +285,6 @@ It goes for two lines"""
         }
         and:
         recordedTestOutcomes[0].tags.contains(TestTag.withName("ISSUE-456").andType("issue"))
-    }
-
-    def "should fill @issue keys"() {
-        given:
-        def runtime = serenityRunnerForCucumberTestRunner(BasicArithemticScenario.class, outputDirectory);
-
-        when:
-        runtime.run();
-        def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory)
-
-        then:
-        recordedTestOutcomes.each { outcome ->
-            outcome.tags.contains(TestTag.withName("ISSUE-123").andType("issue"))
-            outcome.getIssueKeys().contains("ISSUE-123");
-        }
-        and:
-        recordedTestOutcomes[0].tags.contains(TestTag.withName("ISSUE-456").andType("issue"))
-        recordedTestOutcomes[0].getIssueKeys().contains("ISSUE-123");
-        recordedTestOutcomes[0].getIssueKeys().contains("ISSUE-456");
-    }
-
-    def "should fill @issues keys"() {
-        given:
-        def runtime = serenityRunnerForCucumberTestRunner(FeatureWithMoreIssuesTag.class, outputDirectory);
-
-        when:
-        runtime.run();
-        def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory)
-
-        then:
-        recordedTestOutcomes.each { outcome ->
-            outcome.tags.contains(TestTag.withName("ISSUE-123,ISSUE-789").andType("issues"))
-            outcome.getIssueKeys().contains("ISSUE-123");
-            outcome.getIssueKeys().contains("ISSUE-789");
-        }
-        and:
-        recordedTestOutcomes[0].tags.contains(TestTag.withName("ISSUE-456,ISSUE-001").andType("issues"))
-        recordedTestOutcomes[0].getIssueKeys().contains("ISSUE-456");
-        recordedTestOutcomes[0].getIssueKeys().contains("ISSUE-001");
-        recordedTestOutcomes[0].getIssueKeys().contains("ISSUE-123");
-        recordedTestOutcomes[0].getIssueKeys().contains("ISSUE-789");
     }
 
     def "scenarios with the @pending tag should be reported as Pending"() {
