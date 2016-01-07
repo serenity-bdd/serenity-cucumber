@@ -6,5 +6,5 @@ import org.junit.runner.RunWith;
 
 
 @RunWith(Cucumber.class)
-@CucumberOptions(features="src/test/resources/samples/calculator/basic_arithmetic_more_issues.feature")
+@CucumberOptions(features="src/test/resources/samples/multiple_jira_issues.feature")
 public class FeatureWithMoreIssuesTag {}
