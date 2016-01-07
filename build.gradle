@@ -9,7 +9,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:0.6'
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.5'
     }
 }
 
@@ -69,7 +69,7 @@ task tagNewVersion() {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.1'
+    gradleVersion = '2.10'
 }
 
 test {
