@@ -78,7 +78,7 @@ test {
     exclude '**/integration/**'
     exclude '**/samples/**'
     exclude '**/*Sample*'
-    maxParallelForks = 4
+    maxParallelForks = Runtime.runtime.availableProcessors()
 }
 
 
