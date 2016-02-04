@@ -66,13 +66,12 @@ class WhenCreatingSerenityTestOutcomes extends Specification {
         runtime.run();
         def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory);
         def testOutcome = recordedTestOutcomes[0]
-        def stepResults = testOutcome.testSteps.collect { step -> step.result }
 
         then:
         testOutcome.result == TestResult.SUCCESS
 
         and:
-        stepResults == [TestResult.SUCCESS,TestResult.SUCCESS,TestResult.SUCCESS,TestResult.SUCCESS]
+        testOutcome.testSteps.collect { step -> step.result } == [TestResult.SUCCESS,TestResult.SUCCESS,TestResult.SUCCESS,TestResult.SUCCESS]
     }
 
     def "should record failures for a failing scenario"() {
