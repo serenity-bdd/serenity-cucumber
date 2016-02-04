@@ -150,7 +150,7 @@ public class WhenRunningWebCucumberStories extends Specification {
         then:
         systemConfiguration.getBaseUrl() == "some-base-url"
         systemConfiguration.getElementTimeout() == 5
-        systemConfiguration.getUseUniqueBrowser() == true
+        systemConfiguration.shouldUseAUniqueBrowser() == true
 
     }
 

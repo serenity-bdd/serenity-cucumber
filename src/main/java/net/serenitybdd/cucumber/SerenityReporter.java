@@ -236,7 +236,7 @@ public class SerenityReporter implements Formatter, Reporter {
     }
 
     private void configureDriver(Feature feature) {
-        StepEventBus.getEventBus().setUniqueSession(systemConfiguration.getUseUniqueBrowser());
+        StepEventBus.getEventBus().setUniqueSession(systemConfiguration.shouldUseAUniqueBrowser());
 
         List<String> tags = getTagNamesFrom(feature.getTags());
 
