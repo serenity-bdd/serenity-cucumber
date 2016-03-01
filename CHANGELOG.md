@@ -1,21 +1,23 @@
 ## Serenity BDD Cucumber Plugin change Log
 
-### upcoming (2016/02/18 14:34 +00:00)
+### upcoming (2016/03/01 07:15 +00:00)
  
 **Pull requests:**
  
+- [#43](https://github.com/serenity-bdd/serenity-cucumber/pull/43) Updated serenty core to 1.1.27 ([@YamStranger](https://github.com/YamStranger))
+- [#40](https://github.com/serenity-bdd/serenity-cucumber/pull/40) Updated serenity-core to 1.1.26 ([@YamStranger](https://github.com/YamStranger))
+- [#39](https://github.com/serenity-bdd/serenity-cucumber/pull/39) Updated contiributing guide - explaned multiline commits and pull requests name convention ([@YamStranger](https://github.com/YamStranger))
 - [#36](https://github.com/serenity-bdd/serenity-cucumber/pull/36) Updating serenity core to1.1.26-rc.1 ([@YamStranger](https://github.com/YamStranger))
  
 **Commits:**
  
+- [0504542](https://github.com/serenity-bdd/serenity-cucumber/commit/05045423788ed3c3168633849e0a77f27830eed3) chore: updating serenty-core to 1.1.26 ([@YamStranger](https://github.com/YamStranger))
 - [6cf75d8](https://github.com/serenity-bdd/serenity-cucumber/commit/6cf75d85f0c0f28411233aa35809de1f8c4bfc42) fix: core update ([@YamStranger](https://github.com/YamStranger))
+- [b637101](https://github.com/serenity-bdd/serenity-cucumber/commit/b637101d8eff3ba96504c300ddf6230c304aa21e) docs: updating contributing docs ([@YamStranger](https://github.com/YamStranger))
+- [f9d5d83](https://github.com/serenity-bdd/serenity-cucumber/commit/f9d5d83529c315e386708dea2038024dc68ce503) chore: updating serenty core to 1.1.27 ([@YamStranger](https://github.com/YamStranger))
  
 ### v1.1.5 (2016/02/05 18:30 +00:00)
  
- 
-**Commits:**
- 
-- [f9615c3](https://github.com/serenity-bdd/serenity-cucumber/commit/f9615c366d08c6909b31ea70acab1171a5c06d1c) Updated core ([@wakaleo](https://github.com/wakaleo))
  
 ### v1.1.4 (2016/02/05 11:50 +00:00)
  
@@ -40,15 +42,10 @@
 - [26d9cb0](https://github.com/serenity-bdd/serenity-cucumber/commit/26d9cb015527668d22f32f034d2284cc3dd61d8d) chore: updated wrapper, and build publishing libs ([@YamStranger](https://github.com/YamStranger))
 - [2c5186e](https://github.com/serenity-bdd/serenity-cucumber/commit/2c5186e1b4b23fd1f93fb0e219ff3273e09434eb) chore: groovy upgrade from 2.* to 2.4.4 ([@YamStranger](https://github.com/YamStranger))
 - [3a3e105](https://github.com/serenity-bdd/serenity-cucumber/commit/3a3e105f87722661139a7d937c37b60da779f46d) fix: nullpointer during test, if it fail, updated serenity core to rc.4, commons-collections as in selenium 2.50 ([@YamStranger](https://github.com/YamStranger))
-- [5057fec](https://github.com/serenity-bdd/serenity-cucumber/commit/5057fec912e1c6ed325c20b6aab4ef7c53cbd74b) https://github.com/serenity-bdd/serenity-cucumber/issues/19 ([@cliviu](https://github.com/cliviu))
-- [68be99c](https://github.com/serenity-bdd/serenity-cucumber/commit/68be99c0dc0c0871c9919873e6708437db626ba0) Updated core dependency to 1.1.25-rc.5 ([@wakaleo](https://github.com/wakaleo))
 - [8107b22](https://github.com/serenity-bdd/serenity-cucumber/commit/8107b225be895d7f2a7561b2c51785e21608bc83) chore: groovy upgrade from 2.* to 2.4.4 ([@YamStranger](https://github.com/YamStranger))
 - [a3ea615](https://github.com/serenity-bdd/serenity-cucumber/commit/a3ea615946a7eb17dee10f903cd808fd241ac332) chore: groovy upgrade from 2.* to 2.4.4 ([@YamStranger](https://github.com/YamStranger))
 - [a8136a3](https://github.com/serenity-bdd/serenity-cucumber/commit/a8136a37e3983d3532c6c08dc0b450766287c94e) chore: updated serenity-core from rc11 to rc15 ([@YamStranger](https://github.com/YamStranger))
-- [a8deb03](https://github.com/serenity-bdd/serenity-cucumber/commit/a8deb039a151b9eaceba405b526af6258a248cee) https://github.com/serenity-bdd/serenity-cucumber/issues/19 - fix JUnit tests ([@cliviu](https://github.com/cliviu))
 - [bf20110](https://github.com/serenity-bdd/serenity-cucumber/commit/bf20110de2590ea832ba398ec5722d3b8a5e8f30) chore: updated wrapper, and build publishing libs ([@YamStranger](https://github.com/YamStranger))
-- [cef75dc](https://github.com/serenity-bdd/serenity-cucumber/commit/cef75dc7a25f72ec683d946f2f9a3ecdeb23771e) Updated serenity core ([@wakaleo](https://github.com/wakaleo))
-- [ed7551e](https://github.com/serenity-bdd/serenity-cucumber/commit/ed7551e58799b9b2410cf341ffd307fa454514a3) https://github.com/serenity-bdd/serenity-cucumber/issues/19 ([@cliviu](https://github.com/cliviu))
 - [edefcb4](https://github.com/serenity-bdd/serenity-cucumber/commit/edefcb45b42e904461d29c95266142cd9f8f6742) docs: adding instructions for contributors ([@YamStranger](https://github.com/YamStranger))
 - [f642c64](https://github.com/serenity-bdd/serenity-cucumber/commit/f642c644f38cd9b5daa1f11036cc6517428ef65e) fix: update serenity core to rc.5, updating name of function ([@YamStranger](https://github.com/YamStranger))
 - [fbf8c54](https://github.com/serenity-bdd/serenity-cucumber/commit/fbf8c546c0d8087448c08ecfa562a98ec6412458) chore: updated wrapper, and build publishing libs ([@YamStranger](https://github.com/YamStranger))
@@ -75,7 +72,7 @@
  
 - [83c5474](https://github.com/serenity-bdd/serenity-cucumber/commit/83c5474220d83e7cc1b0ee9b22c4ee6194ac3eb5) Added support for manual tests ([@wakaleo](https://github.com/wakaleo))
  
- > You can now flag manual tests using the [@manual tag in scenarios.](https://github.com/manual tag in scenarios.) 
+ > You can now flag manual tests using the [@manual tag in scenarios](https://github.com/manual tag in scenarios).
  
 ### v1.0.19 (2015/07/25 05:34 +00:00)
  
