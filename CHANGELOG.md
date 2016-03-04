@@ -1,9 +1,10 @@
 ## Serenity BDD Cucumber Plugin change Log
 
-### upcoming (2016/03/02 17:29 +00:00)
+### upcoming (2016/03/04 15:24 +00:00)
  
 **Pull requests:**
  
+- [#47](https://github.com/serenity-bdd/serenity-cucumber/pull/47) Updated serenity-core to 1.1.29-rc.1 ([@YamStranger](https://github.com/YamStranger))
 - [#43](https://github.com/serenity-bdd/serenity-cucumber/pull/43) Updated serenty core to 1.1.27 ([@YamStranger](https://github.com/YamStranger))
 - [#40](https://github.com/serenity-bdd/serenity-cucumber/pull/40) Updated serenity-core to 1.1.26 ([@YamStranger](https://github.com/YamStranger))
 - [#39](https://github.com/serenity-bdd/serenity-cucumber/pull/39) Updated contiributing guide - explaned multiline commits and pull requests name convention ([@YamStranger](https://github.com/YamStranger))
@@ -13,6 +14,7 @@
  
 - [0504542](https://github.com/serenity-bdd/serenity-cucumber/commit/05045423788ed3c3168633849e0a77f27830eed3) chore: updating serenty-core to 1.1.26 ([@YamStranger](https://github.com/YamStranger))
 - [6cf75d8](https://github.com/serenity-bdd/serenity-cucumber/commit/6cf75d85f0c0f28411233aa35809de1f8c4bfc42) fix: core update ([@YamStranger](https://github.com/YamStranger))
+- [879d61e](https://github.com/serenity-bdd/serenity-cucumber/commit/879d61ea9dd71e7a549a9367db7f861a361d2b4c) chore: serenity-core updated to 1.1.29-rc.1 ([@YamStranger](https://github.com/YamStranger))
 - [b637101](https://github.com/serenity-bdd/serenity-cucumber/commit/b637101d8eff3ba96504c300ddf6230c304aa21e) docs: updating contributing docs ([@YamStranger](https://github.com/YamStranger))
 - [f9d5d83](https://github.com/serenity-bdd/serenity-cucumber/commit/f9d5d83529c315e386708dea2038024dc68ce503) chore: updating serenty core to 1.1.27 ([@YamStranger](https://github.com/YamStranger))
  
