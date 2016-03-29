@@ -86,10 +86,11 @@ configurations.all {
     resolutionStrategy {
         // fail fast on dependency convergence problems
         failOnVersionConflict()
-        force  'commons-collections:commons-collections:3.2.2'
+        force  'commons-collections:commons-collections:3.2.2',
+        "xml-apis:xml-apis:1.4.01",
+        "commons-codec:commons-codec:1.10"
     }
 }
-
 
 dependencies {
     compile "net.serenity-bdd:serenity-core:${serenityCoreVersion}"
