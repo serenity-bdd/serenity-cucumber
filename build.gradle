@@ -44,7 +44,6 @@ ext {
     if (!project.hasProperty("bintrayApiKey")) {
         bintrayApiKey = ''
     }
-<<<<<<< HEAD
     serenityCoreVersion = '1.1.31'
     cucumberJVMVersion = '1.2.4'
 
