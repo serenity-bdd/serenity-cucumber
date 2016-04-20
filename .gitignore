@@ -4,3 +4,5 @@ build
 lib
 target
 *.iml
+*.ipr
+*.iws
