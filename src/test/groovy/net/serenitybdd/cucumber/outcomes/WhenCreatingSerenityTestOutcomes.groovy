@@ -22,6 +22,7 @@ import net.serenitybdd.cucumber.integration.ScenariosWithSkippedTag
 import net.serenitybdd.cucumber.integration.SimpleScenario
 import net.serenitybdd.cucumber.integration.SimpleScenarioWithNarrativeTexts
 import net.serenitybdd.cucumber.integration.SimpleScenarioWithTags
+import net.thucydides.core.steps.StepEventBus
 import spock.lang.Specification
 
 import static net.serenitybdd.cucumber.util.CucumberRunner.serenityRunnerForCucumberTestRunner
@@ -455,5 +456,22 @@ It goes for two lines"""
         testOutcome1.testSteps.get(1).getResult() == TestResult.IGNORED;
         testOutcome1.testSteps.get(2).getResult() == TestResult.IGNORED;
 
+    }
+
+
+    def "should store correct test source in outcome"() {
+        given:
+        def runtime = serenityRunnerForCucumberTestRunner(SimpleScenario.class, outputDirectory);
+
+        when:
+        runtime.run();
+        def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory);
+        def testOutcome = recordedTestOutcomes[0]
+
+        then:
+        testOutcome.result == TestResult.SUCCESS
+
+        and:
+        testOutcome.getTestSource() == StepEventBus.TEST_SOURCE_CUCUMBER
     }
 }

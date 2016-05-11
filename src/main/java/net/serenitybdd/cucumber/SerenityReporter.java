@@ -401,6 +401,7 @@ public class SerenityReporter implements Formatter, Reporter {
     }
 
     private void startScenario(Scenario scenario) {
+        StepEventBus.getEventBus().setTestSource(StepEventBus.TEST_SOURCE_CUCUMBER);
         StepEventBus.getEventBus().testStarted(scenario.getName());
         StepEventBus.getEventBus().addDescriptionToCurrentTest(scenario.getDescription());
         StepEventBus.getEventBus().addTagsToCurrentTest(convertCucumberTags(currentFeature.getTags()));
