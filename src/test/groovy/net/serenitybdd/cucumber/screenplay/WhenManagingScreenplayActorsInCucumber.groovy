@@ -14,6 +14,15 @@ public class WhenManagingScreenplayActorsInCucumber extends Specification {
             cast.actorNamed("James Dean") == jamesDean
     }
 
+    def "Actors can be assigned a webdriver type"() {
+        given:
+            Cast cast = new Cast();
+        when:
+            def jamesDean = cast.actorUsingBrowser("chrome").named("James Dean")
+        then:
+            cast.actorNamed("James Dean") == jamesDean
+    }
+
 
     def "An actor is only cast once"() {
         given:
