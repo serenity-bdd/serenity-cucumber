@@ -44,7 +44,7 @@ ext {
     if (!project.hasProperty("bintrayApiKey")) {
         bintrayApiKey = ''
     }
-    serenityCoreVersion = '1.1.32-rc.1'
+    serenityCoreVersion = '1.1.33'
     cucumberJVMVersion = '1.2.4'
 
     versionCounter = new ProjectVersionCounter(isRelease: project.hasProperty("releaseBuild"))
@@ -106,7 +106,7 @@ dependencies {
         exclude module: "slf4j-api"
     }
     testCompile 'org.assertj:assertj-core:1.7.1'
-    testCompile 'org.slf4j:slf4j-log4j12:1.7.7'
+//    testCompile 'org.slf4j:slf4j-log4j12:1.7.21'
     testCompile 'org.codehaus.groovy:groovy-all:2.4.4'
     testCompile("org.spockframework:spock-core:0.7-groovy-2.0") {
         exclude group: "junit"
