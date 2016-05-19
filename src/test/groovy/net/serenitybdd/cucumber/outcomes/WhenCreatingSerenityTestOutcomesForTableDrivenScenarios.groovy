@@ -1,6 +1,7 @@
 package net.serenitybdd.cucumber.outcomes
 import com.github.goldin.spock.extensions.tempdir.TempDir
 import net.serenitybdd.cucumber.integration.*
+import net.thucydides.core.model.TestOutcome
 import net.thucydides.core.model.TestResult
 import net.thucydides.core.reports.OutcomeFormat
 import net.thucydides.core.reports.TestOutcomeLoader
@@ -178,5 +179,63 @@ class WhenCreatingSerenityTestOutcomesForTableDrivenScenarios extends Specificat
 
     }
 
+    def "table scenarios marked as @Pending should be reported as Pending"() {
+        given:
+        def runtime = serenityRunnerForCucumberTestRunner(TableScenarioMarkedAsPending.class, outputDirectory);
+
+        when:
+        runtime.run();
+        def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory)
+
+        then:
+
+        recordedTestOutcomes.size() == 1
+        def testOutcome = recordedTestOutcomes[0]
+
+        and:
+        testOutcome.result == TestResult.PENDING
+        testOutcome.stepCount == 2
+
+        and:
+        testOutcome.dataTable.dataSets.size() == 1
+
+        and:
+        testOutcome.dataTable.dataSets[0].rows.size() == 2
+
+        and:
+        testOutcome.dataTable.dataSets[0].rows[0].getResult() == TestResult.PENDING
+        testOutcome.dataTable.dataSets[0].rows[1].getResult() == TestResult.PENDING
+
+    }
+
+    def "table scenarios marked as @Manual should be reported as mamual"() {
+        given:
+        def runtime = serenityRunnerForCucumberTestRunner(TableScenarioMarkedAsManual.class, outputDirectory);
+
+        when:
+        runtime.run();
+        def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory)
+
+        then:
+
+        recordedTestOutcomes.size() == 1
+        TestOutcome testOutcome = recordedTestOutcomes[0]
+
+        and:
+        testOutcome.manual
+        testOutcome.result == TestResult.PENDING
+        testOutcome.stepCount == 2
+
+        and:
+        testOutcome.dataTable.dataSets.size() == 1
+
+        and:
+        testOutcome.dataTable.dataSets[0].rows.size() == 2
+
+        and:
+        testOutcome.dataTable.dataSets[0].rows[0].getResult() == TestResult.SUCCESS
+        testOutcome.dataTable.dataSets[0].rows[1].getResult() == TestResult.SUCCESS
+
+    }
 
 }

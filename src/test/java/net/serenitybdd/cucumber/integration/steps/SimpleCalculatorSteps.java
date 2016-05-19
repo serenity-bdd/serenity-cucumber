@@ -25,4 +25,15 @@ public class SimpleCalculatorSteps {
         throw new PendingException();
     }
 
+    @Given("^the amount ([0-9]*) and the amount ([0-9]*)$")
+    public void theAmounts(Integer a, Integer b) throws Throwable {
+    }
+
+    @When("^([0-9]*) minus ([0-9]*)$")
+    public void aMinusB(Integer a, Integer b) throws Throwable {
+    }
+
+    @Then("^the result should be ([0-9]*)$")
+    public void theResultShouldBe(Integer b) throws Throwable {
+    }
 }
