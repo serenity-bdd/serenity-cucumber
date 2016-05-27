@@ -25,7 +25,6 @@ import net.thucydides.core.steps.StepFailure;
 import net.thucydides.core.util.Inflector;
 import net.thucydides.core.webdriver.Configuration;
 import net.thucydides.core.webdriver.ThucydidesWebDriverSupport;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.internal.AssumptionViolatedException;
 
 import java.io.File;
@@ -33,6 +32,7 @@ import java.util.*;
 
 import static ch.lambdaj.Lambda.*;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 /**
  * Generates Thucydides reports.
@@ -242,11 +242,15 @@ public class SerenityReporter implements Formatter, Reporter {
         List<String> tags = getTagNamesFrom(feature.getTags());
 
         String requestedDriver = getDriverFrom(tags);
-        if (StringUtils.isNotEmpty(requestedDriver)) {
-            ThucydidesWebDriverSupport.initialize(requestedDriver);
-        } else {
-            ThucydidesWebDriverSupport.initialize();
+        if (isNotEmpty(requestedDriver)) {
+            ThucydidesWebDriverSupport.useDefaultDriver(requestedDriver);
         }
+
+//        if (StringUtils.isNotEmpty(requestedDriver)) {
+//            ThucydidesWebDriverSupport.initialize(requestedDriver);
+//        } else {
+//            ThucydidesWebDriverSupport.initialize();
+//        }
         uniqueBrowserTag = getUniqueBrowserTagFrom(tags);
     }
 
@@ -609,9 +613,7 @@ public class SerenityReporter implements Formatter, Reporter {
 
     @Override
     public void after(Match match, Result result) {
-//        if (nestedResult != null) {
-//            throw new CucumberException(nestedResult.toException());
-//        }
+        ThucydidesWebDriverSupport.clearDefaultDriver();
     }
 
     @Override
