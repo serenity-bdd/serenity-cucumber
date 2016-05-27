@@ -464,7 +464,7 @@ public class SerenityReporter implements Formatter, Reporter {
             generateReports();
         }
         if (!useUniqueBrowser(scenario)) {
-            ThucydidesWebDriverSupport.closeCurrentDrivers();
+            ThucydidesWebDriverSupport.closeAllDrivers();
         }
     }
 
