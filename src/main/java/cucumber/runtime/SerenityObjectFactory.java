@@ -72,6 +72,7 @@ public class SerenityObjectFactory implements ObjectFactory {
     private <T> T createNewPageEnabledStepCandidate(final Class<T> type) {
         T newInstance;
         try {
+            ThucydidesWebDriverSupport.initialize();
             Pages pageFactory = ThucydidesWebDriverSupport.getPages();
             Class[] constructorArgs = new Class[1];
             constructorArgs[0] = Pages.class;
