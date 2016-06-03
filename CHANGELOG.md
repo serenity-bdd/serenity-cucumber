@@ -1,5 +1,16 @@
 ## Serenity BDD Cucumber Plugin change Log
 
+### upcoming (2016/06/02 06:17 +00:00)
+ 
+ 
+### v1.1.8 (2016/05/20 09:21 +00:00)
+ 
+ 
+### v1.1.7 (2016/05/18 16:42 +00:00)
+ 
+**Pull requests:**
+ 
+ 
 ### v1.1.6 (2016/04/20 05:55 +00:00)
  
 **Pull requests:**
