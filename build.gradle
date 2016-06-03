@@ -95,7 +95,7 @@ configurations.all {
 dependencies {
     compile "net.serenity-bdd:serenity-core:${serenityCoreVersion}"
     compile "net.serenity-bdd:serenity-screenplay:${serenityCoreVersion}"
-    compile "net.serenity-bdd:browse-the-web:${serenityCoreVersion}"
+    compile "net.serenity-bdd:serenity-screenplay-webdriver:${serenityCoreVersion}"
     compile "info.cukes:cucumber-java:${cucumberJVMVersion}"
     compile("info.cukes:cucumber-junit:${cucumberJVMVersion}") {
             exclude group: "junit"
