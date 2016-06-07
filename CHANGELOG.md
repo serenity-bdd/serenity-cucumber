@@ -1,6 +1,19 @@
 ## Serenity BDD Cucumber Plugin change Log
 
-### upcoming (2016/06/02 06:17 +00:00)
+### upcoming (2016/06/07 21:34 +00:00)
+ 
+**Pull requests:**
+ 
+- [#60](https://github.com/serenity-bdd/serenity-cucumber/pull/60) Tagging strategies tests ([@YamStranger](https://github.com/YamStranger))
+ 
+**Commits:**
+ 
+- [0c49fec](https://github.com/serenity-bdd/serenity-cucumber/commit/0c49fec8c790ffe7be72091890824bf35cadd127) chore: core updated ([@YamStranger](https://github.com/YamStranger))
+- [ef6a671](https://github.com/serenity-bdd/serenity-cucumber/commit/ef6a671ac5d75ee0ec68812ac7a889ea1764a9ea) feat: updated serenityReporter to use scenario ([@YamStranger](https://github.com/YamStranger))
+ 
+### v1.1.9 (2016/06/03 06:26 +00:00)
+ 
+**Pull requests:**
  
  
 ### v1.1.8 (2016/05/20 09:21 +00:00)
