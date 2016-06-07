@@ -395,25 +395,26 @@ public class SerenityReporter implements Formatter, Reporter {
         if (examplesRunning) {
 
             if (newScenario) {
-                startScenario(scenario.getName(), scenario.getDescription(), scenario.getTags());
+                startScenario(scenario);
                 StepEventBus.getEventBus().useExamplesFrom(table);
             } else {
                 StepEventBus.getEventBus().addNewExamplesFrom(table);
             }
             startExample();
         } else {
-            startScenario(scenario.getName(), scenario.getDescription(), scenario.getTags());
+            startScenario(scenario);
         }
     }
 
-    private void startScenario(String name, String description, List<Tag> tags) {
-        StepEventBus.getEventBus().testStarted(name);
-        StepEventBus.getEventBus().addDescriptionToCurrentTest(description);
+    private void startScenario(Scenario scenario) {
+        StepEventBus.getEventBus().setTestSource(StepEventBus.TEST_SOURCE_CUCUMBER);
+        StepEventBus.getEventBus().testStarted(scenario.getName());
+        StepEventBus.getEventBus().addDescriptionToCurrentTest(scenario.getDescription());
         StepEventBus.getEventBus().addTagsToCurrentTest(convertCucumberTags(currentFeature.getTags()));
-        StepEventBus.getEventBus().addTagsToCurrentTest(convertCucumberTags(tags));
+        StepEventBus.getEventBus().addTagsToCurrentTest(convertCucumberTags(scenario.getTags()));
 
         registerFeatureJiraIssues(currentFeature.getTags());
-        registerScenarioJiraIssues(tags);
+        registerScenarioJiraIssues(scenario.getTags());
 
         checkForSkipped(currentFeature);
         checkForPending(currentFeature);
