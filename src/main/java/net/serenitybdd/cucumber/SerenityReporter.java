@@ -661,6 +661,7 @@ public class SerenityReporter implements Formatter, Reporter {
 
     @Override
     public void write(String text) {
+        StepEventBus.getEventBus().stepStarted(ExecutedStepDescription.withTitle("message"));
     }
 
     private synchronized void generateReports() {

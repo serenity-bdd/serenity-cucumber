@@ -4,20 +4,18 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import net.serenitybdd.screenplay.Actor;
 import net.serenitybdd.screenplay.abilities.BrowseTheWeb;
-import net.thucydides.core.guice.Injectors;
+import net.thucydides.core.webdriver.ThucydidesWebDriverSupport;
 import net.thucydides.core.webdriver.WebdriverManager;
 
 import java.util.List;
 import java.util.Map;
-
-import static net.thucydides.core.webdriver.WebDriverFactory.DEFAULT_DRIVER;
 
 /**
  * Provide simple support for managing Screenplay actors in Cucumber-JVM
  */
 public class Cast {
 
-    private WebdriverManager manager = Injectors.getInjector().getInstance(WebdriverManager.class);
+    private WebdriverManager manager = ThucydidesWebDriverSupport.getWebdriverManager();
 
     private final String WITH_NO_SPECIFIED_DRIVER = "";
 

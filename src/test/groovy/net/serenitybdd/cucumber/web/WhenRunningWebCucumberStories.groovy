@@ -110,7 +110,7 @@ public class WhenRunningWebCucumberStories extends Specification {
 
         when:
         runtime.run();
-        def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory);
+        def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory).sort{it.startTime}
 
         then:
         recordedTestOutcomes.size() == 2
@@ -127,7 +127,7 @@ public class WhenRunningWebCucumberStories extends Specification {
 
         when:
         runtime.run();
-        def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory);
+        def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory).sort{it.startTime};
 
         then:
         recordedTestOutcomes[0].result == TestResult.FAILURE

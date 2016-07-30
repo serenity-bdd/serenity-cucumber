@@ -1,5 +1,5 @@
 @foo
-Feature: Basic Arithmetic
+Feature: Basic Arithmetic with several tables
   In order to do my maths homework
   As a maths student
   I want to be able to add sums

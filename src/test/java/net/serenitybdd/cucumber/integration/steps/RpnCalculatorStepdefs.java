@@ -37,8 +37,11 @@ public class RpnCalculatorStepdefs {
         assertEquals(expected, calc.value());
     }
 
-    @Before({"~@foo"})
-    public void before() {
+//    @Before({"~@foo"})
+    @Before
+    public void before(Scenario scenario) {
+//        scenario.write("Some special text");
+//        int i = 0;
     }
 
     @After

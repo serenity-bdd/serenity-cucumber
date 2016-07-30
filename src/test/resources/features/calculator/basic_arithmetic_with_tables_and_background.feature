@@ -1,5 +1,5 @@
 @foo
-Feature: Basic Arithmetic with more complex tables
+Feature: Basic Arithmetic with background features
   Calculing additions
 
   Background: A Calculator

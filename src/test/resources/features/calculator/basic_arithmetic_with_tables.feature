@@ -1,16 +1,15 @@
 @foo
-Feature: Basic Arithmetic with more complex tables
-  Calculing additions
+Feature: Basic Arithmetic with tables
+  In order to do my maths homework
+  As a maths student
+  I want to be able to add sums
 
-  Background: A Calculator
-    The calculator should be set up and all that
+  Scenario Outline: Many additions
     Given a calculator I just turned on
-    Given the previous entries:
+    And the previous entries:
       | first | second | operation |
       | 1     | 1      | +         |
       | 2     | 1      | +         |
-
-  Scenario Outline: Many additions
     When I press +
     And I add <a> and <b>
     And I press +
