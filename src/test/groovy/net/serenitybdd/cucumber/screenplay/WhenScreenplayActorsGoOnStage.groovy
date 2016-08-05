@@ -1,12 +1,16 @@
 package net.serenitybdd.cucumber.screenplay
 
-import net.serenitybdd.cucumber.actors.OnStage
 import net.serenitybdd.cucumber.actors.StageDirector
+import net.serenitybdd.screenplay.actors.Cast
+import net.serenitybdd.screenplay.actors.OnStage
 import spock.lang.Specification
 
 public class WhenScreenplayActorsGoOnStage extends Specification {
 
     def "When an actor is called he is placed in the spotlight"() {
+        given:
+            Cast cast = new Cast()
+            OnStage.setTheStage(cast);
         when:
             def jamesDean = OnStage.theActorCalled("James Dean")
         then:
@@ -15,6 +19,9 @@ public class WhenScreenplayActorsGoOnStage extends Specification {
 
     def "When a new actor is placed in the spotlight the previous actor is no longer in the spotlight"() {
         given:
+            Cast cast = new Cast()
+            OnStage.setTheStage(cast);
+        and:
             def jamesDean = OnStage.theActorCalled("James Dean")
         when:
             def bradPitt = OnStage.theActorCalled("Brad Pitt")
@@ -24,6 +31,9 @@ public class WhenScreenplayActorsGoOnStage extends Specification {
 
     def "At the end of the act we remove all of the actors"() {
         given:
+            Cast cast = new Cast()
+            OnStage.setTheStage(cast);
+        and:
             OnStage.theActorCalled("James Dean")
             OnStage.theActorCalled("Brad Pitt")
         and:
@@ -31,7 +41,7 @@ public class WhenScreenplayActorsGoOnStage extends Specification {
         when:
             stageDirector.endTheAct()
         then:
-            OnStage.stage().cast.actors.isEmpty()
+            cast.actors.isEmpty()
     }
 
 }
