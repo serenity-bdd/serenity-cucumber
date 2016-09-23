@@ -33,4 +33,9 @@ public class CucumberTagProviderStrategy implements TagProviderStrategy {
         return Lists.newArrayList((TagProvider) new FileSystemRequirementsTagProvider(environmentVariables,rootDirectory));
     }
 
+    @Override
+    public boolean hasHighPriority() {
+        return false;
+    }
+
 }
