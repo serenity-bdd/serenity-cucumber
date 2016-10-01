@@ -79,19 +79,6 @@ class WhenCreatingSerenityTestOutcomes extends Specification {
         testOutcome.testSteps[3].errorMessage.contains("expected:<[2]0> but was:<[1]0>")
     }
 
-    def "should record a feature tag based on the name of the feature"() {
-        given:
-        def runtime = serenityRunnerForCucumberTestRunner(SimpleScenario.class, outputDirectory);
-
-        when:
-        runtime.run();
-        def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory).sort{it.name};
-        def testOutcome = recordedTestOutcomes[0]
-
-        then:
-        testOutcome.tags.contains(TestTag.withName("A simple feature").andType("feature"))
-    }
-
     def "should record a feature tag based on the name of the feature when the feature name is different from the feature file name"() {
         given:
         def runtime = serenityRunnerForCucumberTestRunner(SimpleScenarioWithALongName.class, outputDirectory);
@@ -116,19 +103,6 @@ class WhenCreatingSerenityTestOutcomes extends Specification {
 
         then:
         testOutcome.featureTag.get() == TestTag.withName("A simple feature showing how features can have long names").andType("feature")
-    }
-
-    def "should update the test outcome featureTag field"() {
-        given:
-        def runtime = serenityRunnerForCucumberTestRunner(SimpleScenarioWithALongName.class, outputDirectory);
-
-        when:
-        runtime.run();
-        def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory).sort{it.name};
-        def testOutcome = recordedTestOutcomes[0]
-
-        then:
-        testOutcome.tags.contains(TestTag.withName("A simple feature showing how features can have long names").andType("feature"))
     }
 
     def "should record background steps"() {
@@ -162,18 +136,6 @@ class WhenCreatingSerenityTestOutcomes extends Specification {
 | JOHN B JOVI | 22/08/1957 | 871274762 |  | 16422132 | BLAKBURN | TALLAGHT |
 | JOHN ANFIELD | 20/05/1970 | 876565656 | 015555551 | 214555555 | DUBLIN | DUBLIN |"""
     }
-    def "should default to the filename if the feature name is not specified in the feature file"() {
-        given:
-        def runtime = serenityRunnerForCucumberTestRunner(FeatureWithNoName.class, outputDirectory);
-
-        when:
-        runtime.run();
-        def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory).sort{it.name};
-        def testOutcome = recordedTestOutcomes[0]
-
-        then:
-        testOutcome.tags.contains(TestTag.withName("Feature with no name").andType("feature"))
-    }
 
 /*
 @flavor:strawberry
@@ -194,9 +156,8 @@ Feature: A simple feature with tags
         def testOutcome = recordedTestOutcomes[0]
 
         then:
-        testOutcome.tags.size() == 5
+        testOutcome.tags.size() == 4
         and:
-        testOutcome.tags.contains(TestTag.withName("A simple feature with tags").andType("feature"))
         testOutcome.tags.contains(TestTag.withName("strawberry").andType("flavor"))
         testOutcome.tags.contains(TestTag.withName("red").andType("color"))
         testOutcome.tags.contains(TestTag.withName("shouldPass").andType("tag"))
