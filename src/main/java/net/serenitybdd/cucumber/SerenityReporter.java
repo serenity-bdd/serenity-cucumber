@@ -44,7 +44,7 @@ public class SerenityReporter implements Formatter, Reporter {
     private static final String OPEN_PARAM_CHAR = "\uff5f";
     private static final String CLOSE_PARAM_CHAR = "\uff60";
 
-    private static final List<String> SKIPPED_TAGS = ImmutableList.of("@skip", "@wip");
+    private static final List<String> SKIPPED_TAGS = ImmutableList.of("@skip", "@wip","@ignore","@ignored");
     public static final String PENDING_STATUS = "pending";
 
     private final Queue<Step> stepQueue;
@@ -191,14 +191,14 @@ public class SerenityReporter implements Formatter, Reporter {
     private void checkForPendingScenario(List<Tag> tags) {
         if (isPending(tags)) {
             forcedScenarioResult = Optional.of(TestResult.PENDING);
-            StepEventBus.getEventBus().suspendTest();
+            StepEventBus.getEventBus().suspendTest(TestResult.PENDING);
         }
     }
 
     private void checkForSkippedScenario(List<Tag> tags) {
         if (isSkippedOrWIP(tags)) {
             forcedScenarioResult = Optional.of(TestResult.SKIPPED);
-            StepEventBus.getEventBus().suspendTest();
+            StepEventBus.getEventBus().suspendTest(TestResult.SKIPPED);
         }
     }
 
@@ -206,7 +206,7 @@ public class SerenityReporter implements Formatter, Reporter {
         if (isManual(tags)) {
             forcedScenarioResult = Optional.of(TestResult.SKIPPED);
             StepEventBus.getEventBus().testIsManual();
-            StepEventBus.getEventBus().suspendTest();
+            StepEventBus.getEventBus().suspendTest(TestResult.SKIPPED);
         }
     }
 
@@ -404,6 +404,7 @@ public class SerenityReporter implements Formatter, Reporter {
         } else {
             startScenario(scenario);
         }
+
     }
 
     private void startScenario(Scenario scenario) {
