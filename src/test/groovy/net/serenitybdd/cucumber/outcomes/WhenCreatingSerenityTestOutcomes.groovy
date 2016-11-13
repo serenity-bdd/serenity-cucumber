@@ -89,7 +89,7 @@ class WhenCreatingSerenityTestOutcomes extends Specification {
         TestOutcome testOutcome = recordedTestOutcomes[0]
 
         then:
-        testOutcome.featureTag.get() == TestTag.withName("A simple feature showing how features can have long names").andType("feature")
+        testOutcome.featureTag.get() == TestTag.withName("Samples/A simple feature showing how features can have long names").andType("feature")
     }
 
     def "should record the capability tag based on the directory of the feature if known"() {
@@ -102,7 +102,7 @@ class WhenCreatingSerenityTestOutcomes extends Specification {
         TestOutcome testOutcome = recordedTestOutcomes[0]
 
         then:
-        testOutcome.featureTag.get() == TestTag.withName("A simple feature showing how features can have long names").andType("feature")
+        testOutcome.featureTag.get() == TestTag.withName("Samples/A simple feature showing how features can have long names").andType("feature")
     }
 
     def "should record background steps"() {
@@ -367,6 +367,28 @@ It goes for two lines"""
         testOutcome2.result == TestResult.PENDING
         testOutcome3.result == TestResult.SUCCESS
     }
+
+    def "Scenarios in a feature file with the @pending tag should all be reported as Pending"() {
+        given:
+        def runtime = serenityRunnerForCucumberTestRunner(FeatureWithPendingTag.class, outputDirectory);
+
+        when:
+        runtime.run();
+        def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory).sort{it.name}
+
+        then:
+
+        recordedTestOutcomes.size() == 3
+        def testOutcome1 = recordedTestOutcomes[0]
+        def testOutcome2 = recordedTestOutcomes[1]
+        def testOutcome3 = recordedTestOutcomes[2]
+
+        and:
+        testOutcome1.result == TestResult.PENDING
+        testOutcome2.result == TestResult.PENDING
+        testOutcome3.result == TestResult.PENDING
+    }
+
 
     def "individual scenarios with the @wip tag should be reported as Skipped"() {
         given:

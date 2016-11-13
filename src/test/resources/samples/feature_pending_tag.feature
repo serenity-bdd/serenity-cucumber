@@ -1,3 +1,4 @@
+@pending
 Feature: A feature with pending scenarios
 
   Scenario: Simple scenario 1
@@ -6,7 +7,6 @@ Feature: A feature with pending scenarios
     When I buy the widgets
     Then I should be billed $10
 
-  @pending
   Scenario: Simple scenario 2
     Given I want to purchase 4 widgets
     And a widget costs $3

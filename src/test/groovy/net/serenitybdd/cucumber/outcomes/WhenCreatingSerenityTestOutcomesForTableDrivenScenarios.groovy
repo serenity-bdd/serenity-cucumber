@@ -208,7 +208,7 @@ class WhenCreatingSerenityTestOutcomesForTableDrivenScenarios extends Specificat
 
     }
 
-    def "table scenarios marked as @Manual should be reported as mamual"() {
+    def "table scenarios marked as @Manual should be reported as manual"() {
         given:
         def runtime = serenityRunnerForCucumberTestRunner(TableScenarioMarkedAsManual.class, outputDirectory);
 

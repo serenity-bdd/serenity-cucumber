@@ -44,7 +44,7 @@ public class SerenityReporter implements Formatter, Reporter {
     private static final String OPEN_PARAM_CHAR = "\uff5f";
     private static final String CLOSE_PARAM_CHAR = "\uff60";
 
-    private static final List<String> SKIPPED_TAGS = ImmutableList.of("@skip", "@wip","@ignore","@ignored");
+    private static final List<String> SKIPPED_TAGS = ImmutableList.of("@skip", "@wip", "@ignore", "@ignored");
     public static final String PENDING_STATUS = "pending";
 
     private final Queue<Step> stepQueue;
@@ -78,9 +78,8 @@ public class SerenityReporter implements Formatter, Reporter {
 
     private final static String FEATURES_ROOT_PATH = "features";
 
-
-    private static Optional<TestResult> forcedStoryResult = Optional.absent();
-    private static Optional<TestResult> forcedScenarioResult = Optional.absent();
+    private Optional<TestResult> forcedStoryResult = Optional.absent();
+    private Optional<TestResult> forcedScenarioResult = Optional.absent();
 
 
     private void clearStoryResult() {
@@ -136,7 +135,7 @@ public class SerenityReporter implements Formatter, Reporter {
         if (uri.contains(featuresRoot)) {
             currentUri = uri.substring(uri.lastIndexOf(featuresRoot) + FEATURES_ROOT_PATH.length() + 2);
         }
-        defaultFeatureId = new File(currentUri).getName().replace(".feature","");
+        defaultFeatureId = new File(currentUri).getName().replace(".feature", "");
         defaultFeatureName = Inflector.getInstance().humanize(defaultFeatureId);
     }
 
@@ -177,28 +176,24 @@ public class SerenityReporter implements Formatter, Reporter {
     private void checkForPending(Feature feature) {
         if (isPending(feature.getTags())) {
             forcedStoryResult = Optional.of(TestResult.PENDING);
-            StepEventBus.getEventBus().suspendTest();
         }
     }
 
     private void checkForSkipped(Feature feature) {
         if (isSkippedOrWIP(feature.getTags())) {
             forcedStoryResult = Optional.of(TestResult.SKIPPED);
-            StepEventBus.getEventBus().suspendTest();
         }
     }
 
     private void checkForPendingScenario(List<Tag> tags) {
         if (isPending(tags)) {
             forcedScenarioResult = Optional.of(TestResult.PENDING);
-            StepEventBus.getEventBus().suspendTest(TestResult.PENDING);
         }
     }
 
     private void checkForSkippedScenario(List<Tag> tags) {
         if (isSkippedOrWIP(tags)) {
             forcedScenarioResult = Optional.of(TestResult.SKIPPED);
-            StepEventBus.getEventBus().suspendTest(TestResult.SKIPPED);
         }
     }
 
@@ -229,7 +224,7 @@ public class SerenityReporter implements Formatter, Reporter {
 
     private boolean hasTag(String tagName, List<Tag> tags) {
         for (Tag tag : tags) {
-            if (tag.getName().equals(tagName)) {
+            if (tag.getName().equalsIgnoreCase(tagName)) {
                 return true;
             }
         }
@@ -245,12 +240,6 @@ public class SerenityReporter implements Formatter, Reporter {
         if (isNotEmpty(requestedDriver)) {
             ThucydidesWebDriverSupport.useDefaultDriver(requestedDriver);
         }
-
-//        if (StringUtils.isNotEmpty(requestedDriver)) {
-//            ThucydidesWebDriverSupport.initialize(requestedDriver);
-//        } else {
-//            ThucydidesWebDriverSupport.initialize();
-//        }
         uniqueBrowserTag = getUniqueBrowserTagFrom(tags);
     }
 
@@ -307,7 +296,7 @@ public class SerenityReporter implements Formatter, Reporter {
         String scenarioId = scenarioIdFrom(examples.getId());
         boolean newScenario = !scenarioId.equals(currentScenarioId);
 
-         table = (newScenario) ?
+        table = (newScenario) ?
                 thucydidesTableFrom(headers, rows, examples.getName(), examples.getDescription())
                 : addTableRowsTo(table, headers, rows, examples.getName(), examples.getDescription());
         exampleCount = examples.getRows().size() - 1;
@@ -408,6 +397,7 @@ public class SerenityReporter implements Formatter, Reporter {
     }
 
     private void startScenario(Scenario scenario) {
+        clearScenarioResult();
         StepEventBus.getEventBus().setTestSource(StepEventBus.TEST_SOURCE_CUCUMBER);
         StepEventBus.getEventBus().testStarted(scenario.getName());
         StepEventBus.getEventBus().addDescriptionToCurrentTest(scenario.getDescription());
@@ -417,9 +407,41 @@ public class SerenityReporter implements Formatter, Reporter {
         registerFeatureJiraIssues(currentFeature.getTags());
         registerScenarioJiraIssues(scenario.getTags());
 
+        checkForLifecycleTags(scenario);
+        updateTestResultsFromTags();
+    }
+
+    private void checkForLifecycleTags(Scenario scenario) {
         checkForSkipped(currentFeature);
         checkForPending(currentFeature);
+        checkForPendingScenario(scenario.getTags());
+        checkForSkippedScenario(scenario.getTags());
+        checkForManualScenario(scenario.getTags());
     }
+
+    private Optional<TestResult> forcedResult() {
+        return forcedStoryResult.or(forcedScenarioResult);
+    }
+    private void updateTestResultsFromTags() {
+        if (!forcedResult().isPresent()) {
+            return;
+        }
+        switch (forcedResult().get()) {
+            case PENDING:
+                StepEventBus.getEventBus().suspendTest(TestResult.PENDING);
+                return;
+            case SKIPPED:
+                StepEventBus.getEventBus().suspendTest(TestResult.SKIPPED);
+                return;
+            case IGNORED:
+                StepEventBus.getEventBus().suspendTest(TestResult.IGNORED);
+                return;
+            case COMPROMISED:
+                StepEventBus.getEventBus().suspendTest(TestResult.COMPROMISED);
+                return;
+        }
+    }
+
 
     private void registerFeatureJiraIssues(List<Tag> tags) {
         List<String> issues = extractJiraIssueTags(tags);
@@ -446,11 +468,11 @@ public class SerenityReporter implements Formatter, Reporter {
     private List<String> extractJiraIssueTags(List<Tag> cucumberTags) {
         List<String> issues = Lists.newArrayList();
         for (Tag tag : cucumberTags) {
-            if(tag.getName().startsWith("@issue:")) {
+            if (tag.getName().startsWith("@issue:")) {
                 String tagIssueValue = tag.getName().substring("@issue:".length());
                 issues.add(tagIssueValue);
             }
-            if(tag.getName().startsWith("@issues:")) {
+            if (tag.getName().startsWith("@issues:")) {
                 String tagIssuesValues = tag.getName().substring("@issues:".length());
                 issues.addAll(Arrays.asList(tagIssuesValues.split(",")));
             }
@@ -460,14 +482,16 @@ public class SerenityReporter implements Formatter, Reporter {
 
     @Override
     public void endOfScenarioLifeCycle(Scenario scenario) {
+        checkForLifecycleTags(scenario);
+        updateTestResultsFromTags();
         if (examplesRunning) {
             finishExample();
         } else {
             generateReports();
         }
-        if (!useUniqueBrowser(scenario)) {
-            ThucydidesWebDriverSupport.closeAllDrivers();
-        }
+//        if (!useUniqueBrowser(scenario)) {
+//            ThucydidesWebDriverSupport.closeAllDrivers();
+//        }
     }
 
     private boolean useUniqueBrowser(Scenario scenario) {
@@ -483,7 +507,6 @@ public class SerenityReporter implements Formatter, Reporter {
 
     private void startExample() {
         Map<String, String> data = exampleRows.get(currentExample);
-//        getThucydidesListeners().withDriver(ThucydidesWebDriverSupport.getDriver());
         StepEventBus.getEventBus().clearStepFailures();
         StepEventBus.getEventBus().exampleStarted(data);
         currentExample++;
@@ -511,9 +534,6 @@ public class SerenityReporter implements Formatter, Reporter {
     public void scenario(Scenario scenario) {
         configureDriver(currentFeature);
         clearScenarioResult();
-        checkForPendingScenario(scenario.getTags());
-        checkForSkippedScenario(scenario.getTags());
-        checkForManualScenario(scenario.getTags());
     }
 
     @Override
@@ -566,8 +586,7 @@ public class SerenityReporter implements Formatter, Reporter {
             StepEventBus.getEventBus().stepIgnored();
         } else if (PENDING_STATUS.equals(result.getStatus())) {
             StepEventBus.getEventBus().stepPending();
-        }
-        else if (Result.UNDEFINED.equals(result)) {
+        } else if (Result.UNDEFINED.equals(result)) {
             StepEventBus.getEventBus().stepStarted(ExecutedStepDescription.withTitle(stepTitleFrom(currentStep)));
             StepEventBus.getEventBus().stepPending();
         }
@@ -614,9 +633,7 @@ public class SerenityReporter implements Formatter, Reporter {
     }
 
     @Override
-    public void after(Match match, Result result) {
-        ThucydidesWebDriverSupport.clearDefaultDriver();
-    }
+    public void after(Match match, Result result) {}
 
     @Override
     public void match(Match match) {
