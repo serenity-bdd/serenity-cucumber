@@ -161,6 +161,7 @@ public class SerenityReporter implements Formatter, Reporter {
 
         checkForPending(feature);
         checkForSkipped(feature);
+        checkForManual(feature);
     }
 
     private Feature featureWithDefaultName(Feature feature, String defaultName, String id) {
@@ -176,6 +177,12 @@ public class SerenityReporter implements Formatter, Reporter {
     private void checkForPending(Feature feature) {
         if (isPending(feature.getTags())) {
             forcedStoryResult = Optional.of(TestResult.PENDING);
+        }
+    }
+
+    private void checkForManual(Feature feature) {
+        if (isManual(feature.getTags())) {
+            forcedStoryResult = Optional.of(TestResult.SKIPPED);
         }
     }
 
@@ -414,6 +421,7 @@ public class SerenityReporter implements Formatter, Reporter {
     private void checkForLifecycleTags(Scenario scenario) {
         checkForSkipped(currentFeature);
         checkForPending(currentFeature);
+        checkForManual(currentFeature);
         checkForPendingScenario(scenario.getTags());
         checkForSkippedScenario(scenario.getTags());
         checkForManualScenario(scenario.getTags());
