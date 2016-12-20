@@ -149,6 +149,7 @@ public class SerenityReporter implements Formatter, Reporter {
         }
 
         currentFeature = feature;
+        clearStoryResult();
 
         configureDriver(feature);
         getThucydidesListeners();
