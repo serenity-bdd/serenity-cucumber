@@ -151,6 +151,7 @@ public class SerenityReporter implements Formatter, Reporter {
         }
 
         currentFeature = feature;
+        clearStoryResult();
 
         configureDriver(feature);
         getThucydidesListeners();
@@ -185,6 +186,7 @@ public class SerenityReporter implements Formatter, Reporter {
     private void checkForManual(Feature feature) {
         if (isManual(feature.getTags())) {
             forcedStoryResult = Optional.of(TestResult.SKIPPED);
+            StepEventBus.getEventBus().testIsManual();
         }
     }
 
