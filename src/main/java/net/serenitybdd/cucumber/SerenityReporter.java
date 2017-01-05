@@ -403,9 +403,11 @@ public class SerenityReporter implements Formatter, Reporter {
         } else {
             if(newScenario) {
                 startScenario(scenario);
-            }SerenityReporter
+            }
             else { //retry
-                retries++;
+                if(maxRetries > 0) {
+                    retries++;
+                }
             }
         }
     }
