@@ -1,7 +1,5 @@
 package net.serenitybdd.cucumber.integration.steps.thucydides;
 
-import cucumber.api.PendingException;
-import cucumber.runtime.CucumberException;
 import net.thucydides.core.annotations.Step;
 
 import static org.assertj.core.api.Assertions.assertThat;
