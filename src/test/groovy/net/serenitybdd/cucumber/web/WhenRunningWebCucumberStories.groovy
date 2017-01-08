@@ -1,20 +1,14 @@
 package net.serenitybdd.cucumber.web
 
 import com.github.goldin.spock.extensions.tempdir.TempDir
+import net.serenitybdd.cucumber.integration.*
 import net.thucydides.core.ThucydidesSystemProperty
+import net.thucydides.core.configuration.SystemPropertiesConfiguration
 import net.thucydides.core.model.TestResult
 import net.thucydides.core.reports.OutcomeFormat
 import net.thucydides.core.reports.TestOutcomeLoader
 import net.thucydides.core.util.MockEnvironmentVariables
 import net.thucydides.core.webdriver.Configuration
-import net.thucydides.core.webdriver.SystemPropertiesConfiguration
-import net.serenitybdd.cucumber.integration.DataDrivenScenario
-import net.serenitybdd.cucumber.integration.ScenarioSuite
-import net.serenitybdd.cucumber.integration.SimpleSeleniumDifferentBrowserScenario
-import net.serenitybdd.cucumber.integration.SimpleSeleniumFailingAndPassingScenario
-import net.serenitybdd.cucumber.integration.SimpleSeleniumFailingScenario
-import net.serenitybdd.cucumber.integration.SimpleSeleniumPageObjects
-import net.serenitybdd.cucumber.integration.SimpleSeleniumScenario
 import spock.lang.Specification
 
 import static net.serenitybdd.cucumber.util.CucumberRunner.serenityRunnerForCucumberTestRunner
