@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
+import static ch.lambdaj.Lambda.on;
+
 /**
  * Glue code for running Cucumber via Thucydides.
  * Sets the Thucydides reporter.
@@ -47,8 +49,12 @@ public class CucumberWithSerenity extends Cucumber {
         String tagsExpression = ThucydidesSystemProperty.TAGS.from(environmentVariables,"");
         List<String> newTags  = Lambda.convert(Splitter.on(",").trimResults().omitEmptyStrings().splitToList(tagsExpression),
                                                toCucumberTags());
-        newTags.removeAll(existingTags);
+        newTags.removeAll(stringVersionOf(existingTags));
         return newTags;
+    }
+
+    private Collection<String> stringVersionOf(List<Object> existingTags) {
+        return Lambda.extract(existingTags, on(Object.class).toString());
     }
 
     private Converter<String, String> toCucumberTags() {
