@@ -29,9 +29,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import static cucumber.runtime.junit.Assertions.assertNoCucumberAnnotatedMethods;
-import static net.thucydides.core.ThucydidesSystemProperty.TEST_RETRY_COUNT;
 import static ch.lambdaj.Lambda.on;
+import static cucumber.runtime.junit.Assertions.assertNoCucumberAnnotatedMethods;
+import static net.thucydides.core.ThucydidesSystemProperty.TEST_RETRY_COUNT_CUCUMBER;
 
 
 /**
@@ -59,7 +59,7 @@ public class CucumberWithSerenity extends ParentRunner<SerenityFeatureRunner> {
     }
 
     private void initialize(Class clazz,EnvironmentVariables environmentVariables) throws InitializationError, IOException {
-        maxRetryCount = TEST_RETRY_COUNT.integerFrom(environmentVariables, 0);
+        maxRetryCount = TEST_RETRY_COUNT_CUCUMBER.integerFrom(environmentVariables, 0);
         ClassLoader classLoader = clazz.getClassLoader();
         assertNoCucumberAnnotatedMethods(clazz);
         RuntimeOptionsFactory runtimeOptionsFactory = new RuntimeOptionsFactory(clazz);

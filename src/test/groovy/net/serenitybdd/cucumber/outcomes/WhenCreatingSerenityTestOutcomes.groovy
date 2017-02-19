@@ -4,6 +4,7 @@ import com.github.goldin.spock.extensions.tempdir.TempDir
 import net.serenitybdd.cucumber.CucumberWithSerenity
 import net.serenitybdd.cucumber.integration.*
 import net.thucydides.core.ThucydidesSystemProperty
+import net.thucydides.core.configuration.SystemPropertiesConfiguration
 import net.thucydides.core.model.TestOutcome
 import net.thucydides.core.model.TestResult
 import net.thucydides.core.model.TestStep
@@ -13,7 +14,6 @@ import net.thucydides.core.reports.TestOutcomeLoader
 import net.thucydides.core.steps.StepEventBus
 import net.thucydides.core.util.MockEnvironmentVariables
 import net.thucydides.core.webdriver.Configuration
-import net.thucydides.core.webdriver.SystemPropertiesConfiguration
 import org.junit.Before
 import org.junit.runner.notification.RunNotifier
 import org.mockito.MockitoAnnotations
@@ -104,7 +104,7 @@ class WhenCreatingSerenityTestOutcomes extends Specification {
 
     def "should record failures for a failing scenario with retries"() {
         given:
-        environmentVariables.setProperty(ThucydidesSystemProperty.TEST_RETRY_COUNT.getPropertyName(), "3");
+        environmentVariables.setProperty(ThucydidesSystemProperty.TEST_RETRY_COUNT_CUCUMBER.getPropertyName(), "3");
         def cucumber = new CucumberWithSerenity(FailingScenario.class,environmentVariables).withOutputDirectory(outputDirectory);
 
         when:
@@ -127,7 +127,7 @@ class WhenCreatingSerenityTestOutcomes extends Specification {
 
     def "should rerun the instable scenario and succeed"() {
         given:
-        environmentVariables.setProperty(ThucydidesSystemProperty.TEST_RETRY_COUNT.getPropertyName(), "3");
+        environmentVariables.setProperty(ThucydidesSystemProperty.TEST_RETRY_COUNT_CUCUMBER.getPropertyName(), "3");
         def cucumber = new CucumberWithSerenity(InstableScenario.class,environmentVariables).withOutputDirectory(outputDirectory);
 
         when:
@@ -280,7 +280,7 @@ It goes for two lines"""
 
     def "should generate a well-structured Thucydides test outcome for feature files with several Cucumber scenario"() {
         given:
-        environmentVariables.setProperty(ThucydidesSystemProperty.TEST_RETRY_COUNT.getPropertyName(), "0");
+        environmentVariables.setProperty(ThucydidesSystemProperty.TEST_RETRY_COUNT_CUCUMBER.getPropertyName(), "0");
         def runtime = serenityRunnerForCucumberTestRunner(MultipleScenarios.class, outputDirectory);
 
         when:

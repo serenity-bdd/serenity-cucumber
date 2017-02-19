@@ -512,7 +512,7 @@ public class SerenityReporter implements Formatter, Reporter {
                 if(retries > 0) {
                     TestOutcome testOutcome = StepEventBus.getEventBus().getBaseStepListener().getTestOutcomes().get(getAllTestOutcomes().size() - 1);
                     if(testOutcome.isSuccess()) {
-                        StepEventBus.getEventBus().lastTestPassedAfterRetries(retries + 1,new ArrayList<String>());
+                        StepEventBus.getEventBus().lastTestPassedAfterRetries(retries + 1,new ArrayList<String>(),null);
                     }
                     retries = 0;
                 }
