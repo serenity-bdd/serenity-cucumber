@@ -31,6 +31,8 @@ import java.util.List;
 
 import static cucumber.runtime.junit.Assertions.assertNoCucumberAnnotatedMethods;
 import static net.thucydides.core.ThucydidesSystemProperty.TEST_RETRY_COUNT;
+import static ch.lambdaj.Lambda.on;
+
 
 /**
  * Glue code for running Cucumber via Thucydides.
@@ -100,8 +102,12 @@ public class CucumberWithSerenity extends ParentRunner<SerenityFeatureRunner> {
         String tagsExpression = ThucydidesSystemProperty.TAGS.from(environmentVariables,"");
         List<String> newTags  = Lambda.convert(Splitter.on(",").trimResults().omitEmptyStrings().splitToList(tagsExpression),
                                                toCucumberTags());
-        newTags.removeAll(existingTags);
+        newTags.removeAll(stringVersionOf(existingTags));
         return newTags;
+    }
+
+    private Collection<String> stringVersionOf(List<Object> existingTags) {
+        return Lambda.extract(existingTags, on(Object.class).toString());
     }
 
     private Converter<String, String> toCucumberTags() {
