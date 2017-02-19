@@ -1,7 +1,10 @@
 package net.serenitybdd.cucumber.outcomes
 
 import com.github.goldin.spock.extensions.tempdir.TempDir
+import net.serenitybdd.cucumber.CucumberWithSerenity
 import net.serenitybdd.cucumber.integration.*
+import net.thucydides.core.ThucydidesSystemProperty
+import net.thucydides.core.configuration.SystemPropertiesConfiguration
 import net.thucydides.core.model.TestOutcome
 import net.thucydides.core.model.TestResult
 import net.thucydides.core.model.TestStep
@@ -9,14 +12,32 @@ import net.thucydides.core.model.TestTag
 import net.thucydides.core.reports.OutcomeFormat
 import net.thucydides.core.reports.TestOutcomeLoader
 import net.thucydides.core.steps.StepEventBus
+import net.thucydides.core.util.MockEnvironmentVariables
+import net.thucydides.core.webdriver.Configuration
+import org.junit.Before
+import org.junit.runner.notification.RunNotifier
+import org.mockito.MockitoAnnotations
 import spock.lang.Specification
 
 import static net.serenitybdd.cucumber.util.CucumberRunner.serenityRunnerForCucumberTestRunner
+import static org.hamcrest.MatcherAssert.assertThat
+import static org.hamcrest.Matchers.hasItem
 
 class WhenCreatingSerenityTestOutcomes extends Specification {
 
     @TempDir
     File outputDirectory
+
+    MockEnvironmentVariables environmentVariables;
+
+    Configuration configuration;
+
+    @Before
+    public void initMocks() {
+        MockitoAnnotations.initMocks(this);
+        environmentVariables = new MockEnvironmentVariables();
+        configuration = new SystemPropertiesConfiguration(environmentVariables);
+    }
 
     /*
     Feature: A simple feature
@@ -73,10 +94,60 @@ class WhenCreatingSerenityTestOutcomes extends Specification {
 
         then:
         testOutcome.result == TestResult.FAILURE
+        stepResults.size() == 5
+        recordedTestOutcomes.size() == 2
         and:
         stepResults == [TestResult.SUCCESS,TestResult.SUCCESS,TestResult.SUCCESS,TestResult.FAILURE, TestResult.SKIPPED]
         and:
         testOutcome.testSteps[3].errorMessage.contains("expected:<[2]0> but was:<[1]0>")
+    }
+
+    def "should record failures for a failing scenario with retries"() {
+        given:
+        environmentVariables.setProperty(ThucydidesSystemProperty.TEST_RETRY_COUNT_CUCUMBER.getPropertyName(), "3");
+        def cucumber = new CucumberWithSerenity(FailingScenario.class,environmentVariables).withOutputDirectory(outputDirectory);
+
+        when:
+        cucumber.run(new RunNotifier())
+        List<TestOutcome>  recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory).sort{it.name};
+        TestOutcome testOutcome = recordedTestOutcomes[0]
+        List<TestStep> testSteps = testOutcome.testSteps;
+        List<TestResult> stepResults = testOutcome.testSteps.collect { step -> step.result }
+
+        then:
+        testOutcome.result == TestResult.FAILURE
+        testSteps.size() == 5
+        stepResults.size() == 5
+        recordedTestOutcomes.size() == 2
+        and:
+        stepResults == [TestResult.SUCCESS,TestResult.SUCCESS,TestResult.SUCCESS,TestResult.FAILURE, TestResult.SKIPPED]
+        and:
+        testOutcome.testSteps[3].errorMessage.contains("expected:<[2]0> but was:<[1]0>")
+    }
+
+    def "should rerun the instable scenario and succeed"() {
+        given:
+        environmentVariables.setProperty(ThucydidesSystemProperty.TEST_RETRY_COUNT_CUCUMBER.getPropertyName(), "3");
+        def cucumber = new CucumberWithSerenity(InstableScenario.class,environmentVariables).withOutputDirectory(outputDirectory);
+
+        when:
+        cucumber.run(new RunNotifier())
+        List<TestOutcome>  recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory).sort{it.name};
+        TestOutcome testOutcome = recordedTestOutcomes[0]
+        List<TestStep> testSteps = testOutcome.testSteps;
+        List<TestResult> stepResults = testOutcome.testSteps.collect { step -> step.result }
+
+        then:
+        testOutcome.result == TestResult.SUCCESS
+        testSteps.size() == 5
+        stepResults.size() == 5
+        recordedTestOutcomes.size() == 1
+        and:
+        stepResults == [TestResult.SUCCESS,TestResult.SUCCESS,TestResult.SUCCESS,TestResult.SUCCESS, TestResult.IGNORED]
+        and:
+        testSteps.get(4).getDescription().contains("UNSTABLE TEST")
+        and:
+        assertThat(testOutcome.getTags(), hasItem(TestTag.withName("Retries: 3").andType("unstable test")));
     }
 
     def "should record a feature tag based on the name of the feature when the feature name is different from the feature file name"() {
@@ -209,6 +280,7 @@ It goes for two lines"""
 
     def "should generate a well-structured Thucydides test outcome for feature files with several Cucumber scenario"() {
         given:
+        environmentVariables.setProperty(ThucydidesSystemProperty.TEST_RETRY_COUNT_CUCUMBER.getPropertyName(), "0");
         def runtime = serenityRunnerForCucumberTestRunner(MultipleScenarios.class, outputDirectory);
 
         when:
