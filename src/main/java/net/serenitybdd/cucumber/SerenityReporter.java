@@ -181,13 +181,6 @@ public class SerenityReporter implements Formatter, Reporter {
         }
     }
 
-    private void checkForManual(Feature feature) {
-        if (isManual(feature.getTags())) {
-            forcedStoryResult = Optional.of(TestResult.SKIPPED);
-            StepEventBus.getEventBus().testIsManual();
-        }
-    }
-
     private void checkForSkipped(Feature feature) {
         if (isSkippedOrWIP(feature.getTags())) {
             forcedStoryResult = Optional.of(TestResult.SKIPPED);
@@ -203,6 +196,14 @@ public class SerenityReporter implements Formatter, Reporter {
     private void checkForSkippedScenario(List<Tag> tags) {
         if (isSkippedOrWIP(tags)) {
             forcedScenarioResult = Optional.of(TestResult.SKIPPED);
+        }
+    }
+
+    private void checkForManual(Feature feature) {
+        if (isManual(feature.getTags())) {
+            forcedStoryResult = Optional.of(TestResult.SKIPPED);
+            StepEventBus.getEventBus().testIsManual();
+            StepEventBus.getEventBus().suspendTest(TestResult.SKIPPED);
         }
     }
 
@@ -224,7 +225,7 @@ public class SerenityReporter implements Formatter, Reporter {
 
     private boolean isSkippedOrWIP(List<Tag> tags) {
         for (Tag tag : tags) {
-            if (SKIPPED_TAGS.contains(tag.getName())) {
+            if (SKIPPED_TAGS.contains(tag.getName().toLowerCase())) {
                 return true;
             }
         }
