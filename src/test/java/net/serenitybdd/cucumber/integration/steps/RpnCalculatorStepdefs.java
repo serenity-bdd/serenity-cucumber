@@ -27,13 +27,19 @@ public class RpnCalculatorStepdefs {
         calc.push("+");
     }
 
+    @When("^I enter (\\d+) and (\\d+)$")
+    public void entering(int arg1, int arg2) {
+        calc.push(arg1);
+        calc.push(arg2);
+    }
+
     @Given("^I press (.+)$")
     public void I_press(String what) {
         calc.push(what);
     }
 
     @Then("^the result is (\\d+)$")
-    public void the_result_is(double expected) {
+    public void the_result_is(Integer expected) {
         assertEquals(expected, calc.value());
     }
 
