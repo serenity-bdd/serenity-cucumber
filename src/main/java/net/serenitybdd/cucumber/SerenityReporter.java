@@ -13,6 +13,7 @@ import gherkin.formatter.model.DataTableRow;
 import net.serenitybdd.core.Serenity;
 import net.serenitybdd.core.SerenityListeners;
 import net.serenitybdd.core.SerenityReports;
+import net.thucydides.core.ThucydidesSystemProperty;
 import net.thucydides.core.model.*;
 import net.thucydides.core.model.stacktrace.FailureCause;
 import net.thucydides.core.model.stacktrace.RootCauseAnalyzer;
@@ -80,6 +81,8 @@ public class SerenityReporter implements Formatter, Reporter {
     private Optional<TestResult> forcedStoryResult = Optional.absent();
     private Optional<TestResult> forcedScenarioResult = Optional.absent();
 
+    private int retries = 0;
+    private int maxRetries = 0;
 
     private void clearStoryResult() {
         forcedStoryResult = Optional.absent();
@@ -89,6 +92,7 @@ public class SerenityReporter implements Formatter, Reporter {
         forcedScenarioResult = Optional.absent();
     }
 
+    private String currentTest;
 
     private boolean isPendingStory() {
         return ((forcedStoryResult.or(TestResult.UNDEFINED) == TestResult.PENDING)
@@ -409,14 +413,21 @@ public class SerenityReporter implements Formatter, Reporter {
             }
             startExample();
         } else {
-            startScenario(scenario);
+            if(newScenario) {
+                startScenario(scenario);
+            }
+            else { //retry
+                if(maxRetries > 0) {
+                    retries++;
+                }
+            }
         }
-
     }
 
     private void startScenario(Scenario scenario) {
         clearScenarioResult();
         StepEventBus.getEventBus().setTestSource(StepEventBus.TEST_SOURCE_CUCUMBER);
+        currentTest = scenario.getName();
         StepEventBus.getEventBus().testStarted(scenario.getName(), scenario.getId());
         StepEventBus.getEventBus().addDescriptionToCurrentTest(scenario.getDescription());
         StepEventBus.getEventBus().addTagsToCurrentTest(convertCucumberTags(currentFeature.getTags()));
@@ -507,9 +518,36 @@ public class SerenityReporter implements Formatter, Reporter {
         if (examplesRunning) {
             finishExample();
         } else {
-            generateReports();
+            if (lastTestFailed() && maxRetries > 0 && (retries < maxRetries)) {
+                StepEventBus.getEventBus().cancelPreviousTest();
+                StepEventBus.getEventBus().testStarted(currentTest);
+            } else {
+                if(retries > 0) {
+                    TestOutcome testOutcome = StepEventBus.getEventBus().getBaseStepListener().getTestOutcomes().get(getAllTestOutcomes().size() - 1);
+                    if(testOutcome.isSuccess()) {
+                        StepEventBus.getEventBus().lastTestPassedAfterRetries(retries + 1,new ArrayList<String>(),null);
+                    }
+                    retries = 0;
+                }
+                generateReports();
+            }
         }
     }
+
+    private boolean lastTestFailed(){
+        return getAllTestOutcomes().get(getAllTestOutcomes().size() - 1).getResult() == TestResult.FAILURE;
+    }
+
+    private boolean useUniqueBrowser(Scenario scenario) {
+        return (uniqueBrowserTag
+                || ThucydidesSystemProperty.THUCYDIDES_USE_UNIQUE_BROWSER.booleanFrom(systemConfiguration.getEnvironmentVariables(), false)
+                || useUniqueBrowserForThisScenario(scenario));
+    }
+
+    private boolean useUniqueBrowserForThisScenario(Scenario scenario) {
+        return getUniqueBrowserTagFrom(getTagNamesFrom(scenario.getTags()));
+    }
+
 
     private void startExample() {
         Map<String, String> data = exampleRows.get(currentExample);
@@ -609,7 +647,6 @@ public class SerenityReporter implements Formatter, Reporter {
                 StepEventBus.getEventBus().testFinished();
             }
         }
-
     }
 
     private void updatePendingResults() {
@@ -669,8 +706,7 @@ public class SerenityReporter implements Formatter, Reporter {
     }
 
     @Override
-    public void after(Match match, Result result) {
-    }
+    public void after(Match match, Result result) {}
 
     @Override
     public void match(Match match) {
@@ -729,5 +765,9 @@ public class SerenityReporter implements Formatter, Reporter {
 
     private String normalized(String value) {
         return value.replaceAll(OPEN_PARAM_CHAR, "{").replaceAll(CLOSE_PARAM_CHAR, "}");
+    }
+
+    public void setMaxRetryCount(int maxRetryCount) {
+        this.maxRetries = maxRetryCount;
     }
 }
