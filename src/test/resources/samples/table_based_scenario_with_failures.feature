@@ -1,6 +1,8 @@
 Feature: Buying things
 
   Scenario Outline: Buying lots of widgets
+    An error is thrown when the cost is negative
+
     Given I want to purchase <amount> widgets
     And a widget costs $<cost>
     When I buy the widgets
@@ -8,7 +10,7 @@ Feature: Buying things
   Examples:
   | amount | cost | total |
   | 0      | 10   | 0     |
-  | 1      | 10   | 10    |
+  | 1      | -1   | 10    |
   | 2      | 10   | 50    |
   | 2      | 0    | 0     |
 

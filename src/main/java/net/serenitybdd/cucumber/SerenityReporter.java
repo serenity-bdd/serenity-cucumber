@@ -13,7 +13,6 @@ import gherkin.formatter.model.DataTableRow;
 import net.serenitybdd.core.Serenity;
 import net.serenitybdd.core.SerenityListeners;
 import net.serenitybdd.core.SerenityReports;
-import net.thucydides.core.ThucydidesSystemProperty;
 import net.thucydides.core.model.*;
 import net.thucydides.core.model.stacktrace.FailureCause;
 import net.thucydides.core.model.stacktrace.RootCauseAnalyzer;
@@ -128,6 +127,8 @@ public class SerenityReporter implements Formatter, Reporter {
     public void syntaxError(String state, String event, List<String> legalEvents, String uri, Integer line) {
     }
 
+    FeatureFileContents featureFileContents;
+
     @Override
     public void uri(String uri) {
         currentUri = uri;
@@ -137,8 +138,8 @@ public class SerenityReporter implements Formatter, Reporter {
         }
         defaultFeatureId = new File(currentUri).getName().replace(".feature", "");
         defaultFeatureName = Inflector.getInstance().humanize(defaultFeatureId);
+        featureFileContents = new FeatureFileContents(uri);
     }
-
 
     @Override
     public void feature(Feature feature) {
@@ -283,16 +284,22 @@ public class SerenityReporter implements Formatter, Reporter {
 
     boolean addingScenarioOutlineSteps = false;
 
+    int scenarioOutlineStartsAt;
+
     @Override
     public void scenarioOutline(ScenarioOutline scenarioOutline) {
         addingScenarioOutlineSteps = true;
-//        startScenario(scenarioOutline.getName(), scenarioOutline.getDescription(), scenarioOutline.getTags());
+        scenarioOutlineStartsAt = scenarioOutline.getLine();
     }
 
     String currentScenarioId;
 
     @Override
     public void examples(Examples examples) {
+
+        String scenarioOutline = featureFileContents.betweenLine(scenarioOutlineStartsAt)
+                                                    .and(examples.getLine() - 1);
+
         addingScenarioOutlineSteps = false;
         reinitializeExamples();
         List<ExamplesTableRow> examplesTableRows = examples.getRows();
@@ -307,7 +314,7 @@ public class SerenityReporter implements Formatter, Reporter {
         boolean newScenario = !scenarioId.equals(currentScenarioId);
 
         table = (newScenario) ?
-                thucydidesTableFrom(headers, rows, examples.getName(), examples.getDescription())
+                thucydidesTableFrom(scenarioOutline, headers, rows, examples.getName(), examples.getDescription())
                 : addTableRowsTo(table, headers, rows, examples.getName(), examples.getDescription());
         exampleCount = examples.getRows().size() - 1;
 
@@ -356,11 +363,12 @@ public class SerenityReporter implements Formatter, Reporter {
         exampleRows.add(row);
     }
 
-    private DataTable thucydidesTableFrom(List<String> headers,
+    private DataTable thucydidesTableFrom(String scenarioOutline,
+                                          List<String> headers,
                                           List<Map<String, String>> rows,
                                           String name,
                                           String description) {
-        return DataTable.withHeaders(headers).andMappedRows(rows).andTitle(name).andDescription(description).build();
+        return DataTable.withHeaders(headers).andScenarioOutline(scenarioOutline).andMappedRows(rows).andTitle(name).andDescription(description).build();
     }
 
     private DataTable addTableRowsTo(DataTable table, List<String> headers,
@@ -433,6 +441,7 @@ public class SerenityReporter implements Formatter, Reporter {
     private Optional<TestResult> forcedResult() {
         return forcedStoryResult.or(forcedScenarioResult);
     }
+
     private void updateTestResultsFromTags() {
         if (!forcedResult().isPresent()) {
             return;
@@ -500,21 +509,7 @@ public class SerenityReporter implements Formatter, Reporter {
         } else {
             generateReports();
         }
-//        if (!useUniqueBrowser(scenario)) {
-//            ThucydidesWebDriverSupport.closeAllDrivers();
-//        }
     }
-
-    private boolean useUniqueBrowser(Scenario scenario) {
-        return (uniqueBrowserTag
-                || ThucydidesSystemProperty.THUCYDIDES_USE_UNIQUE_BROWSER.booleanFrom(systemConfiguration.getEnvironmentVariables(), false)
-                || useUniqueBrowserForThisScenario(scenario));
-    }
-
-    private boolean useUniqueBrowserForThisScenario(Scenario scenario) {
-        return getUniqueBrowserTagFrom(getTagNamesFrom(scenario.getTags()));
-    }
-
 
     private void startExample() {
         Map<String, String> data = exampleRows.get(currentExample);
@@ -629,14 +624,44 @@ public class SerenityReporter implements Formatter, Reporter {
         }
     }
 
+    private boolean aFailureForTheCurrentScenarioHasAlreadyBeenRecorded() {
+        return StepEventBus.getEventBus().getBaseStepListener().aStepHasFailedInTheCurrentExample();
+    }
+
     public void failed(String stepTitle, Throwable cause) {
-        Throwable rootCause = new RootCauseAnalyzer(cause).getRootCause().toException();
-        StepEventBus.getEventBus().updateCurrentStepTitle(stepTitle);
-        if (isAssumptionFailure(rootCause)) {
-            StepEventBus.getEventBus().assumptionViolated(rootCause.getMessage());
-        } else {
-            StepEventBus.getEventBus().stepFailed(new StepFailure(ExecutedStepDescription.withTitle(normalized(stepTitle)), rootCause));
+
+        if (!errorOrFailureRecordedForStep(stepTitle, cause)) {
+            StepEventBus.getEventBus().updateCurrentStepTitle(stepTitle);
+            Throwable rootCause = new RootCauseAnalyzer(cause).getRootCause().toException();
+
+            if (isAssumptionFailure(rootCause)) {
+                StepEventBus.getEventBus().assumptionViolated(rootCause.getMessage());
+            } else {
+                StepEventBus.getEventBus().stepFailed(new StepFailure(ExecutedStepDescription.withTitle(normalized(stepTitle)), rootCause));
+            }
         }
+    }
+
+    private boolean errorOrFailureRecordedForStep(String stepTitle, Throwable cause) {
+        if (!latestTestOutcome().isPresent()) {
+            return false;
+        }
+        if (!latestTestOutcome().get().testStepWithDescription(stepTitle).isPresent()) {
+            return false;
+        }
+
+        Optional<TestStep> matchingTestStep = latestTestOutcome().get().testStepWithDescription(stepTitle);
+        if (matchingTestStep.isPresent() && matchingTestStep.get().getException() != null) {
+            return (matchingTestStep.get().getException().getOriginalCause() == cause);
+        }
+
+        return false;
+    }
+
+    private Optional<TestOutcome> latestTestOutcome() {
+        List<TestOutcome> recordedOutcomes = StepEventBus.getEventBus().getBaseStepListener().getTestOutcomes();
+        return (recordedOutcomes.isEmpty()) ? Optional.<TestOutcome>absent()
+                : Optional.of(recordedOutcomes.get(recordedOutcomes.size() - 1));
     }
 
     private boolean isAssumptionFailure(Throwable rootCause) {
@@ -644,7 +669,8 @@ public class SerenityReporter implements Formatter, Reporter {
     }
 
     @Override
-    public void after(Match match, Result result) {}
+    public void after(Match match, Result result) {
+    }
 
     @Override
     public void match(Match match) {
