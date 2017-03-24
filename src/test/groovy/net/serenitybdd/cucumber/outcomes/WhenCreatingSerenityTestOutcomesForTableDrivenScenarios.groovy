@@ -10,6 +10,7 @@ import spock.lang.Specification
 import static net.serenitybdd.cucumber.util.CucumberRunner.serenityRunnerForCucumberTestRunner
 import static net.thucydides.core.model.TestResult.FAILURE
 import static net.thucydides.core.model.TestResult.SUCCESS
+import static net.thucydides.core.model.TestResult.ERROR
 
 class WhenCreatingSerenityTestOutcomesForTableDrivenScenarios extends Specification {
 
@@ -82,10 +83,83 @@ class WhenCreatingSerenityTestOutcomesForTableDrivenScenarios extends Specificat
         testOutcome.stepCount == 4
 
         and:
+        testOutcome.dataTable.rows.collect { it.result } == [SUCCESS, ERROR, FAILURE, SUCCESS]
+
+        and:
+        testOutcome.errorMessage.contains "Oh Crap!"
+
+        and:
+        testOutcome.result == ERROR
+
+    }
+
+    def "should run table-driven screenplay scenarios with failing rows"() {
+        given:
+        def runtime = serenityRunnerForCucumberTestRunner(SimpleScreenplayTableScenarioWithFailures.class, outputDirectory);
+
+        when:
+        runtime.run();
+        def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory);
+        def testOutcome = recordedTestOutcomes[0]
+
+        then:
+        testOutcome.title == "Buying lots of widgets"
+
+        and: "there should be one step for each row in the table"
+        testOutcome.stepCount == 4
+
+        and:
         testOutcome.dataTable.rows.collect { it.result } == [SUCCESS, SUCCESS, FAILURE, SUCCESS]
 
         and:
-        testOutcome.errorMessage.contains "expected:<[5]0> but was:<[2]0>"
+        testOutcome.result == FAILURE
+
+    }
+
+    def "should run table-driven screenplay scenarios with rows containing errors"() {
+        given:
+        def runtime = serenityRunnerForCucumberTestRunner(SimpleScreenplayTableScenarioWithErrors.class, outputDirectory);
+
+        when:
+        runtime.run();
+        def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory);
+        def testOutcome = recordedTestOutcomes[0]
+
+        then:
+        testOutcome.title == "Buying lots of widgets"
+
+        and: "there should be one step for each row in the table"
+        testOutcome.stepCount == 4
+
+        and:
+        testOutcome.dataTable.rows.collect { it.result } == [SUCCESS, FAILURE, ERROR, SUCCESS]
+
+        and:
+        testOutcome.result == ERROR
+
+    }
+
+    def "should run table-driven screenplay scenarios with rows containing failures and errors"() {
+        given:
+        def runtime = serenityRunnerForCucumberTestRunner(SimpleScreenplayTableScenarioWithFailuresAndErrors.class, outputDirectory);
+
+        when:
+        runtime.run();
+        def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory);
+        def testOutcome = recordedTestOutcomes[0]
+
+        then:
+        testOutcome.title == "Buying lots of widgets"
+
+        and: "there should be one step for each row in the table"
+        testOutcome.stepCount == 4
+
+        and:
+        testOutcome.dataTable.rows.collect { it.result } == [SUCCESS, ERROR, FAILURE, SUCCESS]
+
+        and:
+        testOutcome.result == ERROR
+
     }
 
 
@@ -128,24 +202,11 @@ class WhenCreatingSerenityTestOutcomesForTableDrivenScenarios extends Specificat
         def testOutcome = recordedTestOutcomes[0]
 
         then:
-        testOutcome.testSteps[0].result = TestResult.SUCCESS
-        testOutcome.testSteps[1].result = TestResult.SUCCESS
-        testOutcome.testSteps[2].result = TestResult.ERROR
-        testOutcome.testSteps[3].result = TestResult.FAILURE
-        testOutcome.testSteps[4].result = TestResult.SUCCESS
-
-        and:
-        testOutcome.dataTable.dataSets.size() == 2
-
-        and:
-        testOutcome.dataTable.dataSets[0].name == "Single digits"
-        testOutcome.dataTable.dataSets[0].description == "With just one digit"
-        testOutcome.dataTable.dataSets[0].rows.size() == 2
-
-        and:
-        testOutcome.dataTable.dataSets[1].name == "Double digits"
-        testOutcome.dataTable.dataSets[1].description == "With more digits than one"
-        testOutcome.dataTable.dataSets[1].rows.size() == 3
+        testOutcome.testSteps[0].result == TestResult.SUCCESS
+        testOutcome.testSteps[1].result == TestResult.SUCCESS
+        testOutcome.testSteps[2].result == TestResult.ERROR
+        testOutcome.testSteps[3].result == TestResult.FAILURE
+        testOutcome.testSteps[4].result == TestResult.SUCCESS
 
     }
 
