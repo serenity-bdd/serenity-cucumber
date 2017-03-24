@@ -41,13 +41,15 @@ public class FeatureFileContents {
 
         if (featureFileAsAResource != null) {
             return new File(featureFileAsAResource.getFile());
+        } else if (Files.exists(Paths.get(featureFileName))) {
+            return new File(featureFileName);
         } else {
             return featureFileFromConfiguredPaths(featureFileName);
         }
     }
 
     private File featureFileFromConfiguredPaths(String featureFileName) throws IOException {
-        for(String path : CucumberWithSerenity.currentRuntimeOptions().getFeaturePaths()) {
+        for (String path : CucumberWithSerenity.currentRuntimeOptions().getFeaturePaths()) {
             if (Files.exists(candidatePath(path, featureFileName))) {
                 return candidatePath(path, featureFileName).toFile();
             }
@@ -71,8 +73,12 @@ public class FeatureFileContents {
         }
 
         public String and(Integer endRow) {
+            if (endRow >= lines.size()) {
+                return "";
+            }
+
             List<String> rows = Lists.newArrayList();
-            for(int row = startRow; row < endRow; row++) {
+            for (int row = startRow; row < endRow; row++) {
                 rows.add(lines.get(row));
             }
             return Joiner.on(System.lineSeparator()).join(rows);
