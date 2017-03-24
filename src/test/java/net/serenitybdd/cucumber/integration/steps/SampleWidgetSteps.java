@@ -3,6 +3,7 @@ package net.serenitybdd.cucumber.integration.steps;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
+import net.serenitybdd.cucumber.integration.steps.thucydides.WidgetRetrySteps;
 import net.serenitybdd.cucumber.integration.steps.thucydides.WidgetSteps;
 import net.serenitybdd.screenplay.Actor;
 import net.serenitybdd.screenplay.Performable;
@@ -27,6 +28,10 @@ public class SampleWidgetSteps {
 
     @Steps
     WidgetSteps widgetSteps;
+
+    @Steps
+    WidgetRetrySteps widgetRetrySteps;
+
 
     @Given("I have \\$(\\d+)")
     public void iHaveMoney(int money) {
@@ -145,4 +150,8 @@ public class SampleWidgetSteps {
         john.should(seeThat(TheTotalPrice.ofTheGizmos(billedPrice), equalTo(totalPrice)));
     }
 
+    @Then("I should perhaps be billed \\$(\\d+)")
+    public void shouldPerhapsBeBilled(int totalPrice) {
+        widgetRetrySteps.aStepThatFailsOnMultipleOfFourTries();
+    }
 }

@@ -58,12 +58,19 @@ public class CucumberWithSerenity extends ParentRunner<SerenityFeatureRunner> {
         initialize(clazz, environmentVariables);
     }
 
+    private static ThreadLocal<RuntimeOptions> RUNTIME_OPTIONS = new ThreadLocal<>();
+
+    public static RuntimeOptions currentRuntimeOptions() {
+        return RUNTIME_OPTIONS.get();
+    }
+
     private void initialize(Class clazz,EnvironmentVariables environmentVariables) throws InitializationError, IOException {
         maxRetryCount = TEST_RETRY_COUNT_CUCUMBER.integerFrom(environmentVariables, 0);
         ClassLoader classLoader = clazz.getClassLoader();
         assertNoCucumberAnnotatedMethods(clazz);
         RuntimeOptionsFactory runtimeOptionsFactory = new RuntimeOptionsFactory(clazz);
         RuntimeOptions runtimeOptions = runtimeOptionsFactory.create();
+        RUNTIME_OPTIONS.set(runtimeOptions);
         ResourceLoader resourceLoader = new MultiLoader(classLoader);
         runtime = createRuntime(resourceLoader, classLoader, runtimeOptions);
         final JUnitOptions junitOptions = new JUnitOptions(runtimeOptions.getJunitOptions());
@@ -139,6 +146,9 @@ public class CucumberWithSerenity extends ParentRunner<SerenityFeatureRunner> {
         ClassFinder classFinder = new ResourceLoaderClassFinder(resourceLoader, classLoader);
         SerenityReporter reporter = new SerenityReporter(systemConfiguration);
         runtimeOptions.addPlugin(reporter);
+
+        RUNTIME_OPTIONS.set(runtimeOptions);
+
         return new Runtime(resourceLoader, classFinder, classLoader, runtimeOptions);
     }
 
@@ -151,6 +161,9 @@ public class CucumberWithSerenity extends ParentRunner<SerenityFeatureRunner> {
         SerenityReporter reporter = new SerenityReporter(systemConfiguration);
         reporter.setMaxRetryCount(maxRetryCount);
         runtimeOptions.addPlugin(reporter);
+
+        RUNTIME_OPTIONS.set(runtimeOptions);
+
         return new Runtime(resourceLoader, classFinder, classLoader, runtimeOptions);
     }
 
