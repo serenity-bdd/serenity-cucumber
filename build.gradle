@@ -51,7 +51,7 @@ ext {
 }
 
 group = 'net.serenity-bdd'
-version = versionCounter.nextVersion
+version = '1.2.5-SNAPSHOT'// versionCounter.nextVersion
 
 
 task createNewVersionTag(type: Exec) {
