@@ -625,10 +625,6 @@ public class SerenityReporter implements Formatter, Reporter {
         }
     }
 
-    private boolean aFailureForTheCurrentScenarioHasAlreadyBeenRecorded() {
-        return StepEventBus.getEventBus().getBaseStepListener().aStepHasFailedInTheCurrentExample();
-    }
-
     public void failed(String stepTitle, Throwable cause) {
 
         if (!errorOrFailureRecordedForStep(stepTitle, cause)) {
