@@ -191,25 +191,6 @@ class WhenCreatingSerenityTestOutcomesForTableDrivenScenarios extends Specificat
 
     }
 
-
-    def "should handle example tables with errors"() {
-        given:
-        def runtime = serenityRunnerForCucumberTestRunner(BasicArithemticWithTablesScenarioWithErrors.class, outputDirectory);
-
-        when:
-        runtime.run();
-        def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory);
-        def testOutcome = recordedTestOutcomes[0]
-
-        then:
-        testOutcome.testSteps[0].result == TestResult.SUCCESS
-        testOutcome.testSteps[1].result == TestResult.SUCCESS
-        testOutcome.testSteps[2].result == TestResult.ERROR
-        testOutcome.testSteps[3].result == TestResult.FAILURE
-        testOutcome.testSteps[4].result == TestResult.SUCCESS
-
-    }
-
     def "should handle multiple example tables with backgrounds"() {
         given:
         def runtime = serenityRunnerForCucumberTestRunner(BasicArithemticWithTablesAndBackgroundScenario.class, outputDirectory);
@@ -328,6 +309,33 @@ class WhenCreatingSerenityTestOutcomesForTableDrivenScenarios extends Specificat
         and:
         testOutcome.dataTable.dataSets[0].rows[0].getResult() == TestResult.SUCCESS
         testOutcome.dataTable.dataSets[0].rows[1].getResult() == TestResult.SUCCESS
+
+    }
+
+    def "should handle example tables with errors"() {
+        given:
+        def runtime = serenityRunnerForCucumberTestRunner(BasicArithemticWithTablesScenarioWithErrors.class, outputDirectory);
+
+        when:
+        runtime.run();
+        def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory);
+        def testOutcome = recordedTestOutcomes[0]
+
+        then:
+        testOutcome.dataTable.rows.collect { it.result } == [SUCCESS, SUCCESS, ERROR, FAILURE, SUCCESS]
+
+//        and:
+//        testOutcome.dataTable.dataSets.size() == 2
+
+        and:
+        testOutcome.dataTable.dataSets[0].name == "Single digits"
+        testOutcome.dataTable.dataSets[0].description == "With just one digit"
+        testOutcome.dataTable.dataSets[0].rows.size() == 2
+
+        and:
+        testOutcome.dataTable.dataSets[1].name == "Double digits"
+        testOutcome.dataTable.dataSets[1].description == "With more digits than one"
+        testOutcome.dataTable.dataSets[1].rows.size() == 3
 
     }
 

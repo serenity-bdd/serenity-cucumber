@@ -183,7 +183,7 @@ public class SerenityReporter implements Formatter, Reporter {
     }
 
     private void checkForSkipped(Feature feature) {
-        if (isSkippedOrWIP(feature.getTags())) {
+            if (isSkippedOrWIP(feature.getTags())) {
             forcedStoryResult = Optional.of(TestResult.SKIPPED);
         }
     }

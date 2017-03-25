@@ -27,12 +27,6 @@ public class RpnCalculatorStepdefs {
         calc.push("+");
     }
 
-    @When("^I enter (\\d+) and (\\d+)$")
-    public void entering(int arg1, int arg2) {
-        calc.push(arg1);
-        calc.push(arg2);
-    }
-
     @Given("^I press (.+)$")
     public void I_press(String what) {
         calc.push(what);
@@ -62,6 +56,13 @@ public class RpnCalculatorStepdefs {
             calc.push(entry.operation);
         }
     }
+
+    @When("^I enter (\\d+) and (\\d+)$")
+    public void entering(int arg1, int arg2) {
+        calc.push(arg1);
+        calc.push(arg2);
+    }
+
 
     public class Entry {
         Integer first;

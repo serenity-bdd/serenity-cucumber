@@ -34,6 +34,12 @@ public class CucumberWithSerenity extends Cucumber {
         super(clazz);
     }
 
+    private static ThreadLocal<RuntimeOptions> RUNTIME_OPTIONS = new ThreadLocal<>();
+
+    public static RuntimeOptions currentRuntimeOptions() {
+        return RUNTIME_OPTIONS.get();
+    }
+
     /**
      * Create the Runtime. Sets the Serenity runtime.
      */
@@ -41,6 +47,7 @@ public class CucumberWithSerenity extends Cucumber {
                                                      ClassLoader classLoader,
                                                      RuntimeOptions runtimeOptions) throws InitializationError, IOException {
         runtimeOptions.getFilters().addAll(environmentSpecifiedTags(runtimeOptions.getFilters()));
+        RUNTIME_OPTIONS.set(runtimeOptions);
         return createSerenityEnabledRuntime(resourceLoader, classLoader, runtimeOptions);
     }
 
@@ -86,6 +93,7 @@ public class CucumberWithSerenity extends Cucumber {
         ClassFinder classFinder = new ResourceLoaderClassFinder(resourceLoader, classLoader);
         SerenityReporter reporter = new SerenityReporter(systemConfiguration);
         runtimeOptions.addPlugin(reporter);
+        RUNTIME_OPTIONS.set(runtimeOptions);
         return new Runtime(resourceLoader, classFinder, classLoader, runtimeOptions);
     }
 }
