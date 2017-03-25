@@ -1,4 +1,4 @@
-package net.serenitybdd.cucumber;
+package net.serenitybdd.cucumber.model;
 
 import com.beust.jcommander.internal.Lists;
 import com.google.common.base.Joiner;
@@ -8,11 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,29 +57,15 @@ public class FeatureFileContents {
 
     private File featureFileWithName(String featureFileName) throws IOException {
 
-        URL featureFileAsAResource = this.getClass().getClassLoader().getResource(featureFileName);
+        StoredFeatureFile theStoredFeatureFile = StoredFeatureFile.withName(featureFileName);
 
-        if (featureFileAsAResource != null) {
-            return new File(featureFileAsAResource.getFile());
-        } else if (Files.exists(Paths.get(featureFileName))) {
-            return new File(featureFileName);
+        if (theStoredFeatureFile.existsOnTheClasspath()) {
+            return StoredFeatureFile.withName(featureFileName).onTheClasspath();
+        } else if (theStoredFeatureFile.existsOnTheFileSystem()) {
+            return theStoredFeatureFile.onTheFileSystem();
         } else {
-            return featureFileFromConfiguredPaths(featureFileName);
+            return theStoredFeatureFile.fromTheConfiguredPaths();
         }
-    }
-
-
-    private File featureFileFromConfiguredPaths(String featureFileName) throws IOException {
-        for(String path : CucumberWithSerenity.currentRuntimeOptions().getFeaturePaths()) {
-            if (Files.exists(candidatePath(path, featureFileName))) {
-                return candidatePath(path, featureFileName).toFile();
-            }
-        }
-        throw new IOException("No such feature file found for " + featureFileName);
-    }
-
-    private Path candidatePath(String path, String featureFileName) {
-        return Paths.get(Joiner.on(File.separator).join(path, featureFileName));
     }
 }
 
