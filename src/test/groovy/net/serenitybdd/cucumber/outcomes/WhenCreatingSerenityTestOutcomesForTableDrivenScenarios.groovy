@@ -323,20 +323,6 @@ class WhenCreatingSerenityTestOutcomesForTableDrivenScenarios extends Specificat
 
         then:
         testOutcome.dataTable.rows.collect { it.result } == [SUCCESS, SUCCESS, ERROR, FAILURE, SUCCESS]
-
-//        and:
-//        testOutcome.dataTable.dataSets.size() == 2
-
-        and:
-        testOutcome.dataTable.dataSets[0].name == "Single digits"
-        testOutcome.dataTable.dataSets[0].description == "With just one digit"
-        testOutcome.dataTable.dataSets[0].rows.size() == 2
-
-        and:
-        testOutcome.dataTable.dataSets[1].name == "Double digits"
-        testOutcome.dataTable.dataSets[1].description == "With more digits than one"
-        testOutcome.dataTable.dataSets[1].rows.size() == 3
-
     }
 
 }
