@@ -298,7 +298,8 @@ public class SerenityReporter implements Formatter, Reporter {
     @Override
     public void examples(Examples examples) {
 
-        String scenarioOutline = featureFileContents.betweenLine(scenarioOutlineStartsAt)
+        String scenarioOutline = featureFileContents.trimmedContent()
+                                                    .betweenLine(scenarioOutlineStartsAt)
                                                     .and(examples.getLine() - 1);
 
         addingScenarioOutlineSteps = false;

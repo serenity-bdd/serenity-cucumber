@@ -32,13 +32,19 @@ public class FeatureFileContents {
     }
 
     public RowSelector betweenLine(int startRow) {
-        return new RowSelector(startRow);
+        return new RowSelector(startRow, false);
+    }
+
+    public RowSelectorBuilder trimmedContent() {
+        return new RowSelectorBuilder(true);
     }
 
     public class RowSelector {
         private final int startRow;
+        private final boolean trim;
 
-        public RowSelector(int startRow) {
+        public RowSelector(int startRow, boolean trim) {
+            this.trim = trim;
             this.startRow = startRow;
         }
 
@@ -48,8 +54,9 @@ public class FeatureFileContents {
             }
 
             List<String> rows = Lists.newArrayList();
-            for(int row = startRow; row < endRow; row++) {
-                rows.add(lines.get(row));
+            for (int row = startRow; row < endRow; row++) {
+                String line = (trim) ? lines.get(row).trim() : lines.get(row);
+                rows.add(line);
             }
             return Joiner.on(System.lineSeparator()).join(rows);
         }
@@ -65,6 +72,18 @@ public class FeatureFileContents {
             return theStoredFeatureFile.onTheFileSystem();
         } else {
             return theStoredFeatureFile.fromTheConfiguredPaths();
+        }
+    }
+
+    public class RowSelectorBuilder {
+        private final boolean trim;
+
+        public RowSelectorBuilder(boolean trim) {
+            this.trim = trim;
+        }
+
+        public RowSelector betweenLine(int startRow) {
+            return new RowSelector(startRow, trim);
         }
     }
 }
