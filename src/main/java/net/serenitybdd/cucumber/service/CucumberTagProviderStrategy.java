@@ -1,10 +1,11 @@
 package net.serenitybdd.cucumber.service;
 
 
-import com.beust.jcommander.internal.Lists;
+import com.google.common.collect.ImmutableSet;
 import net.thucydides.core.ThucydidesSystemProperty;
 import net.thucydides.core.guice.Injectors;
 import net.thucydides.core.requirements.FileSystemRequirementsTagProvider;
+import net.thucydides.core.statistics.service.InjectedTagProvider;
 import net.thucydides.core.statistics.service.TagProvider;
 import net.thucydides.core.statistics.service.TagProviderStrategy;
 import net.thucydides.core.steps.StepEventBus;
@@ -28,9 +29,11 @@ public class CucumberTagProviderStrategy implements TagProviderStrategy {
     }
 
     @Override
-    public Iterable<TagProvider> getTagProviders() {
+    public Iterable<? extends TagProvider> getTagProviders() {
         String rootDirectory = ThucydidesSystemProperty.THUCYDIDES_REQUIREMENTS_DIR.from(environmentVariables,"features");
-        return Lists.newArrayList((TagProvider) new FileSystemRequirementsTagProvider(environmentVariables,rootDirectory));
+        return ImmutableSet.of(
+                new FileSystemRequirementsTagProvider(environmentVariables,rootDirectory),
+                new InjectedTagProvider(environmentVariables));
     }
 
     @Override
