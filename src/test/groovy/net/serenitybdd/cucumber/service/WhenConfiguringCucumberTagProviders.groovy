@@ -26,9 +26,9 @@ class WhenConfiguringCucumberTagProviders extends Specification {
         given:
             CucumberTagProviderStrategy tagProviderStrategy = new CucumberTagProviderStrategy()
         when:
-            List<TagProvider> tagProviders = tagProviderStrategy.tagProviders
+            Set<TagProvider> tagProviders = tagProviderStrategy.tagProviders
         then:
-            tagProviders.size() == 1
+            tagProviders.size() == 2
             tagProviders[0].class == FileSystemRequirementsTagProvider
             ((FileSystemRequirementsTagProvider) tagProviders[0]).rootDirectory == "features"
     }
@@ -39,9 +39,9 @@ class WhenConfiguringCucumberTagProviders extends Specification {
             environmentVariables.setProperty("serenity.requirements.dir","feature-files")
             CucumberTagProviderStrategy tagProviderStrategy = new CucumberTagProviderStrategy(environmentVariables)
         when:
-            List<TagProvider> tagProviders = tagProviderStrategy.tagProviders
+            Set<TagProvider> tagProviders = tagProviderStrategy.tagProviders
         then:
-            tagProviders.size() == 1
+            tagProviders.size() == 2
             tagProviders[0].class == FileSystemRequirementsTagProvider
             ((FileSystemRequirementsTagProvider) tagProviders[0]).rootDirectory == "feature-files"
     }
