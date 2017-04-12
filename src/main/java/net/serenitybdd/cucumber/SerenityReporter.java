@@ -31,6 +31,7 @@ import java.io.File;
 import java.util.*;
 
 import static ch.lambdaj.Lambda.*;
+import static net.serenitybdd.cucumber.TaggedScenario.*;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
@@ -45,6 +46,7 @@ public class SerenityReporter implements Formatter, Reporter {
     private static final String CLOSE_PARAM_CHAR = "\uff60";
 
     private static final List<String> SKIPPED_TAGS = ImmutableList.of("@skip", "@wip", "@ignore", "@ignored");
+    private static final List<String> IGNORED_TAGS = ImmutableList.of("@ignore", "@ignored");
     public static final String PENDING_STATUS = "pending";
 
     private final Queue<Step> stepQueue;
@@ -128,7 +130,7 @@ public class SerenityReporter implements Formatter, Reporter {
     public void syntaxError(String state, String event, List<String> legalEvents, String uri, Integer line) {
     }
 
-    FeatureFileContents featureFileContents;
+    private String uri;
 
     @Override
     public void uri(String uri) {
@@ -139,9 +141,12 @@ public class SerenityReporter implements Formatter, Reporter {
         }
         defaultFeatureId = new File(currentUri).getName().replace(".feature", "");
         defaultFeatureName = Inflector.getInstance().humanize(defaultFeatureId);
-        featureFileContents = new FeatureFileContents(uri);
+        this.uri = uri;
     }
 
+    FeatureFileContents featureFileContents() {
+        return new FeatureFileContents(uri);
+    }
     @Override
     public void feature(Feature feature) {
 
@@ -164,6 +169,7 @@ public class SerenityReporter implements Formatter, Reporter {
 
         checkForPending(feature);
         checkForSkipped(feature);
+        checkForIgnored(feature);
         checkForManual(feature);
     }
 
@@ -184,8 +190,14 @@ public class SerenityReporter implements Formatter, Reporter {
     }
 
     private void checkForSkipped(Feature feature) {
-            if (isSkippedOrWIP(feature.getTags())) {
+        if (isSkippedOrWIP(feature.getTags())) {
             forcedStoryResult = Optional.of(TestResult.SKIPPED);
+        }
+    }
+
+    private void checkForIgnored(Feature feature) {
+        if (isIgnored(feature.getTags())) {
+            forcedStoryResult = Optional.of(TestResult.IGNORED);
         }
     }
 
@@ -198,6 +210,12 @@ public class SerenityReporter implements Formatter, Reporter {
     private void checkForSkippedScenario(List<Tag> tags) {
         if (isSkippedOrWIP(tags)) {
             forcedScenarioResult = Optional.of(TestResult.SKIPPED);
+        }
+    }
+
+    private void checkForIgnoredScenario(List<Tag> tags) {
+        if (isIgnored(tags)) {
+            forcedScenarioResult = Optional.of(TestResult.IGNORED);
         }
     }
 
@@ -215,32 +233,6 @@ public class SerenityReporter implements Formatter, Reporter {
             StepEventBus.getEventBus().testIsManual();
             StepEventBus.getEventBus().suspendTest(TestResult.SKIPPED);
         }
-    }
-
-    private boolean isPending(List<Tag> tags) {
-        return hasTag("@pending", tags);
-    }
-
-    private boolean isManual(List<Tag> tags) {
-        return hasTag("@manual", tags);
-    }
-
-    private boolean isSkippedOrWIP(List<Tag> tags) {
-        for (Tag tag : tags) {
-            if (SKIPPED_TAGS.contains(tag.getName().toLowerCase())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean hasTag(String tagName, List<Tag> tags) {
-        for (Tag tag : tags) {
-            if (tag.getName().equalsIgnoreCase(tagName)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private void configureDriver(Feature feature) {
@@ -298,7 +290,7 @@ public class SerenityReporter implements Formatter, Reporter {
     @Override
     public void examples(Examples examples) {
 
-        String scenarioOutline = featureFileContents.trimmedContent()
+        String scenarioOutline = featureFileContents().trimmedContent()
                                                     .betweenLine(scenarioOutlineStartsAt)
                                                     .and(examples.getLine() - 1);
 
@@ -433,10 +425,12 @@ public class SerenityReporter implements Formatter, Reporter {
 
     private void checkForLifecycleTags(Scenario scenario) {
         checkForSkipped(currentFeature);
+        checkForIgnored(currentFeature);
         checkForPending(currentFeature);
         checkForManual(currentFeature);
         checkForPendingScenario(scenario.getTags());
         checkForSkippedScenario(scenario.getTags());
+        checkForIgnoredScenario(scenario.getTags());
         checkForManualScenario(scenario.getTags());
     }
 
