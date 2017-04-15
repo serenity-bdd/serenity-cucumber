@@ -3,6 +3,7 @@ package net.serenitybdd.cucumber;
 import ch.lambdaj.Lambda;
 import ch.lambdaj.function.convert.Converter;
 import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
 import cucumber.api.junit.Cucumber;
 import cucumber.runtime.ClassFinder;
 import cucumber.runtime.Runtime;
@@ -28,6 +29,8 @@ import static ch.lambdaj.Lambda.on;
  * @author L.Carausu (liviu.carausu@gmail.com)
  */
 public class CucumberWithSerenity extends Cucumber {
+
+    private static final List<String> DEFAULT_FEATURE_PATHS = ImmutableList.of("src/test/resources/features");
 
     public CucumberWithSerenity(Class clazz) throws InitializationError, IOException
     {
@@ -95,5 +98,9 @@ public class CucumberWithSerenity extends Cucumber {
         runtimeOptions.addPlugin(reporter);
         RUNTIME_OPTIONS.set(runtimeOptions);
         return new Runtime(resourceLoader, classFinder, classLoader, runtimeOptions);
+    }
+
+    public static List<String> getFeaturePaths() {
+        return RUNTIME_OPTIONS.get().getFeaturePaths();
     }
 }

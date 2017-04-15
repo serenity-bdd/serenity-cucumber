@@ -45,8 +45,6 @@ public class SerenityReporter implements Formatter, Reporter {
     private static final String OPEN_PARAM_CHAR = "\uff5f";
     private static final String CLOSE_PARAM_CHAR = "\uff60";
 
-    private static final List<String> SKIPPED_TAGS = ImmutableList.of("@skip", "@wip", "@ignore", "@ignored");
-    private static final List<String> IGNORED_TAGS = ImmutableList.of("@ignore", "@ignored");
     public static final String PENDING_STATUS = "pending";
 
     private final Queue<Step> stepQueue;
