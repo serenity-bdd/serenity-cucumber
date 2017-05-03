@@ -28,7 +28,7 @@ class WhenConfiguringCucumberTagProviders extends Specification {
         when:
             Set<TagProvider> tagProviders = tagProviderStrategy.tagProviders
         then:
-            tagProviders.size() == 2
+            tagProviders.size() == 3
             tagProviders[0].class == FileSystemRequirementsTagProvider
             ((FileSystemRequirementsTagProvider) tagProviders[0]).rootDirectory == "features"
     }
@@ -41,7 +41,7 @@ class WhenConfiguringCucumberTagProviders extends Specification {
         when:
             Set<TagProvider> tagProviders = tagProviderStrategy.tagProviders
         then:
-            tagProviders.size() == 2
+            tagProviders.size() == 3
             tagProviders[0].class == FileSystemRequirementsTagProvider
             ((FileSystemRequirementsTagProvider) tagProviders[0]).rootDirectory == "feature-files"
     }
