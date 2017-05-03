@@ -6,6 +6,7 @@ import net.thucydides.core.ThucydidesSystemProperty;
 import net.thucydides.core.guice.Injectors;
 import net.thucydides.core.requirements.FileSystemRequirementsTagProvider;
 import net.thucydides.core.statistics.service.InjectedTagProvider;
+import net.thucydides.core.statistics.service.ContextTagProvider;
 import net.thucydides.core.statistics.service.TagProvider;
 import net.thucydides.core.statistics.service.TagProviderStrategy;
 import net.thucydides.core.steps.StepEventBus;
@@ -33,7 +34,8 @@ public class CucumberTagProviderStrategy implements TagProviderStrategy {
         String rootDirectory = ThucydidesSystemProperty.THUCYDIDES_REQUIREMENTS_DIR.from(environmentVariables,"features");
         return ImmutableSet.of(
                 new FileSystemRequirementsTagProvider(environmentVariables,rootDirectory),
-                new InjectedTagProvider(environmentVariables));
+                new InjectedTagProvider(environmentVariables),
+                new ContextTagProvider());
     }
 
     @Override

@@ -130,6 +130,7 @@ public class SampleWidgetSteps {
 
     @When("I buy said gizmos")
     public void buyGizmo() {
+
         john.attemptsTo(BuyGizmos.times(quantity));
         billedPrice = cost * quantity;
     }
