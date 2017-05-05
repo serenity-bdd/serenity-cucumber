@@ -276,6 +276,7 @@ public class SerenityReporter implements Formatter, Reporter {
     boolean addingScenarioOutlineSteps = false;
 
     int scenarioOutlineStartsAt;
+    int scenarioOutlineEndsAt;
 
     @Override
     public void scenarioOutline(ScenarioOutline scenarioOutline) {
@@ -288,9 +289,7 @@ public class SerenityReporter implements Formatter, Reporter {
     @Override
     public void examples(Examples examples) {
 
-        String scenarioOutline = featureFileContents().trimmedContent()
-                                                    .betweenLine(scenarioOutlineStartsAt)
-                                                    .and(examples.getLine() - 1);
+        scenarioOutlineEndsAt = examples.getLine() - 1;
 
         addingScenarioOutlineSteps = false;
         reinitializeExamples();
@@ -306,7 +305,7 @@ public class SerenityReporter implements Formatter, Reporter {
         boolean newScenario = !scenarioId.equals(currentScenarioId);
 
         table = (newScenario) ?
-                thucydidesTableFrom(scenarioOutline, headers, rows, examples.getName(), examples.getDescription())
+                thucydidesTableFrom("", headers, rows, examples.getName(), examples.getDescription())
                 : addTableRowsTo(table, headers, rows, examples.getName(), examples.getDescription());
         exampleCount = examples.getRows().size() - 1;
 
@@ -517,6 +516,12 @@ public class SerenityReporter implements Formatter, Reporter {
         exampleCount--;
         if (exampleCount == 0) {
             examplesRunning = false;
+
+                    String scenarioOutline = featureFileContents().trimmedContent()
+                                                    .betweenLine(scenarioOutlineStartsAt)
+                                                    .and(scenarioOutlineEndsAt);
+                    table = table.withScenarioOutline(scenarioOutline);
+
             generateReports();
         } else {
             examplesRunning = true;

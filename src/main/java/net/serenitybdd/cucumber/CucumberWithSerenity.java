@@ -8,6 +8,7 @@ import cucumber.api.junit.Cucumber;
 import cucumber.runtime.ClassFinder;
 import cucumber.runtime.Runtime;
 import cucumber.runtime.RuntimeOptions;
+import cucumber.runtime.RuntimeOptionsFactory;
 import cucumber.runtime.io.ResourceLoader;
 import cucumber.runtime.io.ResourceLoaderClassFinder;
 import net.thucydides.core.ThucydidesSystemProperty;
@@ -35,6 +36,9 @@ public class CucumberWithSerenity extends Cucumber {
     public CucumberWithSerenity(Class clazz) throws InitializationError, IOException
     {
         super(clazz);
+        System.out.println("Create runtime options for " + clazz);
+        RuntimeOptionsFactory runtimeOptionsFactory = new RuntimeOptionsFactory(clazz);
+        RUNTIME_OPTIONS.set(runtimeOptionsFactory.create());
     }
 
     private static ThreadLocal<RuntimeOptions> RUNTIME_OPTIONS = new ThreadLocal<>();
@@ -51,6 +55,7 @@ public class CucumberWithSerenity extends Cucumber {
                                                      RuntimeOptions runtimeOptions) throws InitializationError, IOException {
         runtimeOptions.getFilters().addAll(environmentSpecifiedTags(runtimeOptions.getFilters()));
         RUNTIME_OPTIONS.set(runtimeOptions);
+        System.out.println("Setting runtime options in createRuntime()");
         return createSerenityEnabledRuntime(resourceLoader, classLoader, runtimeOptions);
     }
 
@@ -97,6 +102,7 @@ public class CucumberWithSerenity extends Cucumber {
         SerenityReporter reporter = new SerenityReporter(systemConfiguration);
         runtimeOptions.addPlugin(reporter);
         RUNTIME_OPTIONS.set(runtimeOptions);
+        System.out.println("Setting runtime options in createSerenityEnabledRuntime()");
         return new Runtime(resourceLoader, classFinder, classLoader, runtimeOptions);
     }
 
