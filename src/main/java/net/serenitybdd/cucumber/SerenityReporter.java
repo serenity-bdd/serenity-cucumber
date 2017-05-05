@@ -46,6 +46,7 @@ public class SerenityReporter implements Formatter, Reporter {
     private static final String CLOSE_PARAM_CHAR = "\uff60";
 
     public static final String PENDING_STATUS = "pending";
+    private static final String SCENARIO_OUTLINE_NOT_KNOWN_YET = "";
 
     private final Queue<Step> stepQueue;
 
@@ -145,6 +146,7 @@ public class SerenityReporter implements Formatter, Reporter {
     FeatureFileContents featureFileContents() {
         return new FeatureFileContents(uri);
     }
+
     @Override
     public void feature(Feature feature) {
 
@@ -305,7 +307,7 @@ public class SerenityReporter implements Formatter, Reporter {
         boolean newScenario = !scenarioId.equals(currentScenarioId);
 
         table = (newScenario) ?
-                thucydidesTableFrom("", headers, rows, examples.getName(), examples.getDescription())
+                thucydidesTableFrom(SCENARIO_OUTLINE_NOT_KNOWN_YET, headers, rows, examples.getName(), examples.getDescription())
                 : addTableRowsTo(table, headers, rows, examples.getName(), examples.getDescription());
         exampleCount = examples.getRows().size() - 1;
 
@@ -517,10 +519,11 @@ public class SerenityReporter implements Formatter, Reporter {
         if (exampleCount == 0) {
             examplesRunning = false;
 
-                    String scenarioOutline = featureFileContents().trimmedContent()
-                                                    .betweenLine(scenarioOutlineStartsAt)
-                                                    .and(scenarioOutlineEndsAt);
-                    table = table.withScenarioOutline(scenarioOutline);
+            String scenarioOutline = featureFileContents().trimmedContent()
+                    .betweenLine(scenarioOutlineStartsAt)
+                    .and(scenarioOutlineEndsAt);
+
+            table.setScenarioOutline(scenarioOutline);
 
             generateReports();
         } else {
