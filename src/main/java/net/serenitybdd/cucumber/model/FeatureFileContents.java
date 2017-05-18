@@ -2,6 +2,9 @@ package net.serenitybdd.cucumber.model;
 
 import com.beust.jcommander.internal.Lists;
 import com.google.common.base.Joiner;
+import net.thucydides.core.ThucydidesSystemProperty;
+import net.thucydides.core.guice.Injectors;
+import net.thucydides.core.util.EnvironmentVariables;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +20,8 @@ public class FeatureFileContents {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureFileContents.class);
 
+    private EnvironmentVariables environmentVariables = Injectors.getInjector().getInstance(EnvironmentVariables.class);
+
     public FeatureFileContents(String featureFilePath) {
         this.lines = readFeatureFileFrom(featureFilePath);
     }
@@ -24,7 +29,8 @@ public class FeatureFileContents {
     private List<String> readFeatureFileFrom(String featureFileName) {
         try {
             File featureFile = featureFileWithName(featureFileName);
-            return FileUtils.readLines(featureFile, Charset.defaultCharset());
+            String charset = ThucydidesSystemProperty.FEATURE_FILE_ENCODING.from(environmentVariables, Charset.defaultCharset().name());
+            return FileUtils.readLines(featureFile,Charset.forName(charset));
         } catch (IOException e) {
             LOGGER.warn("Could not find feature file " + featureFileName, e);
             return new ArrayList<>();
