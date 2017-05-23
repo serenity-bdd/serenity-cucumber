@@ -150,7 +150,6 @@ public class SerenityReporter implements Formatter, Reporter {
     @Override
     public void feature(Feature feature) {
 
-        assureTestSuiteFinished();
         if (feature.getName().isEmpty()) {
             feature = featureWithDefaultName(feature, defaultFeatureName, defaultFeatureId);
         }
