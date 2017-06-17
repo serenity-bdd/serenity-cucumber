@@ -44,7 +44,7 @@ ext {
     if (!project.hasProperty("bintrayApiKey")) {
         bintrayApiKey = ''
     }
-    serenityCoreVersion = '1.4.0'
+    serenityCoreVersion = '1.4.1-rc.7'
     cucumberJVMVersion = '1.2.5'
 
     versionCounter = new ProjectVersionCounter(isRelease: project.hasProperty("releaseBuild"))
@@ -69,7 +69,7 @@ task tagNewVersion() {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.10'
+    gradleVersion = '4.0'
 }
 
 test {
@@ -107,7 +107,7 @@ dependencies {
     }
     testCompile 'org.assertj:assertj-core:1.7.1'
 //    testCompile 'org.slf4j:slf4j-log4j12:1.7.21'
-    testCompile 'org.codehaus.groovy:groovy-all:2.4.4'
+    testCompile 'org.codehaus.groovy:groovy-all:2.4.11'
     testCompile("org.spockframework:spock-core:0.7-groovy-2.0") {
         exclude group: "junit"
         exclude module: "groovy-all"
