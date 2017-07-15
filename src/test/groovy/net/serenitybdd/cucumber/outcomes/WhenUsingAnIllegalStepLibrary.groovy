@@ -3,6 +3,8 @@ package net.serenitybdd.cucumber.outcomes
 import com.github.goldin.spock.extensions.tempdir.TempDir
 import net.serenitybdd.cucumber.integration.BrokenStepLibraryScenario
 import net.serenitybdd.cucumber.integration.IllegalStepLibraryScenario
+import org.junit.Rule
+import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
 
 import static net.serenitybdd.cucumber.util.CucumberRunner.serenityRunnerForCucumberTestRunner
@@ -12,8 +14,14 @@ import static net.serenitybdd.cucumber.util.CucumberRunner.serenityRunnerForCucu
  */
 class WhenUsingAnIllegalStepLibrary extends Specification {
 
-    @TempDir
+    @Rule
+    TemporaryFolder temporaryFolder
+
     File outputDirectory
+
+    def setup() {
+        outputDirectory = temporaryFolder.newFolder()
+    }
 
     def "should throw a meaningful exception if a step library with no default constructor is used"() {
         given:

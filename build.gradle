@@ -21,8 +21,8 @@ apply plugin: 'maven'
 apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.bintray'
 
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 repositories {
     mavenLocal()
@@ -44,8 +44,6 @@ ext {
     if (!project.hasProperty("bintrayApiKey")) {
         bintrayApiKey = ''
     }
-    serenityCoreVersion = '1.4.1-rc.7'
-    cucumberJVMVersion = '1.2.5'
 
     versionCounter = new ProjectVersionCounter(isRelease: project.hasProperty("releaseBuild"))
 }
@@ -85,10 +83,10 @@ test {
 configurations.all {
     resolutionStrategy {
         // fail fast on dependency convergence problems
-        failOnVersionConflict()
-        force  'commons-collections:commons-collections:3.2.2',
-        "xml-apis:xml-apis:1.4.01",
-        "commons-codec:commons-codec:1.10"
+//        failOnVersionConflict()
+        force  "commons-collections:commons-collections:${commonsCollectionsVersion}",
+        "xml-apis:xml-apis:${xmlApiVersion}",
+        "commons-codec:commons-codec:${commonsCodecVersion}"
     }
 }
 
@@ -100,19 +98,19 @@ dependencies {
     compile("info.cukes:cucumber-junit:${cucumberJVMVersion}") {
             exclude group: "junit"
 }
-    compile "junit:junit:4.12"
+    compile "junit:junit:${junitVersion}"
 
-    testCompile ('ch.qos.logback:logback-classic:1.0.13') {
+    testCompile ("ch.qos.logback:logback-classic:${logbackVersion}") {
         exclude module: "slf4j-api"
     }
-    testCompile 'org.assertj:assertj-core:1.7.1'
+    testCompile "org.assertj:assertj-core:${assertjVersion}"
 //    testCompile 'org.slf4j:slf4j-log4j12:1.7.21'
-    testCompile 'org.codehaus.groovy:groovy-all:2.4.11'
-    testCompile("org.spockframework:spock-core:0.7-groovy-2.0") {
+    testCompile "org.codehaus.groovy:groovy-all:${groovyVersion}"
+    testCompile("org.spockframework:spock-core:${spockVersion}") {
         exclude group: "junit"
         exclude module: "groovy-all"
     }
-    testCompile("com.github.goldin:spock-extensions:0.1.4") {
+    testCompile("com.github.goldin:spock-extensions:${spockExtensionsVersion}") {
         exclude module: "spock-core"
         exclude module: "slf4j-api"
     }

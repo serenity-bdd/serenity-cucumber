@@ -1,9 +1,10 @@
 package net.serenitybdd.cucumber.reports
 
-import com.github.goldin.spock.extensions.tempdir.TempDir
 import net.thucydides.core.reports.OutcomeFormat
 import net.thucydides.core.reports.TestOutcomeLoader
 import net.serenitybdd.cucumber.integration.SimpleScenario
+import org.junit.Rule
+import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
 
 import static net.serenitybdd.cucumber.util.CucumberRunner.serenityRunnerForCucumberTestRunner
@@ -13,8 +14,14 @@ import static net.serenitybdd.cucumber.util.CucumberRunner.serenityRunnerForCucu
  */
 class WhenGeneratingThucydidesReports extends Specification {
 
-    @TempDir
+    @Rule
+    TemporaryFolder temporaryFolder
+
     File outputDirectory
+
+    def setup() {
+        outputDirectory = temporaryFolder.newFolder()
+    }
 
     def "should generate a Thucydides report for each executed Cucumber scenario"() {
         given:

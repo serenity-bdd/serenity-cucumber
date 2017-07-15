@@ -9,18 +9,23 @@ import net.thucydides.core.reports.OutcomeFormat
 import net.thucydides.core.reports.TestOutcomeLoader
 import net.thucydides.core.util.MockEnvironmentVariables
 import net.thucydides.core.webdriver.Configuration
+import org.junit.Rule
+import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
 
 import static net.serenitybdd.cucumber.util.CucumberRunner.serenityRunnerForCucumberTestRunner
 
-public class WhenRunningWebCucumberStories extends Specification {
+class WhenRunningWebCucumberStories extends Specification {
 
-    @TempDir
+    @Rule
+    TemporaryFolder temporaryFolder
+
     File outputDirectory
 
     def environmentVariables = new MockEnvironmentVariables()
 
     def setup() {
+        outputDirectory = temporaryFolder.newFolder()
         environmentVariables.setProperty("webdriver.driver", "phantomjs");
     }
 

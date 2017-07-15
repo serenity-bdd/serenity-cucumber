@@ -1,6 +1,5 @@
 package net.serenitybdd.cucumber.outcomes
 
-import com.github.goldin.spock.extensions.tempdir.TempDir
 import net.serenitybdd.cucumber.integration.*
 import net.thucydides.core.model.TestOutcome
 import net.thucydides.core.model.TestResult
@@ -9,14 +8,22 @@ import net.thucydides.core.model.TestTag
 import net.thucydides.core.reports.OutcomeFormat
 import net.thucydides.core.reports.TestOutcomeLoader
 import net.thucydides.core.steps.StepEventBus
+import org.junit.Rule
+import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
 
 import static net.serenitybdd.cucumber.util.CucumberRunner.serenityRunnerForCucumberTestRunner
 
 class WhenCreatingSerenityTestOutcomes extends Specification {
 
-    @TempDir
+    @Rule
+    TemporaryFolder temporaryFolder
+
     File outputDirectory
+
+    def setup() {
+        outputDirectory = temporaryFolder.newFolder()
+    }
 
     /*
     Feature: A simple feature

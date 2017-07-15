@@ -9,18 +9,24 @@ import net.thucydides.core.util.MockEnvironmentVariables
 import net.serenitybdd.cucumber.integration.PassingWebTestSampleWithNestedSteps
 import net.serenitybdd.cucumber.integration.SimpleSeleniumFailingAndPassingScenario
 import net.serenitybdd.cucumber.integration.SimpleSeleniumSeveralScenarios
+import org.junit.Rule
+import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
 
 import static net.serenitybdd.cucumber.util.CucumberRunner.serenityRunnerForCucumberTestRunner
 
 public class WhenRunningCucumberStoriesWithScreenshots extends Specification {
 
-    @TempDir
+
+    @Rule
+    TemporaryFolder temporaryFolder
+
     File outputDirectory
 
     def environmentVariables = new MockEnvironmentVariables()
 
     def setup() {
+        outputDirectory = temporaryFolder.newFolder()
         environmentVariables.setProperty("webdriver.driver", "phantomjs");
     }
 
