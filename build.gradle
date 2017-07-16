@@ -97,7 +97,10 @@ dependencies {
     compile "info.cukes:cucumber-java:${cucumberJVMVersion}"
     compile("info.cukes:cucumber-junit:${cucumberJVMVersion}") {
             exclude group: "junit"
-}
+    }
+
+    compile("commons-logging:commons-logging:${commonsLoggingVersion}")
+
     compile "junit:junit:${junitVersion}"
 
     testCompile ("ch.qos.logback:logback-classic:${logbackVersion}") {
