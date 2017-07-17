@@ -83,7 +83,7 @@ test {
 configurations.all {
     resolutionStrategy {
         // fail fast on dependency convergence problems
-//        failOnVersionConflict()
+        failOnVersionConflict()
         force  "commons-collections:commons-collections:${commonsCollectionsVersion}",
         "xml-apis:xml-apis:${xmlApiVersion}",
         "commons-codec:commons-codec:${commonsCodecVersion}"
@@ -107,7 +107,6 @@ dependencies {
         exclude module: "slf4j-api"
     }
     testCompile "org.assertj:assertj-core:${assertjVersion}"
-//    testCompile 'org.slf4j:slf4j-log4j12:1.7.21'
     testCompile "org.codehaus.groovy:groovy-all:${groovyVersion}"
     testCompile("org.spockframework:spock-core:${spockVersion}") {
         exclude group: "junit"
