@@ -1,7 +1,5 @@
 package net.serenitybdd.cucumber;
 
-import ch.lambdaj.Lambda;
-import ch.lambdaj.function.convert.Converter;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import cucumber.api.junit.Cucumber;
@@ -20,8 +18,7 @@ import org.junit.runners.model.InitializationError;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
-
-import static ch.lambdaj.Lambda.on;
+import java.util.stream.Collectors;
 
 /**
  * Glue code for running Cucumber via Thucydides.
@@ -61,29 +58,17 @@ public class CucumberWithSerenity extends Cucumber {
     private Collection<String> environmentSpecifiedTags(List<Object> existingTags) {
         EnvironmentVariables environmentVariables = Injectors.getInjector().getInstance(EnvironmentVariables.class);
         String tagsExpression = ThucydidesSystemProperty.TAGS.from(environmentVariables,"");
-        List<String> newTags  = Lambda.convert(Splitter.on(",").trimResults().omitEmptyStrings().splitToList(tagsExpression),
-                                               toCucumberTags());
-        newTags.removeAll(stringVersionOf(existingTags));
-        return newTags;
+        List<String> existingTagsValues = existingTags.stream().map(Object::toString).collect(Collectors.toList());
+        return Splitter.on(",").trimResults().omitEmptyStrings().splitToList(tagsExpression).stream()
+                .map(this::toCucumberTag).filter(t -> !existingTagsValues.contains(t)).collect(Collectors.toList());
     }
 
-    private Collection<String> stringVersionOf(List<Object> existingTags) {
-        return Lambda.extract(existingTags, on(Object.class).toString());
-    }
+    private String toCucumberTag(String from) {
+        String tag = from.replaceAll(":","=");
+        if (tag.startsWith("~@") || tag.startsWith("@")) { return tag; }
+        if (tag.startsWith("~")) { return "~@" + tag.substring(1); }
 
-    private Converter<String, String> toCucumberTags() {
-        return new Converter<String, String>() {
-
-            @Override
-            public String convert(String from) {
-                from = from.replaceAll(":","=");
-                if (from.startsWith("~@")) { return from; }
-                if (from.startsWith("@")) { return from; }
-                if (from.startsWith("~")) { return "~@" + from.substring(1); }
-
-                return "@" + from;
-            }
-        };
+        return "@" + tag;
     }
 
     private Runtime createSerenityEnabledRuntime(ResourceLoader resourceLoader,
