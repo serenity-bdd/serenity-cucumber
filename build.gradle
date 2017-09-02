@@ -91,9 +91,15 @@ configurations.all {
 }
 
 dependencies {
-    compile ("net.serenity-bdd:serenity-core:${serenityCoreVersion}")
-    compile ("net.serenity-bdd:serenity-screenplay:${serenityCoreVersion}")
-    compile ("net.serenity-bdd:serenity-screenplay-webdriver:${serenityCoreVersion}")
+    compile ("net.serenity-bdd:serenity-core:${serenityCoreVersion}") {
+        exclude group: "org.seleniumhq.selenium", module:"htmlunit-driver"
+    }
+    compile ("net.serenity-bdd:serenity-screenplay:${serenityCoreVersion}") {
+        exclude group: "org.seleniumhq.selenium", module:"htmlunit-driver"
+    }
+    compile ("net.serenity-bdd:serenity-screenplay-webdriver:${serenityCoreVersion}") {
+        exclude group: "org.seleniumhq.selenium", module:"htmlunit-driver"
+    }
     compile "info.cukes:cucumber-java:${cucumberJVMVersion}"
     compile("info.cukes:cucumber-junit:${cucumberJVMVersion}") {
             exclude group: "junit"
@@ -102,6 +108,11 @@ dependencies {
     compile("commons-logging:commons-logging:${commonsLoggingVersion}")
 
     compile "junit:junit:${junitVersion}"
+
+    compile("org.seleniumhq.selenium:htmlunit-driver:2.27") {
+        exclude group: "org.seleniumhq.selenium"
+        exclude group: "org.apache.commons", module:"commons-lang3"
+    }
 
     testCompile ("ch.qos.logback:logback-classic:${logbackVersion}") {
         exclude module: "slf4j-api"

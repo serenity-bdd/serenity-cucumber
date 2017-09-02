@@ -3,12 +3,12 @@ package net.serenitybdd.cucumber;
 import ch.lambdaj.Lambda;
 import ch.lambdaj.function.convert.Converter;
 import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableList;
 import cucumber.api.junit.Cucumber;
 import cucumber.runtime.ClassFinder;
 import cucumber.runtime.Runtime;
 import cucumber.runtime.RuntimeOptions;
 import cucumber.runtime.RuntimeOptionsFactory;
+import cucumber.runtime.io.MultiLoader;
 import cucumber.runtime.io.ResourceLoader;
 import cucumber.runtime.io.ResourceLoaderClassFinder;
 import net.thucydides.core.ThucydidesSystemProperty;
@@ -18,20 +18,42 @@ import net.thucydides.core.webdriver.Configuration;
 import org.junit.runners.model.InitializationError;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
 import static ch.lambdaj.Lambda.on;
 
 /**
- * Glue code for running Cucumber via Thucydides.
- * Sets the Thucydides reporter.
+ * Glue code for running Cucumber via Serenity.
+ * Sets up Serenity reporting and instrumentation.
  *
  * @author L.Carausu (liviu.carausu@gmail.com)
  */
 public class CucumberWithSerenity extends Cucumber {
 
-    private static final List<String> DEFAULT_FEATURE_PATHS = ImmutableList.of("src/test/resources/features");
+    public static void main(String[] argv) throws Throwable {
+        byte exitstatus = run(argv, Thread.currentThread().getContextClassLoader());
+        System.exit(exitstatus);
+
+//        net.serenitybdd.cucumber.CucumberWithSerenity.main
+
+    }
+
+    public static byte run(String[] argv, ClassLoader classLoader) throws IOException {
+        RuntimeOptions runtimeOptions = new RuntimeOptions(new ArrayList(Arrays.asList(argv)));
+        ResourceLoader resourceLoader = new MultiLoader(classLoader);
+        ClassFinder classFinder = new ResourceLoaderClassFinder(resourceLoader, classLoader);
+
+        Runtime runtime =  CucumberWithSerenityRuntime.using(resourceLoader, classLoader, classFinder, runtimeOptions);
+
+        RUNTIME_OPTIONS.set(runtimeOptions);
+        runtime.run();
+        return runtime.exitStatus();
+    }
+
+    ////
 
     public CucumberWithSerenity(Class clazz) throws InitializationError, IOException
     {
@@ -49,13 +71,13 @@ public class CucumberWithSerenity extends Cucumber {
     /**
      * Create the Runtime. Sets the Serenity runtime.
      */
+    @Override
     protected cucumber.runtime.Runtime createRuntime(ResourceLoader resourceLoader,
                                                      ClassLoader classLoader,
                                                      RuntimeOptions runtimeOptions) throws InitializationError, IOException {
         runtimeOptions.getFilters().addAll(environmentSpecifiedTags(runtimeOptions.getFilters()));
         RUNTIME_OPTIONS.set(runtimeOptions);
-        System.out.println("Setting runtime options in createRuntime()");
-        return createSerenityEnabledRuntime(resourceLoader, classLoader, runtimeOptions);
+        return CucumberWithSerenityRuntime.using(resourceLoader, classLoader, runtimeOptions);
     }
 
     private Collection<String> environmentSpecifiedTags(List<Object> existingTags) {
@@ -72,17 +94,13 @@ public class CucumberWithSerenity extends Cucumber {
     }
 
     private Converter<String, String> toCucumberTags() {
-        return new Converter<String, String>() {
+        return from -> {
+            from = from.replaceAll(":","=");
+            if (from.startsWith("~@")) { return from; }
+            if (from.startsWith("@")) { return from; }
+            if (from.startsWith("~")) { return "~@" + from.substring(1); }
 
-            @Override
-            public String convert(String from) {
-                from = from.replaceAll(":","=");
-                if (from.startsWith("~@")) { return from; }
-                if (from.startsWith("@")) { return from; }
-                if (from.startsWith("~")) { return "~@" + from.substring(1); }
-
-                return "@" + from;
-            }
+            return "@" + from;
         };
     }
 
