@@ -29,8 +29,8 @@ import org.junit.internal.AssumptionViolatedException;
 
 import java.io.File;
 import java.util.*;
+import java.util.stream.Collectors;
 
-import static ch.lambdaj.Lambda.*;
 import static net.serenitybdd.cucumber.TaggedScenario.*;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
@@ -722,7 +722,8 @@ public class SerenityReporter implements Formatter, Reporter {
     }
 
     public List<TestOutcome> getAllTestOutcomes() {
-        return flatten(extract(baseStepListeners, on(BaseStepListener.class).getTestOutcomes()));
+        return baseStepListeners.stream().map(BaseStepListener::getTestOutcomes).flatMap(List::stream)
+                .collect(Collectors.toList());
     }
 
     private String normalized(String value) {
