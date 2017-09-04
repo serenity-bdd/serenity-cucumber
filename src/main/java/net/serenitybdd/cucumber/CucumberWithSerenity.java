@@ -16,7 +16,6 @@ import net.thucydides.core.webdriver.Configuration;
 import org.junit.runners.model.InitializationError;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -30,27 +29,11 @@ import java.util.stream.Collectors;
  */
 public class CucumberWithSerenity extends Cucumber {
 
-    public static void main(String[] argv) throws Throwable {
-        byte exitstatus = run(argv, Thread.currentThread().getContextClassLoader());
-        System.exit(exitstatus);
+    private static ThreadLocal<RuntimeOptions> RUNTIME_OPTIONS = new ThreadLocal<>();
 
-//        net.serenitybdd.cucumber.CucumberWithSerenity.main
-
-    }
-
-    public static byte run(String[] argv, ClassLoader classLoader) throws IOException {
-        RuntimeOptions runtimeOptions = new RuntimeOptions(new ArrayList(Arrays.asList(argv)));
-        ResourceLoader resourceLoader = new MultiLoader(classLoader);
-        ClassFinder classFinder = new ResourceLoaderClassFinder(resourceLoader, classLoader);
-
-        Runtime runtime =  CucumberWithSerenityRuntime.using(resourceLoader, classLoader, classFinder, runtimeOptions);
-
+    public static void setRuntimeOptions(RuntimeOptions runtimeOptions) {
         RUNTIME_OPTIONS.set(runtimeOptions);
-        runtime.run();
-        return runtime.exitStatus();
     }
-
-    ////
 
     public CucumberWithSerenity(Class clazz) throws InitializationError, IOException
     {
@@ -58,8 +41,6 @@ public class CucumberWithSerenity extends Cucumber {
         RuntimeOptionsFactory runtimeOptionsFactory = new RuntimeOptionsFactory(clazz);
         RUNTIME_OPTIONS.set(runtimeOptionsFactory.create());
     }
-
-    private static ThreadLocal<RuntimeOptions> RUNTIME_OPTIONS = new ThreadLocal<>();
 
     public static RuntimeOptions currentRuntimeOptions() {
         return RUNTIME_OPTIONS.get();
@@ -91,13 +72,6 @@ public class CucumberWithSerenity extends Cucumber {
         if (tag.startsWith("~")) { return "~@" + tag.substring(1); }
 
         return "@" + tag;
-    }
-
-    private Runtime createSerenityEnabledRuntime(ResourceLoader resourceLoader,
-                                                 ClassLoader classLoader,
-                                                 RuntimeOptions runtimeOptions) {
-        Configuration systemConfiguration = Injectors.getInjector().getInstance(Configuration.class);
-        return createSerenityEnabledRuntime(resourceLoader, classLoader, runtimeOptions, systemConfiguration);
     }
 
     public static Runtime createSerenityEnabledRuntime(ResourceLoader resourceLoader,

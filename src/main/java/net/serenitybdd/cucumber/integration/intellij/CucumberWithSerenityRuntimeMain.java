@@ -16,7 +16,9 @@ import static java.util.Arrays.asList;
  * A test runner that allows you to run feature files directly from IntelliJ.
  * This avoids having to write specific runners for each feature file.
  * Contributed by Vladimir Ivanov
+ * Deprecated: Replaced with cucumber.runtime.cli.Main
  */
+@Deprecated
 public class CucumberWithSerenityRuntimeMain {
     public static void main(String[] argv) throws Throwable {
         byte exitStatus = run(argv, Thread.currentThread().getContextClassLoader());
