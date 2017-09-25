@@ -6,6 +6,8 @@ import cucumber.runtime.io.MultiLoader;
 import cucumber.runtime.io.ResourceLoader;
 import net.serenitybdd.cucumber.CucumberWithSerenity;
 import net.thucydides.core.guice.Injectors;
+import net.thucydides.core.steps.BaseStepListener;
+import net.thucydides.core.steps.StepEventBus;
 import net.thucydides.core.webdriver.Configuration;
 
 import java.io.IOException;
