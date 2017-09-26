@@ -1,4 +1,4 @@
-@driver:chrome
+@driver:phantomjs
 Feature: Skipping Scenarios
 
   @skip
