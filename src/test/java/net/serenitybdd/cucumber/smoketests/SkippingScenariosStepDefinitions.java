@@ -1,5 +1,7 @@
 package net.serenitybdd.cucumber.smoketests;
 
+import cucumber.api.java.After;
+import cucumber.api.java.Before;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
@@ -11,6 +13,11 @@ import net.thucydides.core.annotations.Steps;
 import org.assertj.core.api.Assertions;
 import org.openqa.selenium.support.FindBy;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
 public class SkippingScenariosStepDefinitions {
     @DefaultUrl("https://duckduckgo.com")
     public static class DuckDuckGoSearchPage extends PageObject {
@@ -21,6 +28,9 @@ public class SkippingScenariosStepDefinitions {
         @FindBy(id="search_button_homepage")
         WebElementFacade searchButton;
 
+        @FindBy(className = "result__title")
+        List<WebElementFacade> results;
+
         public void enterSearchTerm(String searchTerm) {
             searchField.type(searchTerm);
         }
@@ -28,6 +38,11 @@ public class SkippingScenariosStepDefinitions {
         public void requestSearch() {
             searchButton.click();
         }
+
+        public List<String> getResults() {
+            return results.stream().map(element -> element.getText()).collect(Collectors.toList());
+        }
+
     }
 
     public static class CuriousSurfer {
@@ -49,6 +64,12 @@ public class SkippingScenariosStepDefinitions {
         public void shouldSeeTitle(String title) {
             Assertions.assertThat(searchPage.getTitle()).contains(title);
         }
+
+        @Step
+        public void shouldSeeAListOfResults() {
+            assertThat(searchPage.getResults().size()).isGreaterThan(0);
+        }
+
     }
 
     @Steps
@@ -69,4 +90,13 @@ public class SkippingScenariosStepDefinitions {
         connor.shouldSeeTitle(title);
     }
 
+    @Before("@do_something_before")
+    public void doSomethingBefore() {
+        connor.opensTheSearchApp();
+    }
+
+    @After("@do_something_after")
+    public void doSomethingAfter() {
+        connor.shouldSeeAListOfResults();
+    }
 }

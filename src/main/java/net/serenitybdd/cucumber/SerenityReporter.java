@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import cucumber.api.java.After;
 import cucumber.runtime.StepDefinitionMatch;
 import gherkin.formatter.Formatter;
 import gherkin.formatter.Reporter;
@@ -608,10 +609,8 @@ public class SerenityReporter implements Formatter, Reporter {
                 }
                 updatePendingResults();
                 updateSkippedResults();
-                StepEventBus.getEventBus().testFinished();
             }
         }
-
     }
 
     private void updatePendingResults() {
