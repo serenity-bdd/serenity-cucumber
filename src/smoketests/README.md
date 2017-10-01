@@ -1,4 +1,4 @@
-## Serenity JBehave Smoke tests
+## Serenity Cucumber Smoke tests
 
 This sub-project contains a range of self-documenting tests that illustrate Serenity-JBehave features.
 
