@@ -181,7 +181,7 @@ Feature: A simple feature with tags
         def testOutcome = recordedTestOutcomes[0]
 
         then:
-        testOutcome.userStory.narrative == "This is about selling widgets"
+        testOutcome.userStory.narrative == "  This is about selling widgets"
     }
 
     def "should record the scenario description text for a scenario"() {
@@ -194,8 +194,8 @@ Feature: A simple feature with tags
         def testOutcome = recordedTestOutcomes[0]
 
         then:
-        testOutcome.description == """A description of this scenario
-It goes for two lines"""
+        testOutcome.description == """    A description of this scenario
+    It goes for two lines"""
     }
 
     def "should record pending and skipped steps for a pending scenario"() {

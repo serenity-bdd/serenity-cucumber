@@ -6,7 +6,7 @@ import cucumber.runtime.ClassFinder;
 import cucumber.runtime.Runtime;
 import cucumber.runtime.RuntimeOptions;
 import cucumber.runtime.RuntimeOptionsFactory;
-import cucumber.runtime.io.MultiLoader;
+import cucumber.runtime.formatter.SerenityReporter;
 import cucumber.runtime.io.ResourceLoader;
 import cucumber.runtime.io.ResourceLoaderClassFinder;
 import net.thucydides.core.ThucydidesSystemProperty;
@@ -16,7 +16,6 @@ import net.thucydides.core.webdriver.Configuration;
 import org.junit.runners.model.InitializationError;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -53,12 +52,13 @@ public class CucumberWithSerenity extends Cucumber {
     protected cucumber.runtime.Runtime createRuntime(ResourceLoader resourceLoader,
                                                      ClassLoader classLoader,
                                                      RuntimeOptions runtimeOptions) throws InitializationError, IOException {
-        runtimeOptions.getFilters().addAll(environmentSpecifiedTags(runtimeOptions.getFilters()));
+        runtimeOptions.getTagFilters().addAll(environmentSpecifiedTags(runtimeOptions.getTagFilters()));
         RUNTIME_OPTIONS.set(runtimeOptions);
+        System.out.println("XXX Created runtime " + runtimeOptions);
         return CucumberWithSerenityRuntime.using(resourceLoader, classLoader, runtimeOptions);
     }
 
-    private Collection<String> environmentSpecifiedTags(List<Object> existingTags) {
+    private Collection<String> environmentSpecifiedTags(List<? extends Object> existingTags) {
         EnvironmentVariables environmentVariables = Injectors.getInjector().getInstance(EnvironmentVariables.class);
         String tagsExpression = ThucydidesSystemProperty.TAGS.from(environmentVariables,"");
         List<String> existingTagsValues = existingTags.stream().map(Object::toString).collect(Collectors.toList());
@@ -80,9 +80,11 @@ public class CucumberWithSerenity extends Cucumber {
                                                        Configuration systemConfiguration) {
         ClassFinder classFinder = new ResourceLoaderClassFinder(resourceLoader, classLoader);
         SerenityReporter reporter = new SerenityReporter(systemConfiguration);
-        runtimeOptions.addPlugin(reporter);
         RUNTIME_OPTIONS.set(runtimeOptions);
-        return new Runtime(resourceLoader, classFinder, classLoader, runtimeOptions);
+        Runtime runtime = new Runtime(resourceLoader, classFinder, classLoader, runtimeOptions);
+        //the order here is important, add plugin after the runtime is created
+        runtimeOptions.addPlugin(reporter);
+        return runtime;
     }
 
     public static List<String> getFeaturePaths() {

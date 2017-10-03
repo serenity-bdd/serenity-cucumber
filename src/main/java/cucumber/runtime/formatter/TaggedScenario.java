@@ -1,9 +1,10 @@
-package net.serenitybdd.cucumber;
+package cucumber.runtime.formatter;
 
 import com.google.common.collect.ImmutableList;
-import gherkin.formatter.model.Tag;
+import gherkin.ast.Tag;
 
 import java.util.List;
+
 
 class TaggedScenario {
     private static final List<String> SKIPPED_TAGS = ImmutableList.of("@skip", "@wip");

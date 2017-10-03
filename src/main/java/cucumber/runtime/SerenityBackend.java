@@ -2,7 +2,7 @@ package cucumber.runtime;
 
 import cucumber.runtime.io.ResourceLoader;
 import cucumber.runtime.snippets.FunctionNameGenerator;
-import gherkin.formatter.model.Step;
+import gherkin.pickles.PickleStep;
 import net.thucydides.core.steps.StepEventBus;
 
 import java.util.List;
@@ -36,7 +36,8 @@ public class SerenityBackend implements Backend {
     }
 
     @Override
-    public String getSnippet(Step step, FunctionNameGenerator functionNameGenerator) {
+    public String getSnippet(PickleStep step, String keyword, FunctionNameGenerator functionNameGenerator) {
         return "";
     }
+
 }
