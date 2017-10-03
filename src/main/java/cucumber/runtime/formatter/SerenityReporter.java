@@ -117,8 +117,6 @@ public class SerenityReporter implements Formatter {
 
     private final static String FEATURES_ROOT_PATH = "features";
 
-    private Optional<TestResult> forcedStoryResult = Optional.absent();
-    private Optional<TestResult> forcedScenarioResult = Optional.absent();
 
     private FeatureFileContents featureFileContents;
 
@@ -213,7 +211,7 @@ public class SerenityReporter implements Formatter {
         }
 
         currentFeature = feature;
-        clearStoryResult();
+        featureTags = ImmutableList.copyOf(feature.getTags());
 
         configureDriver(feature);
         getThucydidesListeners();
@@ -223,12 +221,6 @@ public class SerenityReporter implements Formatter {
             userStory = userStory.withNarrative(feature.getDescription());
         }
         StepEventBus.getEventBus().testSuiteStarted(userStory);
-
-        checkForPending(feature);
-        checkForSkipped(feature);
-        checkForIgnored(feature);
-        checkForManual(feature);
-
     }
 
     private void handleTestCaseStarted(TestCaseStarted event) {
@@ -248,7 +240,6 @@ public class SerenityReporter implements Formatter {
             if(newScenario) {
                 if (scenarioDefinition instanceof Scenario) {
                     configureDriver(currentFeature);
-                    clearScenarioResult();
                 } else if (scenarioDefinition instanceof ScenarioOutline) {
                     examplesRunning = true;
                     former_scenarioOutline((ScenarioOutline) scenarioDefinition);
@@ -272,8 +263,6 @@ public class SerenityReporter implements Formatter {
         if(examplesRunning) {
             handleResult(event.result);
         }
-        updatePendingResults();
-        updateSkippedResults();
         StepEventBus.getEventBus().testFinished();
         stepQueue.clear();
         if (examplesRunning) {
@@ -401,8 +390,7 @@ public class SerenityReporter implements Formatter {
     private void handleTestRunFinished(TestRunFinished event)
     {
         ScenarioDefinition scenarioDefinition = (ScenarioDefinition)currentTestCaseMap.get("scenarioDefinition");
-        checkForLifecycleTags(scenarioDefinition);
-        updateTestResultsFromTags();
+        //TODO - check if still necessaryupdateTestResultsFromTags();
         if (examplesRunning) {
             finishExample();
         } else {
@@ -411,31 +399,12 @@ public class SerenityReporter implements Formatter {
         assureTestSuiteFinished();
     }
 
-    private void clearStoryResult() {
-        forcedStoryResult = Optional.absent();
-    }
-
-    private void clearScenarioResult() {
-        forcedScenarioResult = Optional.absent();
-    }
-
-    private boolean isPendingStory() {
-        return ((forcedStoryResult.or(TestResult.UNDEFINED) == TestResult.PENDING)
-                || (forcedScenarioResult.or(TestResult.UNDEFINED) == TestResult.PENDING));
-    }
-
-    private boolean isSkippedStory() {
-        return ((forcedStoryResult.or(TestResult.UNDEFINED) == TestResult.SKIPPED)
-                || (forcedScenarioResult.or(TestResult.UNDEFINED) == TestResult.SKIPPED));
-    }
-
     public SerenityReporter(Configuration systemConfiguration) {
         this.systemConfiguration = systemConfiguration;
         this.stepQueue = new LinkedList<>();
         this.testStepQueue = new LinkedList<>();
         thucydidesListenersThreadLocal = new ThreadLocal<>();
         baseStepListeners = Lists.newArrayList();
-        clearStoryResult();
     }
 
     protected SerenityListeners getThucydidesListeners() {
@@ -458,6 +427,8 @@ public class SerenityReporter implements Formatter {
         return new FeatureFileContents(currentUri);
     }
 
+    List<Tag> featureTags;
+
     private Feature featureWithDefaultName(Feature feature, String defaultName, String id) {
         return feature; //TODO
         /*return new Feature(feature.getComments(),
@@ -467,58 +438,6 @@ public class SerenityReporter implements Formatter {
                 feature.getDescription(),
                 feature.getLine(),
                 id);*/
-    }
-
-    private void checkForPending(Feature feature) {
-        if (isPending(feature.getTags())) {
-            forcedStoryResult = Optional.of(TestResult.PENDING);
-        }
-    }
-
-    private void checkForSkipped(Feature feature) {
-        if (isSkippedOrWIP(feature.getTags())) {
-            forcedStoryResult = Optional.of(TestResult.SKIPPED);
-        }
-    }
-
-    private void checkForIgnored(Feature feature) {
-        if (isIgnored(feature.getTags())) {
-            forcedStoryResult = Optional.of(TestResult.IGNORED);
-        }
-    }
-
-    private void checkForPendingScenario(List<Tag> tags) {
-        if (isPending(tags)) {
-            forcedScenarioResult = Optional.of(TestResult.PENDING);
-        }
-    }
-
-    private void checkForSkippedScenario(List<Tag> tags) {
-        if (isSkippedOrWIP(tags)) {
-            forcedScenarioResult = Optional.of(TestResult.SKIPPED);
-        }
-    }
-
-    private void checkForIgnoredScenario(List<Tag> tags) {
-        if (isIgnored(tags)) {
-            forcedScenarioResult = Optional.of(TestResult.IGNORED);
-        }
-    }
-
-    private void checkForManual(Feature feature) {
-        if (isManual(feature.getTags())) {
-            forcedStoryResult = Optional.of(TestResult.SKIPPED);
-            StepEventBus.getEventBus().testIsManual();
-            StepEventBus.getEventBus().suspendTest(TestResult.SKIPPED);
-        }
-    }
-
-    private void checkForManualScenario(List<Tag> tags) {
-        if (isManual(tags)) {
-            forcedScenarioResult = Optional.of(TestResult.SKIPPED);
-            StepEventBus.getEventBus().testIsManual();
-            StepEventBus.getEventBus().suspendTest(TestResult.SKIPPED);
-        }
     }
 
 
@@ -537,7 +456,6 @@ public class SerenityReporter implements Formatter {
         List<String> tagNames = Lists.newArrayList();
         for (Tag tag : tags) {
             tagNames.add(tag.getName());
-
         }
         return tagNames;
     }
@@ -677,8 +595,9 @@ public class SerenityReporter implements Formatter {
         }
     }
 
+    List<Tag> scenarioTags;
+
     private void startScenario(Feature currentFeature,ScenarioDefinition scenarioDefinition) {
-        clearScenarioResult();
         StepEventBus.getEventBus().setTestSource(StepEventBus.TEST_SOURCE_CUCUMBER);
         StepEventBus.getEventBus().testStarted(scenarioDefinition.getName(),scenarioIdFrom(TestSourcesModel.convertToId(currentFeature.getName()), TestSourcesModel.convertToId(scenarioDefinition.getName())));
         StepEventBus.getEventBus().addDescriptionToCurrentTest(scenarioDefinition.getDescription());
@@ -691,15 +610,36 @@ public class SerenityReporter implements Formatter {
         }
 
         registerFeatureJiraIssues(currentFeature.getTags());
-        if(isScenario(scenarioDefinition)) {
-            registerScenarioJiraIssues(((Scenario) scenarioDefinition).getTags());
-        }
-        else if(isScenarioOutline(scenarioDefinition)) {
-            registerScenarioJiraIssues(((ScenarioOutline)scenarioDefinition).getTags());
+        List<Tag> tags = getTagsOfScenarioDefinition(scenarioDefinition);
+        registerScenarioJiraIssues(tags);
+
+        scenarioTags = tagsForScenario(scenarioDefinition);
+        updateResultsFromTagsIn(scenarioTags);
+    }
+
+    private List<Tag> tagsForScenario(ScenarioDefinition scenarioDefinition) {
+        List<Tag> scenarioTags = new ArrayList<>(featureTags);
+        scenarioTags.addAll(getTagsOfScenarioDefinition(scenarioDefinition));
+        return scenarioTags;
+    }
+
+    private void updateResultsFromTagsIn(List<Tag> tags) {
+        if (isManual(tags)) {
+            StepEventBus.getEventBus().testIsManual();
         }
 
-        checkForLifecycleTags(scenarioDefinition);
-        updateTestResultsFromTags();
+        if (isPending(tags)) {
+            StepEventBus.getEventBus().testPending();
+            StepEventBus.getEventBus().getBaseStepListener().overrideResultTo(TestResult.PENDING);
+        }
+        if (isSkippedOrWIP(tags)) {
+            StepEventBus.getEventBus().testSkipped();
+            StepEventBus.getEventBus().getBaseStepListener().overrideResultTo(TestResult.SKIPPED);
+        }
+        if (isIgnored(tags)) {
+            StepEventBus.getEventBus().testIgnored();
+            StepEventBus.getEventBus().getBaseStepListener().overrideResultTo(TestResult.IGNORED);
+        }
     }
 
     private boolean isScenario(ScenarioDefinition scenarioDefinition) {
@@ -710,45 +650,15 @@ public class SerenityReporter implements Formatter {
         return scenarioDefinition instanceof ScenarioOutline;
     }
 
-    private void checkForLifecycleTags(ScenarioDefinition scenarioDefinition) {
-        checkForSkipped(currentFeature);
-        checkForIgnored(currentFeature);
-        checkForPending(currentFeature);
-        checkForManual(currentFeature);
+
+    private List<Tag> getTagsOfScenarioDefinition(ScenarioDefinition scenarioDefinition) {
         List<Tag> tags = new ArrayList<>();
         if(isScenario(scenarioDefinition)) {
             tags = ((Scenario)scenarioDefinition).getTags();
         } else if(isScenarioOutline(scenarioDefinition)) {
             tags = ((ScenarioOutline)scenarioDefinition).getTags();
         }
-        checkForPendingScenario(tags);
-        checkForSkippedScenario(tags);
-        checkForIgnoredScenario(tags);
-        checkForManualScenario(tags);
-    }
-
-    private Optional<TestResult> forcedResult() {
-        return forcedStoryResult.or(forcedScenarioResult);
-    }
-
-    private void updateTestResultsFromTags() {
-        if (!forcedResult().isPresent()) {
-            return;
-        }
-        switch (forcedResult().get()) {
-            case PENDING:
-                StepEventBus.getEventBus().suspendTest(TestResult.PENDING);
-                return;
-            case SKIPPED:
-                StepEventBus.getEventBus().suspendTest(TestResult.SKIPPED);
-                return;
-            case IGNORED:
-                StepEventBus.getEventBus().suspendTest(TestResult.IGNORED);
-                return;
-            case COMPROMISED:
-                StepEventBus.getEventBus().suspendTest(TestResult.COMPROMISED);
-                return;
-        }
+        return tags;
     }
 
     private void registerFeatureJiraIssues(List<Tag> tags) {
@@ -842,6 +752,16 @@ public class SerenityReporter implements Formatter {
     private void handleResult(Result result) {
         Step currentStep = stepQueue.poll();
         TestStep currentTestStep = testStepQueue.poll();
+
+
+        recordStepResult(result, currentStep, currentTestStep);
+
+        if (stepQueue.isEmpty()) {
+            recordFinalResult();
+        }
+    }
+
+    private void recordStepResult(Result result, Step currentStep,TestStep currentTestStep) {
         if (Result.Type.PASSED.equals(result.getStatus())) {
             StepEventBus.getEventBus().stepFinished();
         } else if (Result.Type.FAILED.equals(result.getStatus())) {
@@ -851,32 +771,38 @@ public class SerenityReporter implements Formatter {
         } else if (Result.Type.PENDING.equals(result.getStatus())) {
             StepEventBus.getEventBus().stepPending();
         } else if (Result.Type.UNDEFINED.equals(result.getStatus())) {
-            //not needed anymore
-            //StepEventBus.getEventBus().stepStarted(ExecutedStepDescription.withTitle(stepTitleFrom(currentStep, currentTestStep)));
             StepEventBus.getEventBus().stepPending();
         }
+    }
 
-        if (stepQueue.isEmpty()) {
-            if (waitingToProcessBackgroundSteps) {
-                waitingToProcessBackgroundSteps = false;
-            } else {
-                updatePendingResults();
-                updateSkippedResults();
-            }
+    private void recordFinalResult() {
+        if (waitingToProcessBackgroundSteps) {
+            waitingToProcessBackgroundSteps = false;
+        } else {
+            updateResultFromTags(scenarioTags);
         }
     }
 
-    private void updatePendingResults() {
-        if (isPendingStory()) {
-            StepEventBus.getEventBus().setAllStepsTo(TestResult.PENDING);
+    private void updateResultFromTags(List<Tag> scenarioTags) {
+        if (isManual(scenarioTags)) {
+            StepEventBus.getEventBus().testIsManual();
+        }
+
+        if (isPending(scenarioTags)) {
+            StepEventBus.getEventBus().testPending();
+        }
+
+        if (isSkippedOrWIP(scenarioTags)) {
+            StepEventBus.getEventBus().testSkipped();
+            StepEventBus.getEventBus().getBaseStepListener().overrideResultTo(TestResult.SKIPPED);
+        }
+
+        if (isIgnored(scenarioTags)) {
+            StepEventBus.getEventBus().testIgnored();
+            StepEventBus.getEventBus().getBaseStepListener().overrideResultTo(TestResult.IGNORED);
         }
     }
 
-    private void updateSkippedResults() {
-        if (isSkippedStory()) {
-            StepEventBus.getEventBus().setAllStepsTo(TestResult.SKIPPED);
-        }
-    }
 
     private void failed(String stepTitle, Throwable cause) {
         if (!errorOrFailureRecordedForStep(stepTitle, cause)) {
