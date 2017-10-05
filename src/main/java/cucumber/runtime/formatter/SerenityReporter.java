@@ -33,9 +33,7 @@ import gherkin.ast.Tag;
 import gherkin.pickles.Argument;
 import gherkin.pickles.PickleCell;
 import gherkin.pickles.PickleRow;
-import gherkin.pickles.PickleString;
 import gherkin.pickles.PickleTable;
-import gherkin.pickles.PickleTag;
 import net.serenitybdd.core.Serenity;
 import net.serenitybdd.core.SerenityListeners;
 import net.serenitybdd.core.SerenityReports;
@@ -95,8 +93,6 @@ public class SerenityReporter implements Formatter {
 
     private final List<BaseStepListener> baseStepListeners;
 
-    private Feature currentFeature;
-
     private int currentExample = 0;
 
     private boolean examplesRunning;
@@ -111,19 +107,21 @@ public class SerenityReporter implements Formatter {
 
     private String currentUri;
 
-    private String defaultFeatureName;
-    private String defaultFeatureId;
-
-
     private final static String FEATURES_ROOT_PATH = "features";
-
 
     private FeatureFileContents featureFileContents;
 
     private String currentFeatureFile;
+
     private List<Map<String, Object>> featureMaps = new ArrayList<Map<String, Object>>();
-    private Map<String, Object> currentTestCaseMap;
+
     private final TestSourcesModel testSources = new TestSourcesModel();
+
+    private String currentScenarioId;
+
+    private int scenarioOutlineStartsAt;
+
+    private int scenarioOutlineEndsAt;
 
     private EventHandler<TestSourceRead> testSourceReadHandler = new EventHandler<TestSourceRead>() {
         @Override
@@ -200,17 +198,16 @@ public class SerenityReporter implements Formatter {
         if (uri.contains(featuresRoot)) {
             currentUri = uri.substring(uri.lastIndexOf(featuresRoot) + FEATURES_ROOT_PATH.length() + 2);
         }
-        defaultFeatureId = new File(currentUri).getName().replace(".feature", "");
-        defaultFeatureName = Inflector.getInstance().humanize(defaultFeatureId);
+        String defaultFeatureId = new File(currentUri).getName().replace(".feature", "");
+        String defaultFeatureName = Inflector.getInstance().humanize(defaultFeatureId);
         featureFileContents = new FeatureFileContents(uri);
 
         Feature feature = testSources.getFeature(event.uri);
         assureTestSuiteFinished();
         if (feature.getName().isEmpty()) {
-            feature = featureWithDefaultName(feature, defaultFeatureName, defaultFeatureId);
+            feature = featureWithDefaultName(feature, defaultFeatureName);
         }
 
-        currentFeature = feature;
         featureTags = ImmutableList.copyOf(feature.getTags());
 
         configureDriver(feature);
@@ -229,7 +226,6 @@ public class SerenityReporter implements Formatter {
             Map<String, Object> currentFeatureMap = createFeatureMap(event.testCase);
             featureMaps.add(currentFeatureMap);
         }
-        currentTestCaseMap = createTestCase(event.testCase);
         TestSourcesModel.AstNode astNode = testSources.getAstNode(currentFeatureFile, event.testCase.getLine());
         if (astNode != null) {
             ScenarioDefinition scenarioDefinition = TestSourcesModel.getScenarioDefinition(astNode);
@@ -242,7 +238,9 @@ public class SerenityReporter implements Formatter {
                     configureDriver(currentFeature);
                 } else if (scenarioDefinition instanceof ScenarioOutline) {
                     examplesRunning = true;
-                    former_scenarioOutline((ScenarioOutline) scenarioDefinition);
+                    addingScenarioOutlineSteps = true;
+                    scenarioOutlineStartsAt = scenarioDefinition.getLocation().getLine();
+                    //scenarioOutlineEndsAt = scenarioOutlineStartsAt + ((ScenarioOutline)scenarioDefinition).getSteps().size();
                     examples(currentFeature.getName(),scenarioDefinition.getName(),((ScenarioOutline)scenarioDefinition).getExamples());
                 }
                 startOfScenarioLifeCycle(currentFeature,scenarioDefinition);
@@ -285,71 +283,6 @@ public class SerenityReporter implements Formatter {
         return featureMap;
     }
 
-    private Map<String, Object> createTestCase(TestCase testCase) {
-        Map<String, Object> testCaseMap = new HashMap<String, Object>();
-        testCaseMap.put("name", testCase.getName());
-        testCaseMap.put("line", testCase.getLine());
-        testCaseMap.put("type", "scenario");
-        TestSourcesModel.AstNode astNode = testSources.getAstNode(currentFeatureFile, testCase.getLine());
-        if (astNode != null) {
-            testCaseMap.put("id", TestSourcesModel.calculateId(astNode));
-            ScenarioDefinition scenarioDefinition = TestSourcesModel.getScenarioDefinition(astNode);
-            testCaseMap.put("keyword", scenarioDefinition.getKeyword());
-            testCaseMap.put("description", scenarioDefinition.getDescription() != null ? scenarioDefinition.getDescription() : "");
-            testCaseMap.put("scenarioDefinition", scenarioDefinition);
-        }
-        testCaseMap.put("steps", new ArrayList<Map<String, Object>>());
-        if (!testCase.getTags().isEmpty()) {
-            List<Map<String, Object>> tagList = new ArrayList<Map<String, Object>>();
-            for (PickleTag tag : testCase.getTags()) {
-                Map<String, Object> tagMap = new HashMap<String, Object>();
-                tagMap.put("name", tag.getName());
-                tagList.add(tagMap);
-            }
-            testCaseMap.put("tags", tagList);
-        }
-        return testCaseMap;
-    }
-
-    private Map<String, Object> createTestStep(TestStep testStep) {
-        Map<String, Object> stepMap = new HashMap<String, Object>();
-        stepMap.put("name", testStep.getStepText());
-        stepMap.put("line", testStep.getStepLine());
-        if (!testStep.getStepArgument().isEmpty()) {
-            Argument argument = testStep.getStepArgument().get(0);
-            if (argument instanceof PickleString) {
-                stepMap.put("doc_string", createDocStringMap(argument));
-            } else if (argument instanceof PickleTable) {
-                stepMap.put("rows", createDataTableList(argument));
-            }
-        }
-        TestSourcesModel.AstNode astNode = testSources.getAstNode(currentFeatureFile, testStep.getStepLine());
-        if (astNode != null) {
-            Step step = (Step) astNode.node;
-            stepMap.put("keyword", step.getKeyword());
-        }
-
-        return stepMap;
-    }
-
-    private Map<String, Object> createDocStringMap(Argument argument) {
-        Map<String, Object> docStringMap = new HashMap<String, Object>();
-        PickleString docString = ((PickleString)argument);
-        docStringMap.put("value", docString.getContent());
-        docStringMap.put("line", docString.getLocation().getLine());
-        return docStringMap;
-    }
-
-    private List<Map<String, Object>> createDataTableList(Argument argument) {
-        List<Map<String, Object>> rowList = new ArrayList<Map<String, Object>>();
-        for (PickleRow row : ((PickleTable)argument).getRows()) {
-            Map<String, Object> rowMap = new HashMap<String, Object>();
-            rowMap.put("cells", createCellList(row));
-            rowList.add(rowMap);
-        }
-        return rowList;
-    }
-
     private List<String> createCellList(PickleRow row) {
         List<String> cells = new ArrayList<>();
         for (PickleCell cell : row.getCells()) {
@@ -389,8 +322,6 @@ public class SerenityReporter implements Formatter {
 
     private void handleTestRunFinished(TestRunFinished event)
     {
-        ScenarioDefinition scenarioDefinition = (ScenarioDefinition)currentTestCaseMap.get("scenarioDefinition");
-        //TODO - check if still necessaryupdateTestResultsFromTags();
         if (examplesRunning) {
             finishExample();
         } else {
@@ -429,15 +360,14 @@ public class SerenityReporter implements Formatter {
 
     List<Tag> featureTags;
 
-    private Feature featureWithDefaultName(Feature feature, String defaultName, String id) {
-        return feature; //TODO
-        /*return new Feature(feature.getComments(),
-                feature.getTags(),
+    private Feature featureWithDefaultName(Feature feature, String defaultName) {
+        return new Feature(feature.getTags(),
+                feature.getLocation(),
+                feature.getLanguage(),
                 feature.getKeyword(),
                 defaultName,
                 feature.getDescription(),
-                feature.getLine(),
-                id);*/
+                feature.getChildren());
     }
 
 
@@ -472,19 +402,9 @@ public class SerenityReporter implements Formatter {
 
     boolean addingScenarioOutlineSteps = false;
 
-    int scenarioOutlineStartsAt;
-    int scenarioOutlineEndsAt;
-
-
-    public void former_scenarioOutline(ScenarioOutline scenarioOutline) {
-        addingScenarioOutlineSteps = true;
-        scenarioOutlineStartsAt = scenarioOutline.getLocation().getLine();
-    }
-
-    String currentScenarioId;
-
 
     private void examples(String featureName,String id,List<Examples> examplesList) {
+
         /*String scenarioOutline = featureFileContents.betweenLine(scenarioOutlineStartsAt)
                 .and(examples.getLine() - 1);*/
         //scenarioOutlineEndsAt = examples.getLine() - 1;
@@ -578,20 +498,20 @@ public class SerenityReporter implements Formatter {
 
     String currentScenario;
 
-    private void startOfScenarioLifeCycle(Feature currentFeature,ScenarioDefinition scenario) {
+    private void startOfScenarioLifeCycle(Feature feature,ScenarioDefinition scenario) {
 
-        boolean newScenario = !scenarioIdFrom(TestSourcesModel.convertToId(currentFeature.getName()),TestSourcesModel.convertToId(scenario.getName())).equals(currentScenario);
-        currentScenario = scenarioIdFrom(TestSourcesModel.convertToId(currentFeature.getName()),TestSourcesModel.convertToId(scenario.getName()));
+        boolean newScenario = !scenarioIdFrom(TestSourcesModel.convertToId(feature.getName()),TestSourcesModel.convertToId(scenario.getName())).equals(currentScenario);
+        currentScenario = scenarioIdFrom(TestSourcesModel.convertToId(feature.getName()),TestSourcesModel.convertToId(scenario.getName()));
         if (examplesRunning) {
             if (newScenario) {
-                startScenario(currentFeature,scenario);
+                startScenario(feature,scenario);
                 StepEventBus.getEventBus().useExamplesFrom(table);
             } else {
                 StepEventBus.getEventBus().addNewExamplesFrom(table);
             }
             startExample();
         } else {
-            startScenario(currentFeature,scenario);
+            startScenario(feature,scenario);
         }
     }
 
@@ -650,7 +570,6 @@ public class SerenityReporter implements Formatter {
         return scenarioDefinition instanceof ScenarioOutline;
     }
 
-
     private List<Tag> getTagsOfScenarioDefinition(ScenarioDefinition scenarioDefinition) {
         List<Tag> tags = new ArrayList<>();
         if(isScenario(scenarioDefinition)) {
@@ -708,13 +627,11 @@ public class SerenityReporter implements Formatter {
     private void finishExample() {
         StepEventBus.getEventBus().exampleFinished();
         exampleCount--;
-
         if (exampleCount == 0) {
             examplesRunning = false;
-
             //TODO
             String scenarioOutline = featureFileContents().trimmedContent()
-                    .betweenLine(scenarioOutlineStartsAt)
+                    .betweenLine(scenarioOutlineStartsAt-1)
                     .and(scenarioOutlineEndsAt);
             System.out.println("XXXSnarioOutline " + scenarioOutline + " " + scenarioOutlineStartsAt + "-- " + scenarioOutlineEndsAt);
             table.setScenarioOutline(scenarioOutline);
@@ -738,24 +655,19 @@ public class SerenityReporter implements Formatter {
     }
 
     private void assureTestSuiteFinished() {
-        if (currentFeature != null) {
-            stepQueue.clear();
-            testStepQueue.clear();
-            StepEventBus.getEventBus().testSuiteFinished();
-            StepEventBus.getEventBus().clear();
-            Serenity.done();
-            table = null;
-            currentScenarioId = null;
-        }
+        stepQueue.clear();
+        testStepQueue.clear();
+        StepEventBus.getEventBus().testSuiteFinished();
+        StepEventBus.getEventBus().clear();
+        Serenity.done();
+        table = null;
+        currentScenarioId = null;
     }
 
     private void handleResult(Result result) {
         Step currentStep = stepQueue.poll();
         TestStep currentTestStep = testStepQueue.poll();
-
-
         recordStepResult(result, currentStep, currentTestStep);
-
         if (stepQueue.isEmpty()) {
             recordFinalResult();
         }
@@ -802,7 +714,6 @@ public class SerenityReporter implements Formatter {
             StepEventBus.getEventBus().getBaseStepListener().overrideResultTo(TestResult.IGNORED);
         }
     }
-
 
     private void failed(String stepTitle, Throwable cause) {
         if (!errorOrFailureRecordedForStep(stepTitle, cause)) {

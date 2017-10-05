@@ -35,7 +35,8 @@ public class CucumberWithSerenityRuntime {
                                                        Configuration systemConfiguration) {
         ClassFinder resolvedClassFinder = Optional.ofNullable(classFinder).orElse(new ResourceLoaderClassFinder(resourceLoader, classLoader));
         SerenityReporter reporter = new SerenityReporter(systemConfiguration);
+        Runtime runtime =  new Runtime(resourceLoader, resolvedClassFinder, classLoader, runtimeOptions);
         runtimeOptions.addPlugin(reporter);
-        return new Runtime(resourceLoader, resolvedClassFinder, classLoader, runtimeOptions);
+        return runtime;
     }
 }

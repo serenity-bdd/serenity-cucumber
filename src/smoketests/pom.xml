@@ -15,13 +15,13 @@
         <serenity.maven.version>1.6.0</serenity.maven.version>
         <serenity.cucumber.version>1.5.11-SNAPSHOT</serenity.cucumber.version>
         <encoding>UTF-8</encoding>
-        <parallel.tests>4</parallel.tests>
+
     </properties>
 
     <repositories>
         <repository>
             <snapshots>
-                <enabled>false</enabled>
+                <enabled>true</enabled>
             </snapshots>
             <id>central</id>
             <name>bintray</name>
@@ -31,7 +31,7 @@
     <pluginRepositories>
         <pluginRepository>
             <snapshots>
-                <enabled>false</enabled>
+                <enabled>true</enabled>
             </snapshots>
             <id>central</id>
             <name>bintray-plugins</name>
@@ -107,9 +107,7 @@
                     <systemPropertyVariables>
                         <webdriver.base.url>${webdriver.base.url}</webdriver.base.url>
                     </systemPropertyVariables>
-                    <parallel>classes</parallel>
-                    <threadCount>${parallel.tests}</threadCount>
-                    <forkCount>${parallel.tests}</forkCount>
+
                 </configuration>
                 <executions>
                     <execution>
