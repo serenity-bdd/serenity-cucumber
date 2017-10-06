@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import cucumber.api.Result;
-import cucumber.api.TestCase;
 import cucumber.api.TestStep;
 import cucumber.api.event.EventHandler;
 import cucumber.api.event.EventPublisher;
@@ -37,7 +36,6 @@ import gherkin.pickles.PickleTable;
 import net.serenitybdd.core.Serenity;
 import net.serenitybdd.core.SerenityListeners;
 import net.serenitybdd.core.SerenityReports;
-import net.serenitybdd.cucumber.model.FeatureFileContents;
 import net.thucydides.core.model.DataTable;
 import net.thucydides.core.model.Story;
 import net.thucydides.core.model.TestOutcome;
@@ -109,19 +107,13 @@ public class SerenityReporter implements Formatter {
 
     private final static String FEATURES_ROOT_PATH = "features";
 
-    private FeatureFileContents featureFileContents;
-
     private String currentFeatureFile;
-
-    private List<Map<String, Object>> featureMaps = new ArrayList<Map<String, Object>>();
 
     private final TestSourcesModel testSources = new TestSourcesModel();
 
     private String currentScenarioId;
 
-    private int scenarioOutlineStartsAt;
-
-    private int scenarioOutlineEndsAt;
+    ScenarioDefinition currentScenarioDefinition;
 
     private EventHandler<TestSourceRead> testSourceReadHandler = new EventHandler<TestSourceRead>() {
         @Override
@@ -200,7 +192,6 @@ public class SerenityReporter implements Formatter {
         }
         String defaultFeatureId = new File(currentUri).getName().replace(".feature", "");
         String defaultFeatureName = Inflector.getInstance().humanize(defaultFeatureId);
-        featureFileContents = new FeatureFileContents(uri);
 
         Feature feature = testSources.getFeature(event.uri);
         assureTestSuiteFinished();
@@ -223,30 +214,25 @@ public class SerenityReporter implements Formatter {
     private void handleTestCaseStarted(TestCaseStarted event) {
         if (currentFeatureFile == null || !currentFeatureFile.equals(event.testCase.getUri())) {
             currentFeatureFile = event.testCase.getUri();
-            Map<String, Object> currentFeatureMap = createFeatureMap(event.testCase);
-            featureMaps.add(currentFeatureMap);
         }
         TestSourcesModel.AstNode astNode = testSources.getAstNode(currentFeatureFile, event.testCase.getLine());
         if (astNode != null) {
-            ScenarioDefinition scenarioDefinition = TestSourcesModel.getScenarioDefinition(astNode);
+            currentScenarioDefinition = TestSourcesModel.getScenarioDefinition(astNode);
             Feature currentFeature = testSources.getFeature(event.testCase.getUri());
-            //the sources are read in parallel, current feature cannot be used
-            String scenarioId = scenarioIdFrom(currentFeature.getName(),TestSourcesModel.convertToId(scenarioDefinition.getName()));
+            //the sources are read in parallel, global current feature cannot be used
+            String scenarioId = scenarioIdFrom(currentFeature.getName(),TestSourcesModel.convertToId(currentScenarioDefinition.getName()));
             boolean newScenario = !scenarioId.equals(currentScenario);
             if(newScenario) {
-                if (scenarioDefinition instanceof Scenario) {
-                    configureDriver(currentFeature);
-                } else if (scenarioDefinition instanceof ScenarioOutline) {
+                configureDriver(currentFeature);
+                if (currentScenarioDefinition instanceof ScenarioOutline) {
                     examplesRunning = true;
                     addingScenarioOutlineSteps = true;
-                    scenarioOutlineStartsAt = scenarioDefinition.getLocation().getLine();
-                    //scenarioOutlineEndsAt = scenarioOutlineStartsAt + ((ScenarioOutline)scenarioDefinition).getSteps().size();
-                    examples(currentFeature.getName(),scenarioDefinition.getName(),((ScenarioOutline)scenarioDefinition).getExamples());
+                    examples(currentFeature.getName(),currentScenarioDefinition.getName(),((ScenarioOutline)currentScenarioDefinition).getExamples());
                 }
-                startOfScenarioLifeCycle(currentFeature,scenarioDefinition);
-                currentScenario = scenarioIdFrom(currentFeature.getName(),TestSourcesModel.convertToId(scenarioDefinition.getName()));
+                startOfScenarioLifeCycle(currentFeature,currentScenarioDefinition);
+                currentScenario = scenarioIdFrom(currentFeature.getName(),TestSourcesModel.convertToId(currentScenarioDefinition.getName()));
             } else {
-                if (scenarioDefinition instanceof ScenarioOutline) {
+                if (currentScenarioDefinition instanceof ScenarioOutline) {
                     startExample();
                 }
             }
@@ -266,21 +252,6 @@ public class SerenityReporter implements Formatter {
         if (examplesRunning) {
             finishExample();
         }
-    }
-
-    private Map<String, Object> createFeatureMap(TestCase testCase) {
-        Map<String, Object> featureMap = new HashMap<String, Object>();
-        featureMap.put("uri", testCase.getUri());
-        featureMap.put("elements", new ArrayList<Map<String, Object>>());
-        Feature feature = testSources.getFeature(testCase.getUri());
-        if (feature != null) {
-            featureMap.put("keyword", feature.getKeyword());
-            featureMap.put("name", feature.getName());
-            featureMap.put("description", feature.getDescription() != null ? feature.getDescription() : "");
-            featureMap.put("line", feature.getLocation().getLine());
-            featureMap.put("id", TestSourcesModel.convertToId(feature.getName()));
-        }
-        return featureMap;
     }
 
     private List<String> createCellList(PickleRow row) {
@@ -353,11 +324,6 @@ public class SerenityReporter implements Formatter {
         return SerenityReports.getReportService(systemConfiguration);
     }
 
-
-    FeatureFileContents featureFileContents() {
-        return new FeatureFileContents(currentUri);
-    }
-
     List<Tag> featureTags;
 
     private Feature featureWithDefaultName(Feature feature, String defaultName) {
@@ -370,12 +336,9 @@ public class SerenityReporter implements Formatter {
                 feature.getChildren());
     }
 
-
     private void configureDriver(Feature feature) {
         StepEventBus.getEventBus().setUniqueSession(systemConfiguration.shouldUseAUniqueBrowser());
-
         List<String> tags = getTagNamesFrom(feature.getTags());
-
         String requestedDriver = getDriverFrom(tags);
         if (isNotEmpty(requestedDriver)) {
             ThucydidesWebDriverSupport.useDefaultDriver(requestedDriver);
@@ -404,11 +367,6 @@ public class SerenityReporter implements Formatter {
 
 
     private void examples(String featureName,String id,List<Examples> examplesList) {
-
-        /*String scenarioOutline = featureFileContents.betweenLine(scenarioOutlineStartsAt)
-                .and(examples.getLine() - 1);*/
-        //scenarioOutlineEndsAt = examples.getLine() - 1;
-
         addingScenarioOutlineSteps = false;
         reinitializeExamples();
         for (Examples examples : examplesList) {
@@ -629,11 +587,12 @@ public class SerenityReporter implements Formatter {
         exampleCount--;
         if (exampleCount == 0) {
             examplesRunning = false;
-            //TODO
-            String scenarioOutline = featureFileContents().trimmedContent()
-                    .betweenLine(scenarioOutlineStartsAt-1)
-                    .and(scenarioOutlineEndsAt);
-            System.out.println("XXXSnarioOutline " + scenarioOutline + " " + scenarioOutlineStartsAt + "-- " + scenarioOutlineEndsAt);
+            List<Step> steps = currentScenarioDefinition.getSteps();
+            StringBuffer scenarioOutlineBuffer = new StringBuffer();
+            for(Step step : steps) {
+                scenarioOutlineBuffer.append(step.getKeyword()).append(step.getText()).append("\n\r");
+            }
+            String scenarioOutline = scenarioOutlineBuffer.toString();
             table.setScenarioOutline(scenarioOutline);
             generateReports();
         } else {
