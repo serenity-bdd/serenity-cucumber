@@ -212,6 +212,7 @@ public class SerenityReporter implements Formatter {
     }
 
     private void handleTestCaseStarted(TestCaseStarted event) {
+        getThucydidesListeners();
         if (currentFeatureFile == null || !currentFeatureFile.equals(event.testCase.getUri())) {
             currentFeatureFile = event.testCase.getUri();
         }
@@ -244,6 +245,7 @@ public class SerenityReporter implements Formatter {
     }
 
     private void handleTestCaseFinished(TestCaseFinished event) {
+        getThucydidesListeners();
         if(examplesRunning) {
             handleResult(event.result);
         }
@@ -264,6 +266,7 @@ public class SerenityReporter implements Formatter {
 
     private void handleTestStepStarted(TestStepStarted event)
     {
+        getThucydidesListeners();
         if(event.testStep instanceof PickleTestStep) {
             TestSourcesModel.AstNode astNode = testSources.getAstNode(currentFeatureFile, event.testStep.getStepLine());
             if (astNode != null) {
@@ -286,6 +289,7 @@ public class SerenityReporter implements Formatter {
 
     private void handleTestStepFinished(TestStepFinished event)
     {
+        getThucydidesListeners();
         if(event.testStep instanceof PickleTestStep) {
             handleResult(event.result);
         }
@@ -293,6 +297,7 @@ public class SerenityReporter implements Formatter {
 
     private void handleTestRunFinished(TestRunFinished event)
     {
+        getThucydidesListeners();
         if (examplesRunning) {
             finishExample();
         } else {
