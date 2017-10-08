@@ -115,6 +115,25 @@ public class SerenityReporter implements Formatter {
 
     ScenarioDefinition currentScenarioDefinition;
 
+    public SerenityReporter(Configuration systemConfiguration) {
+        this.systemConfiguration = systemConfiguration;
+        this.stepQueue = new LinkedList<>();
+        this.testStepQueue = new LinkedList<>();
+        thucydidesListenersThreadLocal = new ThreadLocal<>();
+        baseStepListeners = Lists.newArrayList();
+    }
+
+    private SerenityListeners getThucydidesListeners() {
+        if (thucydidesListenersThreadLocal.get() == null) {
+            SerenityListeners listeners = SerenityReports.setupListeners(systemConfiguration);
+            thucydidesListenersThreadLocal.set(listeners);
+            synchronized (baseStepListeners) {
+                baseStepListeners.add(listeners.getBaseStepListener());
+            }
+        }
+        return thucydidesListenersThreadLocal.get();
+    }
+
     private EventHandler<TestSourceRead> testSourceReadHandler = new EventHandler<TestSourceRead>() {
         @Override
         public void receive(TestSourceRead event) {
@@ -306,26 +325,7 @@ public class SerenityReporter implements Formatter {
         assureTestSuiteFinished();
     }
 
-    public SerenityReporter(Configuration systemConfiguration) {
-        this.systemConfiguration = systemConfiguration;
-        this.stepQueue = new LinkedList<>();
-        this.testStepQueue = new LinkedList<>();
-        thucydidesListenersThreadLocal = new ThreadLocal<>();
-        baseStepListeners = Lists.newArrayList();
-    }
-
-    protected SerenityListeners getThucydidesListeners() {
-        if (thucydidesListenersThreadLocal.get() == null) {
-            SerenityListeners listeners = SerenityReports.setupListeners(systemConfiguration);
-            thucydidesListenersThreadLocal.set(listeners);
-            synchronized (baseStepListeners) {
-                baseStepListeners.add(listeners.getBaseStepListener());
-            }
-        }
-        return thucydidesListenersThreadLocal.get();
-    }
-
-    protected ReportService getReportService() {
+    private ReportService getReportService() {
         return SerenityReports.getReportService(systemConfiguration);
     }
 
