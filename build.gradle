@@ -100,8 +100,8 @@ dependencies {
     compile ("net.serenity-bdd:serenity-screenplay-webdriver:${serenityCoreVersion}") {
         exclude group: "org.seleniumhq.selenium", module:"htmlunit-driver"
     }
-    compile "info.cukes:cucumber-java:${cucumberJVMVersion}"
-    compile("info.cukes:cucumber-junit:${cucumberJVMVersion}") {
+    compile "io.cucumber:cucumber-java:${cucumberJVMVersion}"
+    compile("io.cucumber:cucumber-junit:${cucumberJVMVersion}") {
             exclude group: "junit"
     }
 
