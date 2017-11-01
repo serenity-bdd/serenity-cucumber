@@ -112,6 +112,7 @@ public class UsingStepLibrariesStepDefinitions {
 
     @Then("both should refer to the same instance")
     public void thenBothShouldReferToTheSameInstance() {
+        assertThat("<some><xml>data</xml></some>", is(equalTo("<xml></xml>")));
         assertThat(aSharedStepLibrary, is(sameInstance(anotherSharedStepLibrary)));
     }
 }

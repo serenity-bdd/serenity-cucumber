@@ -256,7 +256,7 @@ public class SerenityReporter implements Formatter {
                     startExample();
                 }
             }
-            Background background = TestSourcesModel.getBackgoundForTestCase(astNode);
+            Background background = TestSourcesModel.getBackgroundForTestCase(astNode);
             if(background != null) {
                 handleBackground(background);
             }
