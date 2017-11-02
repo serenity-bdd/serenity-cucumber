@@ -1,5 +1,6 @@
 package smoketests.stepdefinitions;
 
+import cucumber.api.java.After;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
@@ -84,6 +85,11 @@ public class SkippingScenariosStepDefinitions {
     @Then("I should see \"(.*)\" in the page title")
     public void thenIShouldSeeTitle(String title) {
         connor.shouldSeeTitle(title);
+    }
+
+    @After("@web")
+    public void checkBrowserAfterTheTest() {
+        connor.shouldSeeAListOfResults();
     }
 
     @Then("I should see search results")
