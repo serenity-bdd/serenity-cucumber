@@ -4,6 +4,7 @@ Feature: Lifecycle phases can be used to run steps before and after a scenario
     Given I have a calculator
     And I add 1
 
+  @current
   @expected-outcome:success
   Scenario: A scenario with before and after phases
     When I add 2

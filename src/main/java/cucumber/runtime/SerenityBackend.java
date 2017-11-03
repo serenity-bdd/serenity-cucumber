@@ -3,11 +3,16 @@ package cucumber.runtime;
 import cucumber.runtime.io.ResourceLoader;
 import cucumber.runtime.snippets.FunctionNameGenerator;
 import gherkin.pickles.PickleStep;
+import net.serenitybdd.cucumber.model.FeatureFileContents;
 import net.thucydides.core.steps.StepEventBus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
 public class SerenityBackend implements Backend {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SerenityBackend.class);
 
     private final ResourceLoader resourceLoader;
 
@@ -32,7 +37,11 @@ public class SerenityBackend implements Backend {
 
     @Override
     public void disposeWorld() {
-        StepEventBus.getEventBus().testFinished();
+        if (StepEventBus.getEventBus().isBaseStepListenerRegistered()) {
+            StepEventBus.getEventBus().testFinished();
+        } else {
+            LOGGER.warn("It looks like you are running a feature using @RunWith(Cucumber.class) instead of @RunWith(CucumberWithSerenity.class). Are you sure this is what you meant to do?");
+        }
     }
 
     @Override
