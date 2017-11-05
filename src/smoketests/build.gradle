@@ -1,0 +1,38 @@
+repositories {
+    jcenter()
+    mavenLocal()
+}
+
+buildscript {
+    repositories {
+        mavenLocal()
+        jcenter()
+    }
+    dependencies {
+        classpath("net.serenity-bdd:serenity-gradle-plugin:${serenityCoreVersion}")
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'net.serenity-bdd.aggregator'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+dependencies {
+    compile "net.serenity-bdd:serenity-core:${serenityCoreVersion}"
+    compile "net.serenity-bdd:serenity-cucumber:${serenityCucumberVersion}"
+    testCompile("junit:junit:${junitVersion}")
+    compile("org.assertj:assertj-core:${assertjVersion}")
+    compile("org.slf4j:slf4j-simple:${slf4jVersion}")
+    compile 'junit:junit:4.12'
+}
+
+test {
+    testLogging.showStandardStreams = true
+    systemProperties System.getProperties()
+}
+
+gradle.startParameter.continueOnFailure = true
