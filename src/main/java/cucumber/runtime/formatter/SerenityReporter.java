@@ -674,14 +674,20 @@ public class SerenityReporter implements Formatter {
 
     private void failed(String stepTitle, Throwable cause) {
         if (!errorOrFailureRecordedForStep(stepTitle, cause)) {
-            StepEventBus.eventBusFor(currentFeaturePath()).updateCurrentStepTitle(stepTitle);
+            if (!isEmpty(stepTitle)) {
+                StepEventBus.eventBusFor(currentFeaturePath()).updateCurrentStepTitle(stepTitle);
+            }
             Throwable rootCause = new RootCauseAnalyzer(cause).getRootCause().toException();
             if (isAssumptionFailure(rootCause)) {
                 StepEventBus.eventBusFor(currentFeaturePath()).assumptionViolated(rootCause.getMessage());
             } else {
-                StepEventBus.eventBusFor(currentFeaturePath()).stepFailed(new StepFailure(ExecutedStepDescription.withTitle(normalized(stepTitle)), rootCause));
+                StepEventBus.eventBusFor(currentFeaturePath()).stepFailed(new StepFailure(ExecutedStepDescription.withTitle(normalized(currentStepTitle())), rootCause));
             }
         }
+    }
+
+    private String currentStepTitle() {
+        return StepEventBus.eventBusFor(currentFeaturePath()).getCurrentStep().isPresent() ? StepEventBus.eventBusFor(currentFeaturePath()).getCurrentStep().get().getDescription() : "";
     }
 
     private boolean errorOrFailureRecordedForStep(String stepTitle, Throwable cause) {

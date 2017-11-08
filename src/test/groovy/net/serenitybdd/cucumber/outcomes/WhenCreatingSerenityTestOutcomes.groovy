@@ -86,6 +86,25 @@ class WhenCreatingSerenityTestOutcomes extends Specification {
         testOutcome.testSteps[3].errorMessage.contains("expected:<[2]0> but was:<[1]0>")
     }
 
+    def "should record failures for failing scenario outlines"() {
+        given:
+        def runtime = serenityRunnerForCucumberTestRunner(FailingScenarioOutline.class, outputDirectory);
+
+        when:
+        runtime.run();
+        List<TestOutcome>  recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory).sort{it.name};
+        TestOutcome testOutcome = recordedTestOutcomes[0]
+        List<TestStep> stepResults = testOutcome.testSteps.collect { step -> step.result }
+
+        then:
+        testOutcome.result == TestResult.FAILURE
+        and:
+        stepResults == [TestResult.FAILURE, TestResult.SUCCESS]
+        and:
+        testOutcome.testSteps[0].description == "A simple failing scenario outline #1: {count=1, cost=5}"
+        testOutcome.testSteps[1].description == "A simple failing scenario outline #2: {count=2, cost=5}"
+    }
+
     def "should record a feature tag based on the name of the feature when the feature name is different from the feature file name"() {
         given:
         def runtime = serenityRunnerForCucumberTestRunner(SimpleScenarioWithALongName.class, outputDirectory);

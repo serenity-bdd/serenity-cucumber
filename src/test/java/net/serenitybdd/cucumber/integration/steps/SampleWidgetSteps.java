@@ -46,6 +46,14 @@ public class SampleWidgetSteps {
         this.cost = cost;
     }
 
+    @Given("at a cost of (.*)")
+    public void widgetsCostAt(int cost) {
+        if (cost < 0) {
+            throw new RuntimeException("Oh Crap!");
+        }
+        this.cost = cost;
+    }
+
     @When("I buy the widgets")
     public void buyWidgets() {
         billedPrice = cost * quantity;
