@@ -612,10 +612,15 @@ public class SerenityReporter implements Formatter {
     private void assureTestSuiteFinished() {
         stepQueue.clear();
         testStepQueue.clear();
-        StepEventBus.eventBusFor(currentFeaturePath()).testSuiteFinished();
-        StepEventBus.eventBusFor(currentFeaturePath()).clear();
+
+        java.util.Optional.ofNullable(currentFeaturePath()).ifPresent(
+                featurePath -> {
+                    StepEventBus.eventBusFor(featurePath).testSuiteFinished();
+                    StepEventBus.eventBusFor(featurePath).clear();
+                    StepEventBus.clearEventBusFor(featurePath);
+                }
+        );
         Serenity.done();
-        StepEventBus.clearEventBusFor(currentFeaturePath());
         table = null;
         currentScenarioId = null;
 
