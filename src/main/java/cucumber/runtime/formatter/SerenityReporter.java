@@ -2,7 +2,6 @@ package cucumber.runtime.formatter;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import cucumber.api.Result;
@@ -19,7 +18,6 @@ import cucumber.api.event.TestStepStarted;
 import cucumber.api.event.WriteEvent;
 import cucumber.api.formatter.Formatter;
 import cucumber.runner.PickleTestStep;
-import cucumber.runtime.SerenityBackend;
 import gherkin.ast.Background;
 import gherkin.ast.Examples;
 import gherkin.ast.Feature;
@@ -52,11 +50,17 @@ import net.thucydides.core.util.Inflector;
 import net.thucydides.core.webdriver.Configuration;
 import net.thucydides.core.webdriver.ThucydidesWebDriverSupport;
 import org.junit.internal.AssumptionViolatedException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
 import java.util.stream.Collectors;
 
 import static cucumber.runtime.formatter.TaggedScenario.isIgnored;
@@ -67,7 +71,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 /**
- * Generates Thucydides reports.
+ * Cucumber Formatter for Serenity.
  *
  * @author L.Carausu (liviu.carausu@gmail.com)
  */
@@ -99,15 +103,19 @@ public class SerenityReporter implements Formatter {
 
     private final static String FEATURES_ROOT_PATH = "features";
 
-//    private String currentFeatureFile;
-
     private final TestSourcesModel testSources = new TestSourcesModel();
 
     private String currentScenarioId;
 
-    ScenarioDefinition currentScenarioDefinition;
+    private ScenarioDefinition currentScenarioDefinition;
 
-   // private static final Logger LOGGER = LoggerFactory.getLogger(SerenityBackend.class);
+    private String currentScenario;
+
+    private List<Tag> featureTags;
+
+    private boolean addingScenarioOutlineSteps = false;
+
+    private List<Tag> scenarioTags;
 
     public SerenityReporter(Configuration systemConfiguration) {
         this.systemConfiguration = systemConfiguration;
@@ -180,7 +188,6 @@ public class SerenityReporter implements Formatter {
         StepEventBus.clearEventBusFor(featurePath);
     }
 
-
     private String relativeUriFrom(String fullPathUri) {
         String featuresRoot = File.separatorChar + FEATURES_ROOT_PATH + File.separatorChar;
         if (fullPathUri.contains(featuresRoot)) {
@@ -217,15 +224,10 @@ public class SerenityReporter implements Formatter {
         currentFeaturePathIs(event.testCase.getUri());
         StepEventBus.setCurrentBusToEventBusFor(event.testCase.getUri());
 
-//        if (currentFeatureFile == null || !currentFeatureFile.equals(event.testCase.getUri())) {
-//            currentFeatureFile = event.testCase.getUri();
-//        }
-
-//        TestSourcesModel.AstNode astNode = testSources.getAstNode(currentFeatureFile, event.testCase.getLine());
         TestSourcesModel.AstNode astNode = testSources.getAstNode(currentFeaturePath(), event.testCase.getLine());
         if (astNode != null) {
             currentScenarioDefinition = TestSourcesModel.getScenarioDefinition(astNode);
-//            Feature currentFeature = testSources.getFeature(event.testCase.getUri());
+
             Feature currentFeature = featureFrom(event.testCase.getUri());
 
             //the sources are read in parallel, global current feature cannot be used
@@ -317,8 +319,6 @@ public class SerenityReporter implements Formatter {
         return SerenityReports.getReportService(systemConfiguration);
     }
 
-    List<Tag> featureTags;
-
     private Feature featureWithDefaultName(Feature feature, String defaultName) {
         return new Feature(feature.getTags(),
                 feature.getLocation(),
@@ -355,9 +355,6 @@ public class SerenityReporter implements Formatter {
         }
         return requestedDriver;
     }
-
-    boolean addingScenarioOutlineSteps = false;
-
 
     private void examples(String featureName,String id,List<Examples> examplesList) {
         addingScenarioOutlineSteps = false;
@@ -439,15 +436,13 @@ public class SerenityReporter implements Formatter {
         return table;
     }
 
-    private Map<String, String> rowValuesFrom(List<String> headers, Map<String, String> row) {
-        Map<String, String> rowValues = Maps.newHashMap();
+    private List<String> rowValuesFrom(List<String> headers, Map<String, String> row) {
+        List<String> rowValues = Lists.newArrayList();
         for (String header : headers) {
-            rowValues.put(header, row.get(header));
+            rowValues.add(row.get(header));
         }
-        return ImmutableMap.copyOf(rowValues);
+        return ImmutableList.copyOf(rowValues);
     }
-
-    String currentScenario;
 
     private void startOfScenarioLifeCycle(Feature feature,ScenarioDefinition scenario) {
 
@@ -466,7 +461,7 @@ public class SerenityReporter implements Formatter {
         }
     }
 
-    List<Tag> scenarioTags;
+
 
     private void startScenario(Feature currentFeature,ScenarioDefinition scenarioDefinition) {
         StepEventBus.eventBusFor(currentFeaturePath()).setTestSource(StepEventBus.TEST_SOURCE_CUCUMBER);
