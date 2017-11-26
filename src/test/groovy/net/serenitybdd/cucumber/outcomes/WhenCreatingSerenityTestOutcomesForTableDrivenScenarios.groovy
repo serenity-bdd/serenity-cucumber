@@ -1,5 +1,5 @@
 package net.serenitybdd.cucumber.outcomes
-import com.github.goldin.spock.extensions.tempdir.TempDir
+
 import net.serenitybdd.cucumber.integration.*
 import net.thucydides.core.model.TestOutcome
 import net.thucydides.core.model.TestResult
@@ -10,9 +10,7 @@ import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
 
 import static net.serenitybdd.cucumber.util.CucumberRunner.serenityRunnerForCucumberTestRunner
-import static net.thucydides.core.model.TestResult.FAILURE
-import static net.thucydides.core.model.TestResult.SUCCESS
-import static net.thucydides.core.model.TestResult.ERROR
+import static net.thucydides.core.model.TestResult.*
 
 class WhenCreatingSerenityTestOutcomesForTableDrivenScenarios extends Specification {
 
@@ -73,6 +71,11 @@ class WhenCreatingSerenityTestOutcomesForTableDrivenScenarios extends Specificat
         testOutcome.exampleFields == ["amount", "cost","total"]
         testOutcome.dataTable.rows[0].stringValues == ["0","10","0"]
         testOutcome.dataTable.rows[1].stringValues == ["1","10","10"]
+        testOutcome.dataTable.rows[2].stringValues == ["2","10","20"]
+        testOutcome.dataTable.rows[3].stringValues == ["3","10","30"]
+        testOutcome.dataTable.rows[4].stringValues == ["4","0","0"]
+        testOutcome.dataTable.rows[5].stringValues == ["50","10","500"]
+        testOutcome.dataTable.rows[6].stringValues == ["60","10","600"]
     }
 
     def "should run table-driven scenarios with failing rows"() {
