@@ -86,7 +86,8 @@ configurations.all {
         failOnVersionConflict()
         force  "commons-collections:commons-collections:${commonsCollectionsVersion}",
         "xml-apis:xml-apis:${xmlApiVersion}",
-        "commons-codec:commons-codec:${commonsCodecVersion}"
+                "commons-codec:commons-codec:${commonsCodecVersion}",
+        "com.google.code.gson:gson:${gsonVersion}"
     }
 }
 
