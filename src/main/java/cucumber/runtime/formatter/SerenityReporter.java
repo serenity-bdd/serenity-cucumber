@@ -35,6 +35,7 @@ import gherkin.pickles.PickleTable;
 import net.serenitybdd.core.Serenity;
 import net.serenitybdd.core.SerenityListeners;
 import net.serenitybdd.core.SerenityReports;
+import net.serenitybdd.cucumber.CucumberWithSerenity;
 import net.thucydides.core.model.DataTable;
 import net.thucydides.core.model.Story;
 import net.thucydides.core.model.TestOutcome;
@@ -93,7 +94,11 @@ public class SerenityReporter implements Formatter {
 
     private boolean examplesRunning;
 
-    private List<Map<String, String>> exampleRows;
+    //keys are line numbers, entries are example rows (key=header, value=rowValue )
+    private Map<Integer,Map<String, String>> exampleRows;
+
+    //keys are line numbers
+    private Map<Integer, List<Tag>> exampleTags;
 
     private int exampleCount = 0;
 
@@ -128,9 +133,7 @@ public class SerenityReporter implements Formatter {
         if (StepEventBus.eventBusFor(featurePath).isBaseStepListenerRegistered()) {
             return;
         }
-
         SerenityListeners listeners = new SerenityListeners(StepEventBus.eventBusFor(featurePath), systemConfiguration);
-
         baseStepListeners.add(listeners.getBaseStepListener());
     }
 
@@ -238,13 +241,13 @@ public class SerenityReporter implements Formatter {
                 if (currentScenarioDefinition instanceof ScenarioOutline) {
                     examplesRunning = true;
                     addingScenarioOutlineSteps = true;
-                    examples(currentFeature.getName(),currentScenarioDefinition.getName(),((ScenarioOutline)currentScenarioDefinition).getExamples());
+                    examples(currentFeature.getName(),((ScenarioOutline) currentScenarioDefinition).getTags(),currentScenarioDefinition.getName(),((ScenarioOutline)currentScenarioDefinition).getExamples());
                 }
-                startOfScenarioLifeCycle(currentFeature,currentScenarioDefinition);
+                startOfScenarioLifeCycle(currentFeature,currentScenarioDefinition,event.testCase.getLine());
                 currentScenario = scenarioIdFrom(currentFeature.getName(),TestSourcesModel.convertToId(currentScenarioDefinition.getName()));
             } else {
                 if (currentScenarioDefinition instanceof ScenarioOutline) {
-                    startExample();
+                    startExample(event.testCase.getLine());
                 }
             }
             Background background = TestSourcesModel.getBackgroundForTestCase(astNode);
@@ -356,24 +359,72 @@ public class SerenityReporter implements Formatter {
         return requestedDriver;
     }
 
-    private void examples(String featureName,String id,List<Examples> examplesList) {
+    private void examples(String featureName,List<Tag> scenarioOutlineTags,String id,List<Examples> examplesList) {
         addingScenarioOutlineSteps = false;
-        reinitializeExamples();
+        initializeExamples();
         for (Examples examples : examplesList) {
-            List<TableRow> examplesTableRows = examples.getTableBody();
-            List<String> headers = getHeadersFrom(examples.getTableHeader());
-            List<Map<String, String>> rows = getValuesFrom(examplesTableRows, headers);
-            for (int i = 0; i < examplesTableRows.size(); i++) {
-                addRow(exampleRows, headers, examplesTableRows.get(i));
+            if(examplesAreNotExcludedByTags(examples,scenarioOutlineTags)) {
+                List<TableRow> examplesTableRows = examples.getTableBody();
+                List<String> headers = getHeadersFrom(examples.getTableHeader());
+                List<Map<String, String>> rows = getValuesFrom(examplesTableRows, headers);
+                for (int i = 0; i < examplesTableRows.size(); i++) {
+                    addRow(exampleRows, headers, examplesTableRows.get(i));
+                    if (examples.getTags() != null) {
+                        exampleTags.put(examplesTableRows.get(i).getLocation().getLine(), examples.getTags());
+                    }
+                }
+                String scenarioId = scenarioIdFrom(featureName, id);
+                boolean newScenario = !scenarioId.equals(currentScenarioId);
+                table = (newScenario) ?
+                        thucydidesTableFrom(SCENARIO_OUTLINE_NOT_KNOWN_YET, headers, rows, trim(examples.getName()), trim(examples.getDescription()))
+                        : addTableRowsTo(table, headers, rows, trim(examples.getName()), trim(examples.getDescription()));
+                exampleCount = table.getSize();
+                currentScenarioId = scenarioId;
             }
-            String scenarioId = scenarioIdFrom(featureName, id);
-            boolean newScenario = !scenarioId.equals(currentScenarioId);
-            table = (newScenario) ?
-                    thucydidesTableFrom(SCENARIO_OUTLINE_NOT_KNOWN_YET, headers, rows, trim(examples.getName()), trim(examples.getDescription()))
-                    : addTableRowsTo(table, headers, rows, trim(examples.getName()), trim(examples.getDescription()));
-            exampleCount = table.getSize();
-            currentScenarioId = scenarioId;
         }
+    }
+
+    private boolean examplesAreNotExcludedByTags(Examples examples,List<Tag> scenarioOutlineTags) {
+        if(testRunHasFilterTags())
+        {
+            return examplesMatchFilter(examples,scenarioOutlineTags);
+        }
+        return true;
+    }
+
+    private boolean examplesMatchFilter(Examples examples,List<Tag> scenarioOutlineTags)
+    {
+        List<Tag> allTags = getExampleAllTags(examples, scenarioOutlineTags);
+        if (examplesHaveFilterTags(allTags))
+        {
+            return allTags.stream().map(Tag::getName).collect(Collectors.toList()).containsAll(getCucumberRuntimeTags());
+        }
+        return false;
+    }
+
+    private boolean testRunHasFilterTags()
+    {
+        List<String> tagFilters = getCucumberRuntimeTags();
+        return  (tagFilters != null) && tagFilters.size() > 0;
+    }
+
+    private List<String> getCucumberRuntimeTags() {
+        return CucumberWithSerenity.currentRuntimeOptions().getTagFilters();
+    }
+
+    private boolean examplesHaveFilterTags(List<Tag> allTags)
+    {
+        return  allTags.size() > 0;
+    }
+
+    private List<Tag> getExampleAllTags(Examples examples, List<Tag> scenarioOutlineTags) {
+        List<Tag> exampleTags = examples.getTags();
+        List<Tag> allTags = new ArrayList<>();
+        if(exampleTags != null)
+            allTags.addAll(exampleTags);
+        if(scenarioOutlineTags != null)
+            allTags.addAll(scenarioOutlineTags);
+        return allTags;
     }
 
     private List<String> getHeadersFrom(TableRow headerRow) {
@@ -396,7 +447,7 @@ public class SerenityReporter implements Formatter {
         return rows;
     }
 
-    private void addRow(List<Map<String, String>> exampleRows,
+    private void addRow(Map<Integer,Map<String, String>> exampleRows,
                         List<String> headers,
                         TableRow currentTableRow) {
         Map<String, String> row = new LinkedHashMap<>();
@@ -404,17 +455,18 @@ public class SerenityReporter implements Formatter {
             List<String> cells = currentTableRow.getCells().stream().map(TableCell::getValue).collect(Collectors.toList());
             row.put(headers.get(j), cells.get(j));
         }
-        exampleRows.add(row);
+        exampleRows.put(currentTableRow.getLocation().getLine(),row);
     }
 
     private String scenarioIdFrom(String featureId,String scenarioIdOrExampleId) {
         return (featureId != null && scenarioIdOrExampleId != null) ? String.format("%s;%s", featureId, scenarioIdOrExampleId) : "";
     }
 
-    private void reinitializeExamples() {
+    private void initializeExamples() {
         examplesRunning = true;
         currentExample = 0;
-        exampleRows = new ArrayList<>();
+        exampleRows = Collections.synchronizedMap(new HashMap<>());
+        exampleTags = Collections.synchronizedMap(new HashMap<>());
     }
 
     private DataTable thucydidesTableFrom(String scenarioOutline,
@@ -444,7 +496,7 @@ public class SerenityReporter implements Formatter {
         return ImmutableList.copyOf(rowValues);
     }
 
-    private void startOfScenarioLifeCycle(Feature feature,ScenarioDefinition scenario) {
+    private void startOfScenarioLifeCycle(Feature feature,ScenarioDefinition scenario,Integer currentLine) {
 
         boolean newScenario = !scenarioIdFrom(TestSourcesModel.convertToId(feature.getName()),TestSourcesModel.convertToId(scenario.getName())).equals(currentScenario);
         currentScenario = scenarioIdFrom(TestSourcesModel.convertToId(feature.getName()),TestSourcesModel.convertToId(scenario.getName()));
@@ -455,7 +507,7 @@ public class SerenityReporter implements Formatter {
             } else {
                 StepEventBus.eventBusFor(currentFeaturePath()).addNewExamplesFrom(table);
             }
-            startExample();
+            startExample(currentLine);
         } else {
             startScenario(feature,scenario);
         }
@@ -566,10 +618,14 @@ public class SerenityReporter implements Formatter {
         return issues;
     }
 
-    private void startExample() {
-        Map<String, String> data = exampleRows.get(currentExample);
+    private void startExample(Integer lineNumber) {
+        Map<String, String> data = exampleRows.get(lineNumber);
         StepEventBus.eventBusFor(currentFeaturePath()).clearStepFailures();
         StepEventBus.eventBusFor(currentFeaturePath()).exampleStarted(data);
+        if(exampleTags.containsKey(lineNumber)) {
+            List<Tag> currentExampleTags = exampleTags.get(lineNumber);
+            StepEventBus.eventBusFor(currentFeaturePath()).addTagsToCurrentTest(convertCucumberTags(currentExampleTags));
+        }
         currentExample++;
     }
 
@@ -578,18 +634,25 @@ public class SerenityReporter implements Formatter {
         exampleCount--;
         if (exampleCount == 0) {
             examplesRunning = false;
-            List<Step> steps = currentScenarioDefinition.getSteps();
-            StringBuffer scenarioOutlineBuffer = new StringBuffer();
-            for(Step step : steps) {
-                scenarioOutlineBuffer.append(step.getKeyword()).append(step.getText()).append("\n\r");
-            }
-            String scenarioOutline = scenarioOutlineBuffer.toString();
-            table.setScenarioOutline(scenarioOutline);
+            setTableScenarioOutline();
             generateReports();
         } else {
             examplesRunning = true;
         }
     }
+
+    private void setTableScenarioOutline() {
+        List<Step> steps = currentScenarioDefinition.getSteps();
+        StringBuffer scenarioOutlineBuffer = new StringBuffer();
+        for(Step step : steps) {
+            scenarioOutlineBuffer.append(step.getKeyword()).append(step.getText()).append("\n\r");
+        }
+        String scenarioOutline = scenarioOutlineBuffer.toString();
+        if(table != null) {
+            table.setScenarioOutline(scenarioOutline);
+        }
+    }
+
 
     private void handleBackground(Background background) {
         waitingToProcessBackgroundSteps = true;

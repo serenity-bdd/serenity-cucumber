@@ -54,7 +54,6 @@ public class CucumberWithSerenity extends Cucumber {
                                                      RuntimeOptions runtimeOptions) throws InitializationError, IOException {
         runtimeOptions.getTagFilters().addAll(environmentSpecifiedTags(runtimeOptions.getTagFilters()));
         RUNTIME_OPTIONS.set(runtimeOptions);
-        System.out.println("XXX Created runtime " + runtimeOptions);
         return CucumberWithSerenityRuntime.using(resourceLoader, classLoader, runtimeOptions);
     }
 

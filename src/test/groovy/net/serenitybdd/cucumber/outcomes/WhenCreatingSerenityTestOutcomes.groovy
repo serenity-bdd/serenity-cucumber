@@ -266,7 +266,7 @@ Feature: A simple feature with tags
 
     def "should generate outcomes for scenarios with a background section"() {
         given:
-        def runtime = serenityRunnerForCucumberTestRunner(BasicArithemticScenario.class, outputDirectory);
+        def runtime = serenityRunnerForCucumberTestRunner(BasicArithmeticScenario.class, outputDirectory);
 
         when:
         runtime.run();
@@ -286,7 +286,7 @@ Feature: A simple feature with tags
 
     def "should read @issue tags"() {
         given:
-        def runtime = serenityRunnerForCucumberTestRunner(BasicArithemticScenario.class, outputDirectory);
+        def runtime = serenityRunnerForCucumberTestRunner(BasicArithmeticScenario.class, outputDirectory);
 
         when:
         runtime.run();
@@ -302,7 +302,7 @@ Feature: A simple feature with tags
 
     def "should fill @issue keys"() {
         given:
-        def runtime = serenityRunnerForCucumberTestRunner(BasicArithemticScenario.class, outputDirectory);
+        def runtime = serenityRunnerForCucumberTestRunner(BasicArithmeticScenario.class, outputDirectory);
 
         when:
         runtime.run();

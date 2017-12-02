@@ -177,7 +177,7 @@ class WhenCreatingSerenityTestOutcomesForTableDrivenScenarios extends Specificat
 
     def "should handle multiple example tables"() {
         given:
-        def runtime = serenityRunnerForCucumberTestRunner(BasicArithemticWithTablesScenario.class, outputDirectory);
+        def runtime = serenityRunnerForCucumberTestRunner(BasicArithmeticWithTablesScenario.class, outputDirectory);
 
         when:
         runtime.run();
@@ -204,7 +204,7 @@ class WhenCreatingSerenityTestOutcomesForTableDrivenScenarios extends Specificat
 
     def "should handle multiple example tables with backgrounds"() {
         given:
-        def runtime = serenityRunnerForCucumberTestRunner(BasicArithemticWithTablesAndBackgroundScenario.class, outputDirectory);
+        def runtime = serenityRunnerForCucumberTestRunner(BasicArithmeticWithTablesAndBackgroundScenario.class, outputDirectory);
 
         when:
         runtime.run();
@@ -325,7 +325,7 @@ class WhenCreatingSerenityTestOutcomesForTableDrivenScenarios extends Specificat
 
     def "should handle example tables with errors"() {
         given:
-        def runtime = serenityRunnerForCucumberTestRunner(BasicArithemticWithTablesScenarioWithErrors.class, outputDirectory);
+        def runtime = serenityRunnerForCucumberTestRunner(BasicArithmeticWithTablesScenarioWithErrors.class, outputDirectory);
 
         when:
         runtime.run();
@@ -335,5 +335,68 @@ class WhenCreatingSerenityTestOutcomesForTableDrivenScenarios extends Specificat
         then:
         testOutcome.dataTable.rows.collect { it.result } == [SUCCESS, SUCCESS, ERROR, FAILURE, SUCCESS]
     }
+
+    def "should handle example tables with tag on first example"() {
+        given:
+        def runtime = serenityRunnerForCucumberTestRunner(TablesAndExamplesTagsSingleDigitsScenario.class, outputDirectory);
+
+        when:
+        runtime.run();
+        def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory);
+        def testOutcome = recordedTestOutcomes[0]
+
+        then:
+        testOutcome.getTags().collect{testTag-> testTag.normalisedName()}.contains("single_digits")
+        testOutcome.dataTable.rows.collect { it.result } == [SUCCESS, SUCCESS]
+    }
+
+    def "should handle example tables with tag on second example"() {
+        given:
+        def runtime = serenityRunnerForCucumberTestRunner(TablesAndExamplesTagsDoubleDigitsScenario.class, outputDirectory);
+
+        when:
+        runtime.run();
+        def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory);
+        def testOutcome = recordedTestOutcomes[0]
+
+        then:
+        testOutcome.getTags().collect{testTag-> testTag.normalisedName()}.contains("double_digits")
+        testOutcome.dataTable.rows.collect { it.result } == [SUCCESS, SUCCESS, SUCCESS]
+    }
+
+    def "should handle example tables with tags on scenario outline"() {
+        given:
+        def runtime = serenityRunnerForCucumberTestRunner(TablesAndExamplesTagsManyAdditionsScenario.class, outputDirectory);
+
+        when:
+        runtime.run();
+        def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory);
+        def testOutcome = recordedTestOutcomes[0]
+
+        then:
+        def testTagNames = testOutcome.getTags().collect{testTag-> testTag.normalisedName()};
+        testTagNames.contains("single_digits")
+        testTagNames.contains("double_digits")
+        testOutcome.dataTable.rows.collect { it.result } == [SUCCESS, SUCCESS, SUCCESS, SUCCESS, SUCCESS]
+    }
+
+    def "should handle example tables with tags on scenario outline and on example"() {
+        given:
+        def runtime = serenityRunnerForCucumberTestRunner(TablesAndExamplesTagsOutlineAndExampleScenario.class, outputDirectory);
+
+        when:
+        runtime.run();
+        def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory);
+        def testOutcome = recordedTestOutcomes[0]
+
+        then:
+        def testTagNames = testOutcome.getTags().collect{testTag-> testTag.normalisedName()};
+        testTagNames.contains("many_additions")
+        testTagNames.contains("double_digits")
+        testOutcome.dataTable.rows.collect { it.result } == [SUCCESS, SUCCESS, SUCCESS]
+
+    }
+
+
 
 }
