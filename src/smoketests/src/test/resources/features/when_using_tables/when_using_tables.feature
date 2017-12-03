@@ -15,7 +15,7 @@ Feature: Serenity automatically instantiates step libraries
 
   @tables
   @expected-outcome:success
-  Scenario Outline: Doing maths
+  Scenario Outline: Doing more maths
     Given I have a calculator
     When I add <a>
     And I add <b>
@@ -31,9 +31,9 @@ Feature: Serenity automatically instantiates step libraries
     @double
     Examples: Double digits
       | a  | b | c  |
-      | 10 | 1 | 12 |
-      | 10 | 2 | 13 |
-      | 20 | 3 | 15 |
+      | 10 | 1 | 11 |
+      | 10 | 2 | 12 |
+      | 20 | 3 | 23 |
 
   @tables
   @expected-outcome:failure

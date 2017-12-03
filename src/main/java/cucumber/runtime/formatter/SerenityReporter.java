@@ -405,7 +405,11 @@ public class SerenityReporter implements Formatter {
     }
 
     private List<String> getCucumberRuntimeTags() {
-        return CucumberWithSerenity.currentRuntimeOptions().getTagFilters();
+        if (CucumberWithSerenity.currentRuntimeOptions() == null) {
+            return new ArrayList<>();
+        } else {
+            return CucumberWithSerenity.currentRuntimeOptions().getTagFilters();
+        }
     }
 
     private boolean examplesHaveFilterTags(List<Tag> allTags) {
