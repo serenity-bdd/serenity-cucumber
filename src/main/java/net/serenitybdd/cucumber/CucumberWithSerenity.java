@@ -28,32 +28,32 @@ import java.util.stream.Collectors;
  */
 public class CucumberWithSerenity extends Cucumber {
 
-    private static ThreadLocal<RuntimeOptions> RUNTIME_OPTIONS = new ThreadLocal<>();
+    private static RuntimeOptions RUNTIME_OPTIONS;
 
     public static void setRuntimeOptions(RuntimeOptions runtimeOptions) {
-        RUNTIME_OPTIONS.set(runtimeOptions);
+        RUNTIME_OPTIONS = runtimeOptions;
     }
 
     public CucumberWithSerenity(Class clazz) throws InitializationError, IOException
     {
         super(clazz);
         RuntimeOptionsFactory runtimeOptionsFactory = new RuntimeOptionsFactory(clazz);
-        RUNTIME_OPTIONS.set(runtimeOptionsFactory.create());
+        RUNTIME_OPTIONS = runtimeOptionsFactory.create();
     }
 
     public static RuntimeOptions currentRuntimeOptions() {
-        return RUNTIME_OPTIONS.get();
+        return RUNTIME_OPTIONS;
     }
 
     /**
      * Create the Runtime. Sets the Serenity runtime.
      */
     @Override
-    protected cucumber.runtime.Runtime createRuntime(ResourceLoader resourceLoader,
+    protected Runtime createRuntime(ResourceLoader resourceLoader,
                                                      ClassLoader classLoader,
                                                      RuntimeOptions runtimeOptions) throws InitializationError, IOException {
         runtimeOptions.getTagFilters().addAll(environmentSpecifiedTags(runtimeOptions.getTagFilters()));
-        RUNTIME_OPTIONS.set(runtimeOptions);
+        RUNTIME_OPTIONS = runtimeOptions;
         return CucumberWithSerenityRuntime.using(resourceLoader, classLoader, runtimeOptions);
     }
 
@@ -79,14 +79,11 @@ public class CucumberWithSerenity extends Cucumber {
                                                        Configuration systemConfiguration) {
         ClassFinder classFinder = new ResourceLoaderClassFinder(resourceLoader, classLoader);
         SerenityReporter reporter = new SerenityReporter(systemConfiguration);
-        RUNTIME_OPTIONS.set(runtimeOptions);
+        RUNTIME_OPTIONS = runtimeOptions;
         Runtime runtime = new Runtime(resourceLoader, classFinder, classLoader, runtimeOptions);
         //the order here is important, add plugin after the runtime is created
         runtimeOptions.addPlugin(reporter);
         return runtime;
     }
 
-    public static List<String> getFeaturePaths() {
-        return RUNTIME_OPTIONS.get().getFeaturePaths();
-    }
 }
