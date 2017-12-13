@@ -378,6 +378,8 @@ public class SerenityReporter implements Formatter {
                 table = (newScenario) ?
                         thucydidesTableFrom(SCENARIO_OUTLINE_NOT_KNOWN_YET, headers, rows, trim(examples.getName()), trim(examples.getDescription()))
                         : addTableRowsTo(table, headers, rows, trim(examples.getName()), trim(examples.getDescription()));
+
+                table.addTagsToLatestDataSet(examples.getTags().stream().map(tag -> TestTag.withValue(tag.getName().substring(1))).collect(Collectors.toList()));
                 exampleCount = table.getSize();
                 currentScenarioId = scenarioId;
             }
