@@ -7,6 +7,8 @@ Feature: Serenity automatically instantiates step libraries
     When I add <a>
     And I add <b>
     Then the total should be <c>
+
+    @isolated
     Examples:
       | a | b | c |
       | 1 | 1 | 2 |
@@ -21,19 +23,19 @@ Feature: Serenity automatically instantiates step libraries
     And I add <b>
     Then the total should be <c>
 
-    @single
+    @single @red
     Examples: Single digits
       | a | b | c |
       | 1 | 1 | 2 |
       | 1 | 2 | 3 |
       | 2 | 3 | 5 |
 
-    @double
+    @double @blue
     Examples: Double digits
       | a  | b | c  |
-      | 10 | 1 | 12 |
-      | 10 | 2 | 13 |
-      | 20 | 3 | 15 |
+      | 10 | 1 | 11 |
+      | 10 | 2 | 12 |
+      | 20 | 3 | 23 |
 
   @tables
   @expected-outcome:failure
@@ -42,6 +44,8 @@ Feature: Serenity automatically instantiates step libraries
     When I add <a>
     And I add <b>
     Then the total should be <c>
+
+    @isolated
     Examples:
       | a | b | c |
       | 1 | 1 | 2 |

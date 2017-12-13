@@ -12,10 +12,14 @@ public class LifecycleStepDefinitions {
 
     static class Calculations {
 
+        @Steps
+        Prep prep;
+
         int total = 0;
 
         @Step
         public void add(int amount) {
+            prep.prepareTheCalculator();
             total += amount;
         }
 
@@ -26,6 +30,12 @@ public class LifecycleStepDefinitions {
 
         public int getTotal() { return total; }
 
+    }
+
+
+    static class Prep {
+        @Step
+        public void prepareTheCalculator() {}
     }
 
     @Steps

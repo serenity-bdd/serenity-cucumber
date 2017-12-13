@@ -83,7 +83,7 @@ test {
 configurations.all {
     resolutionStrategy {
         // fail fast on dependency convergence problems
-        failOnVersionConflict()
+        //failOnVersionConflict()
         force  "commons-collections:commons-collections:${commonsCollectionsVersion}",
         "xml-apis:xml-apis:${xmlApiVersion}",
                 "commons-codec:commons-codec:${commonsCodecVersion}",
@@ -110,7 +110,7 @@ dependencies {
 
     compile "junit:junit:${junitVersion}"
 
-    compile("org.seleniumhq.selenium:htmlunit-driver:2.27") {
+    compile("org.seleniumhq.selenium:htmlunit-driver:2.28") {
         exclude group: "org.seleniumhq.selenium"
         exclude group: "org.apache.commons", module:"commons-lang3"
     }
