@@ -8,5 +8,5 @@ import org.junit.runner.RunWith;
  * Created by john on 23/07/2014.
  */
 @RunWith(CucumberWithSerenity.class)
-@CucumberOptions(features="src/test/resources/features/calculator/basic_arithmetic_with_tables_and_examples_tags.feature",tags = {"@many_additions","@double_digits"})
+@CucumberOptions(features="src/test/resources/features/calculator/basic_arithmetic_with_tables_and_examples_tags.feature",tags = {"@many_additions and @double_digits"})
 public class TablesAndExamplesTagsOutlineAndExampleScenario {}

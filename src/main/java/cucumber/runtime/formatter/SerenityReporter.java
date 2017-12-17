@@ -1,5 +1,24 @@
 package cucumber.runtime.formatter;
 
+import static cucumber.runtime.formatter.TaggedScenario.isIgnored;
+import static cucumber.runtime.formatter.TaggedScenario.isManual;
+import static cucumber.runtime.formatter.TaggedScenario.isPending;
+import static cucumber.runtime.formatter.TaggedScenario.isSkippedOrWIP;
+import static java.util.stream.Collectors.toList;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.stream.Collectors;
+import org.junit.internal.AssumptionViolatedException;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -32,6 +51,8 @@ import gherkin.pickles.Argument;
 import gherkin.pickles.PickleCell;
 import gherkin.pickles.PickleRow;
 import gherkin.pickles.PickleTable;
+import io.cucumber.tagexpressions.Expression;
+import io.cucumber.tagexpressions.TagExpressionParser;
 import net.serenitybdd.core.Serenity;
 import net.serenitybdd.core.SerenityListeners;
 import net.serenitybdd.core.SerenityReports;
@@ -50,28 +71,6 @@ import net.thucydides.core.steps.StepFailure;
 import net.thucydides.core.util.Inflector;
 import net.thucydides.core.webdriver.Configuration;
 import net.thucydides.core.webdriver.ThucydidesWebDriverSupport;
-import org.junit.internal.AssumptionViolatedException;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.stream.Collectors;
-
-import static cucumber.runtime.formatter.TaggedScenario.isIgnored;
-import static cucumber.runtime.formatter.TaggedScenario.isManual;
-import static cucumber.runtime.formatter.TaggedScenario.isPending;
-import static cucumber.runtime.formatter.TaggedScenario.isSkippedOrWIP;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
-import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 /**
  * Cucumber Formatter for Serenity.
@@ -394,12 +393,16 @@ public class SerenityReporter implements Formatter {
     }
 
     private boolean examplesMatchFilter(Examples examples, List<Tag> scenarioOutlineTags) {
-        List<Tag> allTags = getExampleAllTags(examples, scenarioOutlineTags);
-        if (examplesHaveFilterTags(allTags)) {
-            return allTags.stream().map(Tag::getName).collect(Collectors.toList()).containsAll(getCucumberRuntimeTags());
+        List<Tag> allExampleTags = getExampleAllTags(examples, scenarioOutlineTags);
+        if (examplesHaveFilterTags(allExampleTags)) {
+	        List<String> allTagsForAnExampleScenario = allExampleTags.stream().map(Tag::getName).collect(Collectors.toList());
+			String TagValuesFromCucumberOptions = getCucumberRuntimeTags().get(0);
+			TagExpressionParser parser = new TagExpressionParser();
+			Expression expressionNode = parser.parse(TagValuesFromCucumberOptions);
+			return expressionNode.evaluate(allTagsForAnExampleScenario);
         }
         return false;
-    }
+      }
 
     private boolean testRunHasFilterTags() {
         List<String> tagFilters = getCucumberRuntimeTags();
@@ -425,6 +428,8 @@ public class SerenityReporter implements Formatter {
             allTags.addAll(exampleTags);
         if (scenarioOutlineTags != null)
             allTags.addAll(scenarioOutlineTags);
+        if (featureTags !=null && featureTags.size() > 0)
+	        allTags.addAll(featureTags);
         return allTags;
     }
 
