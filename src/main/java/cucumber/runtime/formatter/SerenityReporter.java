@@ -396,10 +396,75 @@ public class SerenityReporter implements Formatter {
     private boolean examplesMatchFilter(Examples examples, List<Tag> scenarioOutlineTags) {
         List<Tag> allTags = getExampleAllTags(examples, scenarioOutlineTags);
         if (examplesHaveFilterTags(allTags)) {
-            return allTags.stream().map(Tag::getName).collect(Collectors.toList()).containsAll(getCucumberRuntimeTags());
+	        List<String> oredTags = getOredTags();
+	        List<String> andedTags = getAndedTags();
+            List<String> skippedTags = getSkippedTags();
+	        List<String> allTagsForAnExampleScenario = allTags.stream().map(Tag::getName).collect(Collectors.toList());
+            boolean resultOfORedTagsMatch = false, resultOfAndedTagsMatch = false, resultOfSkippedTagsMatch = false;
+	        if (isSkippedTagsPresent()) {
+	            return !allTagsForAnExampleScenario.containsAll(skippedTags);
+	        }
+
+            if (isOredTagsPresent()) {
+	           resultOfORedTagsMatch =  !Collections.disjoint(allTagsForAnExampleScenario, oredTags);
+	        } else {
+	           resultOfORedTagsMatch = true;
+	        }
+	        if (isAndedTagsPresent()) {
+	           resultOfAndedTagsMatch = allTagsForAnExampleScenario.containsAll(andedTags);
+	        }else {
+	           resultOfAndedTagsMatch = true;
+	        }
+
+	        return resultOfORedTagsMatch && resultOfAndedTagsMatch;
         }
         return false;
-    }
+      }
+
+    private boolean isSkippedTagsPresent() {
+	    return getSkippedTags() != null && getSkippedTags().size() > 0;
+	}
+
+    private boolean isAndedTagsPresent() {
+	    return getAndedTags() != null && getAndedTags().size() > 0;
+	}
+
+	private boolean isOredTagsPresent() {
+		return getOredTags() != null && getOredTags().size() > 0;
+	}
+
+    private List<String> getOredTags() {
+	    List<String> oredTagsList = getCucumberRuntimeTags().stream()
+								                            .filter(tagName -> tagName.contains(","))
+	                                                        .map(s -> s.split(","))
+	                                                        .flatMap(Arrays::stream)
+	                                                        .map(String::trim)
+	                                                        .filter(s -> !s.matches("(not|Not|NOt|NOT|~|@~).*")) 
+	                                                        .collect(Collectors.toList());
+	    return oredTagsList;
+	}
+
+    private List<String> getAndedTags() {
+	    List<String> andedTagsList = getCucumberRuntimeTags().stream()
+	                                                         .filter(tagName -> !tagName.contains(","))
+	                                                         .map(s -> s.split(","))
+	                                                         .flatMap(Arrays::stream)
+	                                                         .map(String::trim)
+	                                                         .filter(s -> !s.matches("(not|Not|NOt|NOT|~|@~).*"))
+                                                             .collect(Collectors.toList());
+	    return andedTagsList;
+	}
+
+    private List<String> getSkippedTags() {
+	    String[] skippedTagsArray = getCucumberRuntimeTags().toString().replace("[","").replace("]","").split(",");
+		List<String> skippedTagsList = Arrays.stream(skippedTagsArray)
+								  .map(String::trim)
+								  .filter(s -> s.matches("(not|Not|NOt|NOT|~|@~).*"))
+								  .map(s -> s.replaceAll("(not|Not|NOt|NOT|~)",""))
+								 .map(String::trim)
+								 .collect(Collectors.toList());
+		return skippedTagsList;
+	}
 
     private boolean testRunHasFilterTags() {
         List<String> tagFilters = getCucumberRuntimeTags();
@@ -425,6 +490,8 @@ public class SerenityReporter implements Formatter {
             allTags.addAll(exampleTags);
         if (scenarioOutlineTags != null)
             allTags.addAll(scenarioOutlineTags);
+        if (featureTags !=null && featureTags.size() > 0)
+	        allTags.addAll(featureTags);
         return allTags;
     }
 
