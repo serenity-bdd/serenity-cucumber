@@ -397,6 +397,128 @@ class WhenCreatingSerenityTestOutcomesForTableDrivenScenarios extends Specificat
 
     }
 
+	def "should run all the examples that inherits a feature tag"() {
+		given:
+		def runtime = serenityRunnerForCucumberTestRunner(RunExamplesMatchingFeatureTag.class, outputDirectory);
 
+		when:
+		runtime.run();
+		def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory);
+		def testOutcome = recordedTestOutcomes[0]
+
+		then:
+		def testTagNames = testOutcome.getTags().collect{testTag-> testTag.normalisedName()};
+		testTagNames.contains("single_digits")
+		testTagNames.contains("double_digits")
+		testOutcome.dataTable.rows.collect { it.result } == [SUCCESS, SUCCESS, SUCCESS, SUCCESS, SUCCESS]
+	}
+
+	def "should only run the examples that inherits a feature tag and a scenario outline tag"() {
+		given:
+		def runtime = serenityRunnerForCucumberTestRunner(RunExamplesMatchingFeatureLevelAndOutlineLevelTags.class, outputDirectory);
+
+		when:
+		runtime.run();
+		def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory);
+		def testOutcome = recordedTestOutcomes[0]
+
+		then:
+		def testTagNames = testOutcome.getTags().collect{testTag-> testTag.normalisedName()};
+		testTagNames.contains("single_digits")
+		testTagNames.contains("double_digits")
+		testOutcome.dataTable.rows.collect { it.result } == [SUCCESS, SUCCESS, SUCCESS, SUCCESS, SUCCESS]
+	}
+
+	def "should only run the examples that inherits a feature tag and has a example table tag"() {
+		given:
+		def runtime = serenityRunnerForCucumberTestRunner(RunExamplesMatchingFeatureAndExampleTags.class, outputDirectory);
+
+		when:
+		runtime.run();
+		def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory);
+		def testOutcome = recordedTestOutcomes[0]
+
+		then:
+		def testTagNames = testOutcome.getTags().collect{testTag-> testTag.normalisedName()};
+		testTagNames.contains("single_digits")
+		testOutcome.dataTable.rows.collect { it.result } == [SUCCESS, SUCCESS]
+	}
+
+	def "should only run the examples that inherits a feature tag or a scenario outline tag"() {
+        given:
+		def runtime = serenityRunnerForCucumberTestRunner(RunExamplesMatchingFeatureLevelOrOutlineLevelTags.class, outputDirectory);
+
+        when:
+        runtime.run();
+        def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory);
+        def testOutcome = recordedTestOutcomes[0]
+
+        then:
+        def testTagNames = testOutcome.getTags().collect{testTag-> testTag.normalisedName()};
+        testTagNames.contains("single_digits")
+        testTagNames.contains("double_digits")
+        testOutcome.dataTable.rows.collect { it.result } == [SUCCESS, SUCCESS, SUCCESS, SUCCESS, SUCCESS]
+   }
+
+   def "should only run the examples that inherits a feature tag or has a example tag"() {
+        given:
+        def runtime = serenityRunnerForCucumberTestRunner(RunExamplesMatchingFeatureOrExampleTags.class, outputDirectory);
+
+        when:
+        runtime.run();
+        def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory);
+        def testOutcome = recordedTestOutcomes[0]
+
+        then:
+        def testTagNames = testOutcome.getTags().collect{testTag-> testTag.normalisedName()};
+        testTagNames.contains("single_digits")
+        testTagNames.contains("double_digits")
+        testOutcome.dataTable.rows.collect { it.result } == [SUCCESS, SUCCESS, SUCCESS, SUCCESS, SUCCESS]
+   }
+
+   def "should only run the examples that inherits a feature or a scenario outline tag and a particular example table tag"() {
+		given:
+		def runtime = serenityRunnerForCucumberTestRunner(RunExamplesMatchingExampleOrScenarioOutlineTagAndAnExampleTag.class, outputDirectory);
+
+		when:
+		runtime.run();
+		def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory);
+		def testOutcome = recordedTestOutcomes[0]
+
+		then:
+		def testTagNames = testOutcome.getTags().collect{testTag-> testTag.normalisedName()};
+		testTagNames.contains("double_digits")
+		testOutcome.dataTable.rows.collect { it.result } == [SUCCESS, SUCCESS, SUCCESS]
+	}
+
+   def "should only run the examples that inherits a feature or a scenario outline tag but not a particular example table tag"() {
+        given:
+        def runtime = serenityRunnerForCucumberTestRunner(RunExamplesMatchingExampleOrScenarioOutlineTagButNotAnExampleTag.class, outputDirectory);
+
+        when:
+        runtime.run();
+        def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory);
+        def testOutcome = recordedTestOutcomes[0]
+
+        then:
+        def testTagNames = testOutcome.getTags().collect{testTag-> testTag.normalisedName()};
+        testTagNames.contains("double_digits")
+        testOutcome.dataTable.rows.collect { it.result } == [SUCCESS, SUCCESS, SUCCESS]
+   }
+
+   def "should only run the examples that inherits a feature but not a particular example table tag"() {
+		given:
+		def runtime = serenityRunnerForCucumberTestRunner(RunExamplesMatchingFeatureTagButNotAnExampleTag.class, outputDirectory);
+
+		when:
+		runtime.run();
+		def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory);
+		def testOutcome = recordedTestOutcomes[0]
+
+		then:
+		def testTagNames = testOutcome.getTags().collect{testTag-> testTag.normalisedName()};
+		testTagNames.contains("single_digits")
+		testOutcome.dataTable.rows.collect { it.result } == [SUCCESS, SUCCESS]
+	}
 
 }

@@ -394,12 +394,72 @@ public class SerenityReporter implements Formatter {
     }
 
     private boolean examplesMatchFilter(Examples examples, List<Tag> scenarioOutlineTags) {
-        List<Tag> allTags = getExampleAllTags(examples, scenarioOutlineTags);
-        if (examplesHaveFilterTags(allTags)) {
-            return allTags.stream().map(Tag::getName).collect(Collectors.toList()).containsAll(getCucumberRuntimeTags());
+        List<Tag> allExampleTags = getExampleAllTags(examples, scenarioOutlineTags);
+        if (examplesHaveFilterTags(allExampleTags)) {
+	        List<String> allTagsForAnExampleScenario = allExampleTags.stream().map(Tag::getName).collect(Collectors.toList());
+	        return !exampleTagsContainAnySkippedTag(allTagsForAnExampleScenario) && (exampleTagsContainAnyOredTag(allTagsForAnExampleScenario) && exampleTagsContainAllAndedTags(allTagsForAnExampleScenario));
         }
         return false;
-    }
+      }
+
+	private boolean exampleTagsContainAllAndedTags(List<String> allTagsForAnExampleScenario) {
+		List<String> andedTags = getAndedTags();
+		if (andedTags != null && andedTags.size() > 0) {
+			return allTagsForAnExampleScenario.containsAll(andedTags);
+		}else {
+			return true;
+		}
+	}
+
+	private boolean exampleTagsContainAnyOredTag(List<String> allTagsForAnExampleScenario) {
+		List<String> oredTags = getOredTags();
+		if (oredTags !=null && oredTags.size() > 0) {
+			return !Collections.disjoint(allTagsForAnExampleScenario, oredTags);
+		} else {
+			return true;
+		}
+	}
+
+	private boolean exampleTagsContainAnySkippedTag(List<String> allTagsForAnExampleScenario) {
+		List<String> skippedTags = getSkippedTags();
+		if (skippedTags !=null && skippedTags.size() > 0) {
+            return allTagsForAnExampleScenario.containsAll(skippedTags);
+        }
+		return false;
+	}
+
+    private List<String> getOredTags() {
+	    List<String> oredTagsList = getCucumberRuntimeTags().stream()
+								                            .filter(tagName -> tagName.contains(","))
+	                                                        .map(s -> s.split(","))
+	                                                        .flatMap(Arrays::stream)
+	                                                        .map(String::trim)
+	                                                        .filter(s -> !s.matches("(not|Not|NOt|NOT|~|@~).*")) 
+	                                                        .collect(Collectors.toList());
+	    return oredTagsList;
+	}
+
+    private List<String> getAndedTags() {
+	    List<String> andedTagsList = getCucumberRuntimeTags().stream()
+	                                                         .filter(tagName -> !tagName.contains(","))
+	                                                         .map(s -> s.split(","))
+	                                                         .flatMap(Arrays::stream)
+	                                                         .map(String::trim)
+	                                                         .filter(s -> !s.matches("(not|Not|NOt|NOT|~|@~).*"))
+                                                             .collect(Collectors.toList());
+	    return andedTagsList;
+	}
+
+    private List<String> getSkippedTags() {
+	    String[] skippedTagsArray = getCucumberRuntimeTags().toString().replace("[","").replace("]","").split(",");
+		List<String> skippedTagsList = Arrays.stream(skippedTagsArray)
+								  .map(String::trim)
+								  .filter(s -> s.matches("(not|Not|NOt|NOT|~|@~).*"))
+								  .map(s -> s.replaceAll("(not|Not|NOt|NOT|~)",""))
+								 .map(String::trim)
+								 .collect(Collectors.toList());
+		return skippedTagsList;
+	}
 
     private boolean testRunHasFilterTags() {
         List<String> tagFilters = getCucumberRuntimeTags();
@@ -425,6 +485,8 @@ public class SerenityReporter implements Formatter {
             allTags.addAll(exampleTags);
         if (scenarioOutlineTags != null)
             allTags.addAll(scenarioOutlineTags);
+        if (featureTags !=null && featureTags.size() > 0)
+	        allTags.addAll(featureTags);
         return allTags;
     }
 
