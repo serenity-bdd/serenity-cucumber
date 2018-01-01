@@ -69,7 +69,6 @@ import static cucumber.runtime.formatter.TaggedScenario.isManual;
 import static cucumber.runtime.formatter.TaggedScenario.isPending;
 import static cucumber.runtime.formatter.TaggedScenario.isSkippedOrWIP;
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
@@ -123,6 +122,7 @@ public class SerenityReporter implements Formatter {
     private boolean addingScenarioOutlineSteps = false;
 
     private List<Tag> scenarioTags;
+    private Map<String, String> data;
 
     public SerenityReporter(Configuration systemConfiguration) {
         this.systemConfiguration = systemConfiguration;
@@ -368,9 +368,9 @@ public class SerenityReporter implements Formatter {
                 List<String> headers = getHeadersFrom(examples.getTableHeader());
                 List<Map<String, String>> rows = getValuesFrom(examplesTableRows, headers);
                 for (int i = 0; i < examplesTableRows.size(); i++) {
-                    addRow(exampleRows, headers, examplesTableRows.get(i));
+                    addRow(exampleRows(), headers, examplesTableRows.get(i));
                     if (examples.getTags() != null) {
-                        exampleTags.put(examplesTableRows.get(i).getLocation().getLine(), examples.getTags());
+                        exampleTags().put(examplesTableRows.get(i).getLocation().getLine(), examples.getTags());
                     }
                 }
                 String scenarioId = scenarioIdFrom(featureName, id);
@@ -456,7 +456,7 @@ public class SerenityReporter implements Formatter {
             List<String> cells = currentTableRow.getCells().stream().map(TableCell::getValue).collect(Collectors.toList());
             row.put(headers.get(j), cells.get(j));
         }
-        exampleRows.put(currentTableRow.getLocation().getLine(), row);
+        exampleRows().put(currentTableRow.getLocation().getLine(), row);
     }
 
     private String scenarioIdFrom(String featureId, String scenarioIdOrExampleId) {
@@ -466,8 +466,20 @@ public class SerenityReporter implements Formatter {
     private void initializeExamples() {
         examplesRunning = true;
         currentExample = 0;
-        exampleRows = Collections.synchronizedMap(new HashMap<>());
-        exampleTags = Collections.synchronizedMap(new HashMap<>());
+    }
+
+    private Map<Integer, Map<String, String>> exampleRows() {
+        if (exampleRows == null) {
+            exampleRows = Collections.synchronizedMap(new HashMap<>());
+        }
+        return exampleRows;
+    }
+
+    private Map<Integer, List<Tag>> exampleTags() {
+        if (exampleTags == null) {
+            exampleTags = Collections.synchronizedMap(new HashMap<>());
+        }
+        return exampleTags;
     }
 
     private DataTable thucydidesTableFrom(String scenarioOutline,
@@ -616,11 +628,11 @@ public class SerenityReporter implements Formatter {
     }
 
     private void startExample(Integer lineNumber) {
-        Map<String, String> data = exampleRows.get(lineNumber);
+        Map<String, String> data = exampleRows().get(lineNumber);
         StepEventBus.eventBusFor(currentFeaturePath()).clearStepFailures();
         StepEventBus.eventBusFor(currentFeaturePath()).exampleStarted(data);
-        if (exampleTags.containsKey(lineNumber)) {
-            List<Tag> currentExampleTags = exampleTags.get(lineNumber);
+        if (exampleTags().containsKey(lineNumber)) {
+            List<Tag> currentExampleTags = exampleTags().get(lineNumber);
             StepEventBus.eventBusFor(currentFeaturePath()).addTagsToCurrentTest(convertCucumberTags(currentExampleTags));
         }
         currentExample++;
