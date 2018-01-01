@@ -3,6 +3,7 @@ package smoketests.stepdefinitions;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
+import net.thucydides.core.annotations.Shared;
 import net.thucydides.core.annotations.Step;
 import net.thucydides.core.annotations.Steps;
 
@@ -13,6 +14,27 @@ public class UsingStepLibrariesStepDefinitions {
 
 
     public static class SomeStepLibrary {
+
+        public int stepRunCount = 0;
+
+        @Step
+        public void doSomething() {
+            stepRunCount++;
+        }
+
+        @Step
+        public void doSomethingElse() {
+            stepRunCount++;
+        }
+
+        @Step
+        public void doSomeOtherThing() {
+            stepRunCount++;
+        }
+    }
+
+
+    public static class SomeSharedStepLibrary {
 
         public int stepRunCount = 0;
 
@@ -106,12 +128,35 @@ public class UsingStepLibrariesStepDefinitions {
     public void givenIHaveTwoSerenityStepLibraries() {
     }
 
+    @Given("I have two @Shared Serenity step libraries")
+    public void givenIHaveTwoSharedStepLibraries() {
+        aSharedStepLibrary.doSomething();
+        aSharedStepLibrary.doSomethingElse();
+    }
+
     @When("they are annotated with @Steps\\(shared=true\\)")
     public void whenTheyAreAnnotatedWithStepssharedtrue() {
+    }
+
+    @Shared
+    private SomeSharedStepLibrary someSharedStepLibrary;
+
+    @When("they are annotated with @Shared")
+    public void whenTheyAreAnnotatedWithShared() {
     }
 
     @Then("both should refer to the same instance")
     public void thenBothShouldReferToTheSameInstance() {
         assertThat(aSharedStepLibrary, is(sameInstance(anotherSharedStepLibrary)));
+    }
+
+    @Then("they should be reset between scenarios")
+    public void shouldResetSharedLibrariesBetweenScenarios() {
+        assertThat(aSharedStepLibrary.stepRunCount, is(2));
+    }
+
+    @Then("they should be reset between scenario examples")
+    public void shouldResetSharedLibrariesBetweenScenarioExamples() {
+        assertThat(aSharedStepLibrary.stepRunCount, is(2));
     }
 }

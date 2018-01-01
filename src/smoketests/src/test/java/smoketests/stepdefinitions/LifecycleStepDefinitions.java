@@ -45,6 +45,15 @@ public class LifecycleStepDefinitions {
     public void givenIHaveACalculator() {
     }
 
+    @Given("I have an odd number")
+    public void givenIHaveAnOddNumber() {
+    }
+
+    @Then("the result should be should be odd: (.*)")
+    public void shouldBeOdd(boolean isOdd) {
+
+    }
+
     @Given("I add (.*)")
     public void givenIAdd(int amount) {
         calculations.add(amount);

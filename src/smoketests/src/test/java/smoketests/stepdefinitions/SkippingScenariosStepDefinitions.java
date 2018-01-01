@@ -9,6 +9,8 @@ import net.serenitybdd.core.pages.WebElementFacade;
 import net.thucydides.core.annotations.DefaultUrl;
 import net.thucydides.core.annotations.Step;
 import net.thucydides.core.annotations.Steps;
+import net.thucydides.core.model.TestResult;
+import net.thucydides.core.steps.StepEventBus;
 import org.openqa.selenium.support.FindBy;
 
 import java.util.List;
@@ -43,6 +45,16 @@ public class SkippingScenariosStepDefinitions {
         }
     }
 
+    @DefaultUrl("https://html5demos.com/drag/")
+    public static class HTMLDragAndDrop extends PageObject {
+
+        public void tryDragAndDrop() {
+            withAction().dragAndDrop($("#one"), $("#bin")).perform();
+            StepEventBus.getEventBus().suspendTest(TestResult.SUCCESS);
+            StepEventBus.getEventBus().temporarilySuspendWebdriverCalls();
+        }
+    }
+
     public static class CuriousSurfer {
 
         DuckDuckGoSearchPage searchPage;
@@ -71,6 +83,8 @@ public class SkippingScenariosStepDefinitions {
 
     @Steps
     CuriousSurfer connor;
+
+    HTMLDragAndDrop dragAndDrop;
 
     @Given("I want to search for something")
     public void givenIWantToSearchForFruit() {
