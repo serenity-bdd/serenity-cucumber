@@ -12,3 +12,9 @@ buildSrc/build/
 lib/
 target/
 build/
+/out/
+.idea/
+serenity-cucumber.iml
+src/smoketests/.idea/
+src/smoketests/history/
+src/smoketests/smoketests.iml

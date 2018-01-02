@@ -6,3 +6,8 @@ Feature: Hooks can be used with web tests as well
     Given I want to search for something
     When I lookup pear
     Then I should see "pear at DuckDuckGo" in the page title
+
+  Scenario: Another simple passing scenario
+    Given I want to search for something
+    When I lookup pear
+    Then I should see "pear at DuckDuckGo" in the page title

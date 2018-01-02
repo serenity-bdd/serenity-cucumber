@@ -23,3 +23,26 @@ Feature: Serenity automatically instantiates step libraries
     Given I have two Serenity step libraries
     When they are annotated with @Steps(shared=true)
     Then both should refer to the same instance
+
+  @expected-outcome:success
+  Scenario: You can share step library instances using @Shared
+    Given I have two @Shared Serenity step libraries
+    When they are annotated with @Shared
+    Then they should be reset between scenarios
+
+  @expected-outcome:success
+  Scenario: Shared scenarios should be reset between scenarios
+    Given I have two @Shared Serenity step libraries
+    When they are annotated with @Shared
+    Then they should be reset between scenarios
+
+  @expected-outcome:success
+  Scenario Outline: You can share step library instances using @Shared in scenario outlines
+    Given I have two @Shared Serenity step libraries
+    When they are annotated with @Shared
+    Then they should be reset between scenario examples
+    Examples:
+      | example |
+      | 1       |
+      | 2       |
+      | 3       |

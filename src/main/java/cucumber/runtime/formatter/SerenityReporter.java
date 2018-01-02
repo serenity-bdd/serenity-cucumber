@@ -1,52 +1,15 @@
 package cucumber.runtime.formatter;
 
-import static cucumber.runtime.formatter.TaggedScenario.isIgnored;
-import static cucumber.runtime.formatter.TaggedScenario.isManual;
-import static cucumber.runtime.formatter.TaggedScenario.isPending;
-import static cucumber.runtime.formatter.TaggedScenario.isSkippedOrWIP;
-import static java.util.stream.Collectors.toList;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
-import static org.apache.commons.lang3.StringUtils.isNotEmpty;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.stream.Collectors;
-import org.junit.internal.AssumptionViolatedException;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import cucumber.api.Result;
 import cucumber.api.TestStep;
-import cucumber.api.event.EventHandler;
-import cucumber.api.event.EventPublisher;
-import cucumber.api.event.TestCaseFinished;
-import cucumber.api.event.TestCaseStarted;
-import cucumber.api.event.TestRunFinished;
-import cucumber.api.event.TestRunStarted;
-import cucumber.api.event.TestSourceRead;
-import cucumber.api.event.TestStepFinished;
-import cucumber.api.event.TestStepStarted;
-import cucumber.api.event.WriteEvent;
+import cucumber.api.event.*;
 import cucumber.api.formatter.Formatter;
 import cucumber.runner.PickleTestStep;
-import gherkin.ast.Background;
-import gherkin.ast.Examples;
-import gherkin.ast.Feature;
-import gherkin.ast.Scenario;
-import gherkin.ast.ScenarioDefinition;
-import gherkin.ast.ScenarioOutline;
-import gherkin.ast.Step;
-import gherkin.ast.TableCell;
-import gherkin.ast.TableRow;
-import gherkin.ast.Tag;
+import gherkin.ast.*;
 import gherkin.pickles.Argument;
 import gherkin.pickles.PickleCell;
 import gherkin.pickles.PickleRow;
@@ -58,10 +21,7 @@ import net.serenitybdd.core.SerenityListeners;
 import net.serenitybdd.core.SerenityReports;
 import net.serenitybdd.cucumber.CucumberWithSerenity;
 import net.thucydides.core.model.DataTable;
-import net.thucydides.core.model.Story;
-import net.thucydides.core.model.TestOutcome;
-import net.thucydides.core.model.TestResult;
-import net.thucydides.core.model.TestTag;
+import net.thucydides.core.model.*;
 import net.thucydides.core.model.stacktrace.RootCauseAnalyzer;
 import net.thucydides.core.reports.ReportService;
 import net.thucydides.core.steps.BaseStepListener;
@@ -71,6 +31,16 @@ import net.thucydides.core.steps.StepFailure;
 import net.thucydides.core.util.Inflector;
 import net.thucydides.core.webdriver.Configuration;
 import net.thucydides.core.webdriver.ThucydidesWebDriverSupport;
+import org.junit.internal.AssumptionViolatedException;
+
+import java.io.File;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static cucumber.runtime.formatter.TaggedScenario.*;
+import static java.util.stream.Collectors.toList;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 /**
  * Cucumber Formatter for Serenity.
@@ -90,8 +60,6 @@ public class SerenityReporter implements Formatter {
     private Configuration systemConfiguration;
 
     private final List<BaseStepListener> baseStepListeners;
-
-    private int currentExample = 0;
 
     private boolean examplesRunning;
 
@@ -122,6 +90,7 @@ public class SerenityReporter implements Formatter {
     private boolean addingScenarioOutlineSteps = false;
 
     private List<Tag> scenarioTags;
+//    private Map<String, String> data;
 
     public SerenityReporter(Configuration systemConfiguration) {
         this.systemConfiguration = systemConfiguration;
@@ -367,9 +336,9 @@ public class SerenityReporter implements Formatter {
                 List<String> headers = getHeadersFrom(examples.getTableHeader());
                 List<Map<String, String>> rows = getValuesFrom(examplesTableRows, headers);
                 for (int i = 0; i < examplesTableRows.size(); i++) {
-                    addRow(exampleRows, headers, examplesTableRows.get(i));
+                    addRow(exampleRows(), headers, examplesTableRows.get(i));
                     if (examples.getTags() != null) {
-                        exampleTags.put(examplesTableRows.get(i).getLocation().getLine(), examples.getTags());
+                        exampleTags().put(examplesTableRows.get(i).getLocation().getLine(), examples.getTags());
                     }
                 }
                 String scenarioId = scenarioIdFrom(featureName, id);
@@ -395,14 +364,14 @@ public class SerenityReporter implements Formatter {
     private boolean examplesMatchFilter(Examples examples, List<Tag> scenarioOutlineTags) {
         List<Tag> allExampleTags = getExampleAllTags(examples, scenarioOutlineTags);
         if (examplesHaveFilterTags(allExampleTags)) {
-	        List<String> allTagsForAnExampleScenario = allExampleTags.stream().map(Tag::getName).collect(Collectors.toList());
-			String TagValuesFromCucumberOptions = getCucumberRuntimeTags().get(0);
-			TagExpressionParser parser = new TagExpressionParser();
-			Expression expressionNode = parser.parse(TagValuesFromCucumberOptions);
-			return expressionNode.evaluate(allTagsForAnExampleScenario);
+            List<String> allTagsForAnExampleScenario = allExampleTags.stream().map(Tag::getName).collect(Collectors.toList());
+            String TagValuesFromCucumberOptions = getCucumberRuntimeTags().get(0);
+            TagExpressionParser parser = new TagExpressionParser();
+            Expression expressionNode = parser.parse(TagValuesFromCucumberOptions);
+            return expressionNode.evaluate(allTagsForAnExampleScenario);
         }
         return false;
-      }
+    }
 
     private boolean testRunHasFilterTags() {
         List<String> tagFilters = getCucumberRuntimeTags();
@@ -428,8 +397,8 @@ public class SerenityReporter implements Formatter {
             allTags.addAll(exampleTags);
         if (scenarioOutlineTags != null)
             allTags.addAll(scenarioOutlineTags);
-        if (featureTags !=null && featureTags.size() > 0)
-	        allTags.addAll(featureTags);
+        if (featureTags != null && featureTags.size() > 0)
+            allTags.addAll(featureTags);
         return allTags;
     }
 
@@ -461,7 +430,7 @@ public class SerenityReporter implements Formatter {
             List<String> cells = currentTableRow.getCells().stream().map(TableCell::getValue).collect(Collectors.toList());
             row.put(headers.get(j), cells.get(j));
         }
-        exampleRows.put(currentTableRow.getLocation().getLine(), row);
+        exampleRows().put(currentTableRow.getLocation().getLine(), row);
     }
 
     private String scenarioIdFrom(String featureId, String scenarioIdOrExampleId) {
@@ -470,9 +439,20 @@ public class SerenityReporter implements Formatter {
 
     private void initializeExamples() {
         examplesRunning = true;
-        currentExample = 0;
-        exampleRows = Collections.synchronizedMap(new HashMap<>());
-        exampleTags = Collections.synchronizedMap(new HashMap<>());
+    }
+
+    private Map<Integer, Map<String, String>> exampleRows() {
+        if (exampleRows == null) {
+            exampleRows = Collections.synchronizedMap(new HashMap<>());
+        }
+        return exampleRows;
+    }
+
+    private Map<Integer, List<Tag>> exampleTags() {
+        if (exampleTags == null) {
+            exampleTags = Collections.synchronizedMap(new HashMap<>());
+        }
+        return exampleTags;
     }
 
     private DataTable thucydidesTableFrom(String scenarioOutline,
@@ -621,14 +601,13 @@ public class SerenityReporter implements Formatter {
     }
 
     private void startExample(Integer lineNumber) {
-        Map<String, String> data = exampleRows.get(lineNumber);
+        Map<String, String> data = exampleRows().get(lineNumber);
         StepEventBus.eventBusFor(currentFeaturePath()).clearStepFailures();
         StepEventBus.eventBusFor(currentFeaturePath()).exampleStarted(data);
-        if (exampleTags.containsKey(lineNumber)) {
-            List<Tag> currentExampleTags = exampleTags.get(lineNumber);
+        if (exampleTags().containsKey(lineNumber)) {
+            List<Tag> currentExampleTags = exampleTags().get(lineNumber);
             StepEventBus.eventBusFor(currentFeaturePath()).addTagsToCurrentTest(convertCucumberTags(currentExampleTags));
         }
-        currentExample++;
     }
 
     private void finishExample() {
@@ -837,6 +816,6 @@ public class SerenityReporter implements Formatter {
     }
 
     private String trim(String stringToBeTrimmed) {
-        return (stringToBeTrimmed == null) ? stringToBeTrimmed : stringToBeTrimmed.trim();
+        return (stringToBeTrimmed == null) ? null : stringToBeTrimmed.trim();
     }
 }
