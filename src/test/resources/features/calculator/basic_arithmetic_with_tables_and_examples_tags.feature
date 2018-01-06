@@ -1,10 +1,10 @@
-@foo
+@feature
 Feature: Basic Arithmetic with tables
   In order to do my maths homework
   As a maths student
   I want to be able to add sums
 
-  @many_additions
+  @scenario_outline
   Scenario Outline: Many additions
     Given a calculator I just turned on
     And the previous entries:
@@ -16,14 +16,14 @@ Feature: Basic Arithmetic with tables
     And I press +
     Then the result is <c>
 
-  @single_digits
+  @example_one
   Examples: Single digits
   With just one digit
     | a | b | c  |
     | 1 | 2 | 8  |
     | 2 | 3 | 10 |
 
-  @double_digits
+  @example_two
   Examples: Double digits
   With more digits than one
     | a  | b  | c  |
