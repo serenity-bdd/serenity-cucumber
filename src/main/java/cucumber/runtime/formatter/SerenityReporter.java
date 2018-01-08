@@ -216,7 +216,7 @@ public class SerenityReporter implements Formatter {
                 if (currentScenarioDefinition instanceof ScenarioOutline) {
                     examplesRunning = true;
                     addingScenarioOutlineSteps = true;
-                    examples(currentFeature.getName(), ((ScenarioOutline) currentScenarioDefinition).getTags(), currentScenarioDefinition.getName(), ((ScenarioOutline) currentScenarioDefinition).getExamples());
+                    examples(currentFeature, ((ScenarioOutline) currentScenarioDefinition).getTags(), currentScenarioDefinition.getName(), ((ScenarioOutline) currentScenarioDefinition).getExamples());
                 }
                 startOfScenarioLifeCycle(currentFeature, currentScenarioDefinition, event.testCase.getLine());
                 currentScenario = scenarioIdFrom(currentFeature.getName(), TestSourcesModel.convertToId(currentScenarioDefinition.getName()));
@@ -331,11 +331,13 @@ public class SerenityReporter implements Formatter {
         return requestedDriver;
     }
 
-    private void examples(String featureName, List<Tag> scenarioOutlineTags, String id, List<Examples> examplesList) {
+    private void examples(Feature currentFeature, List<Tag> scenarioOutlineTags, String id, List<Examples> examplesList) {
+        String featureName = currentFeature.getName();
+        List<Tag> currentFeatureTags = currentFeature.getTags();
         addingScenarioOutlineSteps = false;
         initializeExamples();
         for (Examples examples : examplesList) {
-            if (examplesAreNotExcludedByTags(examples, scenarioOutlineTags) &&
+            if (examplesAreNotExcludedByTags(examples, scenarioOutlineTags, currentFeatureTags) &&
                     examplesAreNotExcludedByLinesFilter(examples)) {
                 List<TableRow> examplesTableRows = examples.getTableBody().stream().filter(
                         tableRow -> tableRowIsNotExcludedByLinesFilter(tableRow)).collect(Collectors.toList());
@@ -359,7 +361,7 @@ public class SerenityReporter implements Formatter {
             }
         }
     }
-
+    
     private void initLineFilters(ResourceLoader resourceLoader) {
         if (lineFilters == null) {
             Map<String, List<Long>> lineFiltersFromRuntime = CucumberWithSerenity.currentRuntimeOptions()
@@ -400,15 +402,15 @@ public class SerenityReporter implements Formatter {
         }
     }
 
-    private boolean examplesAreNotExcludedByTags(Examples examples, List<Tag> scenarioOutlineTags) {
+    private boolean examplesAreNotExcludedByTags(Examples examples, List<Tag> scenarioOutlineTags, List<Tag> currentFeatureTags) {
         if (testRunHasFilterTags()) {
-            return examplesMatchFilter(examples, scenarioOutlineTags);
+            return examplesMatchFilter(examples, scenarioOutlineTags, currentFeatureTags);
         }
         return true;
     }
 
-    private boolean examplesMatchFilter(Examples examples, List<Tag> scenarioOutlineTags) {
-        List<Tag> allExampleTags = getExampleAllTags(examples, scenarioOutlineTags);
+    private boolean examplesMatchFilter(Examples examples, List<Tag> scenarioOutlineTags, List<Tag> currentFeatureTags) {
+        List<Tag> allExampleTags = getExampleAllTags(examples, scenarioOutlineTags, currentFeatureTags);
         if (examplesHaveFilterTags(allExampleTags)) {
             List<String> allTagsForAnExampleScenario = allExampleTags.stream().map(Tag::getName).collect(Collectors.toList());
             String TagValuesFromCucumberOptions = getCucumberRuntimeTags().get(0);
@@ -436,15 +438,15 @@ public class SerenityReporter implements Formatter {
         return allTags.size() > 0;
     }
 
-    private List<Tag> getExampleAllTags(Examples examples, List<Tag> scenarioOutlineTags) {
+    private List<Tag> getExampleAllTags(Examples examples, List<Tag> scenarioOutlineTags, List<Tag> currentFeatureTags) {
         List<Tag> exampleTags = examples.getTags();
         List<Tag> allTags = new ArrayList<>();
         if (exampleTags != null)
             allTags.addAll(exampleTags);
         if (scenarioOutlineTags != null)
             allTags.addAll(scenarioOutlineTags);
-        if (featureTags != null && featureTags.size() > 0)
-            allTags.addAll(featureTags);
+        if (currentFeatureTags !=null)
+	        allTags.addAll(currentFeatureTags);
         return allTags;
     }
 
