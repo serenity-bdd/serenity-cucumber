@@ -10,6 +10,7 @@ import cucumber.api.event.*;
 import cucumber.api.formatter.Formatter;
 import cucumber.runner.PickleTestStep;
 import gherkin.ast.*;
+import cucumber.runtime.io.ResourceLoader;
 import gherkin.pickles.Argument;
 import gherkin.pickles.PickleCell;
 import gherkin.pickles.PickleRow;
@@ -89,14 +90,17 @@ public class SerenityReporter implements Formatter {
 
     private boolean addingScenarioOutlineSteps = false;
 
+    private Map<String, List<Long>> lineFilters;
+
     private List<Tag> scenarioTags;
 //    private Map<String, String> data;
 
-    public SerenityReporter(Configuration systemConfiguration) {
+    public SerenityReporter(Configuration systemConfiguration, ResourceLoader resourceLoader) {
         this.systemConfiguration = systemConfiguration;
         this.stepQueue = new LinkedList<>();
         this.testStepQueue = new LinkedList<>();
         baseStepListeners = Collections.synchronizedList(new ArrayList<>());
+        initLineFilters(resourceLoader);
     }
 
     private void initialiseThucydidesListenersFor(String featurePath) {
@@ -333,8 +337,10 @@ public class SerenityReporter implements Formatter {
         addingScenarioOutlineSteps = false;
         initializeExamples();
         for (Examples examples : examplesList) {
-            if (examplesAreNotExcludedByTags(examples, scenarioOutlineTags, currentFeatureTags)) {
-                List<TableRow> examplesTableRows = examples.getTableBody();
+            if (examplesAreNotExcludedByTags(examples, scenarioOutlineTags, currentFeatureTags) &&
+                    examplesAreNotExcludedByLinesFilter(examples)) {
+                List<TableRow> examplesTableRows = examples.getTableBody().stream().filter(
+                        tableRow -> tableRowIsNotExcludedByLinesFilter(tableRow)).collect(Collectors.toList());
                 List<String> headers = getHeadersFrom(examples.getTableHeader());
                 List<Map<String, String>> rows = getValuesFrom(examplesTableRows, headers);
                 for (int i = 0; i < examplesTableRows.size(); i++) {
@@ -353,6 +359,46 @@ public class SerenityReporter implements Formatter {
                 exampleCount = table.getSize();
                 currentScenarioId = scenarioId;
             }
+        }
+    }
+    
+    private void initLineFilters(ResourceLoader resourceLoader) {
+        if (lineFilters == null) {
+            Map<String, List<Long>> lineFiltersFromRuntime = CucumberWithSerenity.currentRuntimeOptions()
+                    .getLineFilters(resourceLoader);
+            if (lineFiltersFromRuntime == null) {
+                lineFilters = new HashMap<>();
+            }
+            else {
+                lineFilters = lineFiltersFromRuntime;
+            }
+        }
+    }
+
+    private boolean examplesAreNotExcludedByLinesFilter(Examples examples) {
+        if (lineFilters.isEmpty()) {
+            return true;
+        }
+
+        if (!lineFilters.containsKey(currentFeaturePath())) {
+            return false;
+        }
+        else {
+            return examples.getTableBody().stream().anyMatch(
+                    row -> lineFilters.get(currentFeaturePath()).contains((long)row.getLocation().getLine()));
+        }
+    }
+
+    private boolean tableRowIsNotExcludedByLinesFilter(TableRow tableRow) {
+        if (lineFilters.isEmpty()) {
+            return true;
+        }
+
+        if (!lineFilters.containsKey(currentFeaturePath())) {
+            return false;
+        }
+        else {
+            return lineFilters.get(currentFeaturePath()).contains((long)tableRow.getLocation().getLine());
         }
     }
 
