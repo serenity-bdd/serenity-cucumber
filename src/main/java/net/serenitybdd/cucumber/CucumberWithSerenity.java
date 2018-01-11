@@ -75,10 +75,10 @@ public class CucumberWithSerenity extends Cucumber {
                                                        RuntimeOptions runtimeOptions,
                                                        Configuration systemConfiguration) {
         ClassFinder classFinder = new ResourceLoaderClassFinder(resourceLoader, classLoader);
-        SerenityReporter reporter = new SerenityReporter(systemConfiguration, resourceLoader);
         RUNTIME_OPTIONS = runtimeOptions;
         Runtime runtime = new Runtime(resourceLoader, classFinder, classLoader, runtimeOptions);
         //the order here is important, add plugin after the runtime is created
+        SerenityReporter reporter = new SerenityReporter(systemConfiguration, resourceLoader);
         runtimeOptions.addPlugin(reporter);
         return runtime;
     }
