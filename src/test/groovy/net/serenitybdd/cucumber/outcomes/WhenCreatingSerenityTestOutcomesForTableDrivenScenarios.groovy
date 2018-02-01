@@ -516,10 +516,26 @@ class WhenCreatingSerenityTestOutcomesForTableDrivenScenarios extends Specificat
 		def testOutcome = recordedTestOutcomes[0]
 
 		then:
+        recordedTestOutcomes.size() == 1
 		def testTagNames = testOutcome.getTags().collect{testTag-> testTag.normalisedName()};
 		testTagNames.contains("example_one")
 		testOutcome.dataTable.rows.collect { it.result } == [SUCCESS, SUCCESS]
 	}
+
+    def "should also run the examples without tags"() {
+        given:
+        def runtime = serenityRunnerForCucumberTestRunner(RunExamplesWithoutTags.class, outputDirectory);
+
+        when:
+        runtime.run();
+        def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory);
+        def firstTestOutcome = recordedTestOutcomes[0]
+        def secondTestOutcome = recordedTestOutcomes[1]
+        then:
+        recordedTestOutcomes.size() == 2
+        firstTestOutcome.dataTable.rows.collect { it.result } == [SUCCESS, SUCCESS]
+        secondTestOutcome.dataTable.rows.collect { it.result } == [SUCCESS, SUCCESS,SUCCESS, SUCCESS, SUCCESS]
+    }
 
 	def "should generate correct test outcome when only root directory of feature file is provided"() {
 		given:

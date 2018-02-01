@@ -411,14 +411,11 @@ public class SerenityReporter implements Formatter {
 
     private boolean examplesMatchFilter(Examples examples, List<Tag> scenarioOutlineTags, List<Tag> currentFeatureTags) {
         List<Tag> allExampleTags = getExampleAllTags(examples, scenarioOutlineTags, currentFeatureTags);
-        if (examplesHaveFilterTags(allExampleTags)) {
-            List<String> allTagsForAnExampleScenario = allExampleTags.stream().map(Tag::getName).collect(Collectors.toList());
-            String TagValuesFromCucumberOptions = getCucumberRuntimeTags().get(0);
-            TagExpressionParser parser = new TagExpressionParser();
-            Expression expressionNode = parser.parse(TagValuesFromCucumberOptions);
-            return expressionNode.evaluate(allTagsForAnExampleScenario);
-        }
-        return false;
+        List<String> allTagsForAnExampleScenario = allExampleTags.stream().map(Tag::getName).collect(Collectors.toList());
+        String TagValuesFromCucumberOptions = getCucumberRuntimeTags().get(0);
+        TagExpressionParser parser = new TagExpressionParser();
+        Expression expressionNode = parser.parse(TagValuesFromCucumberOptions);
+        return expressionNode.evaluate(allTagsForAnExampleScenario);
     }
 
     private boolean testRunHasFilterTags() {
@@ -432,10 +429,6 @@ public class SerenityReporter implements Formatter {
         } else {
             return CucumberWithSerenity.currentRuntimeOptions().getTagFilters();
         }
-    }
-
-    private boolean examplesHaveFilterTags(List<Tag> allTags) {
-        return allTags.size() > 0;
     }
 
     private List<Tag> getExampleAllTags(Examples examples, List<Tag> scenarioOutlineTags, List<Tag> currentFeatureTags) {
