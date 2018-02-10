@@ -1,14 +1,14 @@
 package cucumber.runtime.formatter;
 
-import com.google.common.collect.ImmutableList;
 import gherkin.ast.Tag;
 
+import java.util.Arrays;
 import java.util.List;
 
 
 class TaggedScenario {
-    private static final List<String> SKIPPED_TAGS = ImmutableList.of("@skip", "@wip");
-    private static final List<String> IGNORED_TAGS = ImmutableList.of("@ignore", "@ignored");
+    private static final List<String> SKIPPED_TAGS = Arrays.asList("@skip", "@wip");
+    private static final List<String> IGNORED_TAGS = Arrays.asList("@ignore", "@ignored");
 
     static boolean isPending(List<Tag> tags) {
         return hasTag("@pending", tags);

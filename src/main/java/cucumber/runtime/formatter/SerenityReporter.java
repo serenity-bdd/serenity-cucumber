@@ -1,9 +1,6 @@
 package cucumber.runtime.formatter;
 
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import cucumber.api.PendingException;
 import cucumber.api.Result;
 import cucumber.api.TestStep;
 import cucumber.api.event.*;
@@ -147,7 +144,7 @@ public class SerenityReporter implements Formatter {
         String featurePath = event.uri;
 
         Feature feature = featureFrom(featurePath);
-        featureTags = ImmutableList.copyOf(feature.getTags());
+        featureTags = new ArrayList<>(feature.getTags());
 
         resetEventBusFor(featurePath);
         initialiseThucydidesListenersFor(featurePath);
@@ -310,7 +307,7 @@ public class SerenityReporter implements Formatter {
     }
 
     private List<String> getTagNamesFrom(List<Tag> tags) {
-        List<String> tagNames = Lists.newArrayList();
+        List<String> tagNames = new ArrayList<>();
         for (Tag tag : tags) {
             tagNames.add(tag.getName());
         }
@@ -408,9 +405,9 @@ public class SerenityReporter implements Formatter {
 
     private List<Map<String, String>> getValuesFrom(List<TableRow> examplesTableRows, List<String> headers) {
 
-        List<Map<String, String>> rows = Lists.newArrayList();
+        List<Map<String, String>> rows = new ArrayList<>();
         for (int row = 0; row < examplesTableRows.size(); row++) {
-            Map<String, String> rowValues = Maps.newLinkedHashMap();
+            Map<String, String> rowValues = new HashMap<>();
             int column = 0;
             List<String> cells = examplesTableRows.get(row).getCells().stream().map(TableCell::getValue).collect(Collectors.toList());
             for (String cellValue : cells) {
@@ -578,15 +575,15 @@ public class SerenityReporter implements Formatter {
     }
 
     private List<TestTag> convertCucumberTags(List<Tag> cucumberTags) {
-        List<TestTag> tags = Lists.newArrayList();
+        List<TestTag> tags = new ArrayList<>();
         for (Tag tag : cucumberTags) {
             tags.add(TestTag.withValue(tag.getName().substring(1)));
         }
-        return ImmutableList.copyOf(tags);
+        return new ArrayList(tags);
     }
 
     private List<String> extractJiraIssueTags(List<Tag> cucumberTags) {
-        List<String> issues = Lists.newArrayList();
+        List<String> issues = new ArrayList<>();
         for (Tag tag : cucumberTags) {
             if (tag.getName().startsWith("@issue:")) {
                 String tagIssueValue = tag.getName().substring("@issue:".length());
@@ -751,7 +748,7 @@ public class SerenityReporter implements Formatter {
 
     private Optional<TestOutcome> latestTestOutcome() {
         List<TestOutcome> recordedOutcomes = StepEventBus.eventBusFor(currentFeaturePath()).getBaseStepListener().getTestOutcomes();
-        return (recordedOutcomes.isEmpty()) ? Optional.absent()
+        return (recordedOutcomes.isEmpty()) ? Optional.empty()
                 : Optional.of(recordedOutcomes.get(recordedOutcomes.size() - 1));
     }
 

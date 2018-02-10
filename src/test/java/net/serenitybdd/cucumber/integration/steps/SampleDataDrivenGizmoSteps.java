@@ -1,13 +1,13 @@
 package net.serenitybdd.cucumber.integration.steps;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import cucumber.api.DataTable;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 
-;import java.util.List;
+;import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class SampleDataDrivenGizmoSteps {
@@ -54,7 +54,10 @@ public class SampleDataDrivenGizmoSteps {
 
         @Override
         public Map<String, String> performWithValuesFrom(Map<String, String> exampleData) {
-            return ImmutableMap.of("item", exampleData.get("item"), "total", "100");
+            Map<String,String> map = new HashMap<>();
+            map.put("item",exampleData.get("item"));
+            map.put("total",exampleData.get("100"));
+            return map;
         }
     }
 
@@ -70,7 +73,7 @@ public class SampleDataDrivenGizmoSteps {
         }
 
         public List<Map<String, String>> perform(ExampleTask example) {
-            List<Map<String,String>> outcomes = Lists.newArrayList();
+            List<Map<String,String>> outcomes = new ArrayList<>();
             for(Map<String, String> exampleData : examples) {
                 outcomes.add(example.performWithValuesFrom(exampleData));
             }

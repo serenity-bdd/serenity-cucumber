@@ -1,6 +1,5 @@
 package net.serenitybdd.cucumber;
 
-import com.google.common.base.Splitter;
 import cucumber.api.junit.Cucumber;
 import cucumber.runtime.ClassFinder;
 import cucumber.runtime.Runtime;
@@ -9,6 +8,7 @@ import cucumber.runtime.RuntimeOptionsFactory;
 import cucumber.runtime.formatter.SerenityReporter;
 import cucumber.runtime.io.ResourceLoader;
 import cucumber.runtime.io.ResourceLoaderClassFinder;
+import net.serenitybdd.cucumber.util.Splitter;
 import net.thucydides.core.ThucydidesSystemProperty;
 import net.thucydides.core.guice.Injectors;
 import net.thucydides.core.util.EnvironmentVariables;

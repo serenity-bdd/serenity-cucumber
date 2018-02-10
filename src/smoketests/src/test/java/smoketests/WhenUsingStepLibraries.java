@@ -5,5 +5,5 @@ import net.serenitybdd.cucumber.CucumberWithSerenity;
 import org.junit.runner.RunWith;
 
 @RunWith(CucumberWithSerenity.class)
-@CucumberOptions(features="src/test/resources/features/understanding_serenity_steps")
+@CucumberOptions(features="src/test/resources/features")
 public class WhenUsingStepLibraries {}

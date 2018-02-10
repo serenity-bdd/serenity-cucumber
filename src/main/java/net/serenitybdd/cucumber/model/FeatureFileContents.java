@@ -1,7 +1,5 @@
 package net.serenitybdd.cucumber.model;
 
-import com.beust.jcommander.internal.Lists;
-import com.google.common.base.Joiner;
 import net.thucydides.core.ThucydidesSystemProperty;
 import net.thucydides.core.guice.Injectors;
 import net.thucydides.core.util.EnvironmentVariables;
@@ -14,6 +12,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class FeatureFileContents {
     private final List<String> lines;
@@ -59,12 +58,12 @@ public class FeatureFileContents {
                 return "";
             }
 
-            List<String> rows = Lists.newArrayList();
+            List<String> rows = new ArrayList<>();
             for (int row = startRow; row < endRow; row++) {
                 String line = (trim) ? lines.get(row).trim() : lines.get(row);
                 rows.add(line);
             }
-            return Joiner.on(System.lineSeparator()).join(rows);
+            return rows.stream().collect(Collectors.joining(System.lineSeparator()));
         }
     }
 

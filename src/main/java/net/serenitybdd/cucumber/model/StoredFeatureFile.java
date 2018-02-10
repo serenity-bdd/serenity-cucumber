@@ -1,6 +1,5 @@
 package net.serenitybdd.cucumber.model;
 
-import com.google.common.base.Joiner;
 import net.serenitybdd.cucumber.CucumberWithSerenity;
 
 import java.io.File;
@@ -9,6 +8,8 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class StoredFeatureFile {
 
@@ -53,6 +54,7 @@ public class StoredFeatureFile {
     }
 
     private Path candidatePath(String path, String featureFileName) {
-        return Paths.get(Joiner.on(File.separator).join(path, featureFileName));
+
+        return Paths.get(Stream.of(path, featureFileName).collect(Collectors.joining(File.separator)));
     }
 }
