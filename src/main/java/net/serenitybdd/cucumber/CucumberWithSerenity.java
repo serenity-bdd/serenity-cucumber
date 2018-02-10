@@ -4,7 +4,6 @@ import cucumber.api.junit.Cucumber;
 import cucumber.runtime.ClassFinder;
 import cucumber.runtime.Runtime;
 import cucumber.runtime.RuntimeOptions;
-import cucumber.runtime.RuntimeOptionsFactory;
 import cucumber.runtime.formatter.SerenityReporter;
 import cucumber.runtime.io.ResourceLoader;
 import cucumber.runtime.io.ResourceLoaderClassFinder;
@@ -37,8 +36,6 @@ public class CucumberWithSerenity extends Cucumber {
     public CucumberWithSerenity(Class clazz) throws InitializationError, IOException
     {
         super(clazz);
-        RuntimeOptionsFactory runtimeOptionsFactory = new RuntimeOptionsFactory(clazz);
-        RUNTIME_OPTIONS = runtimeOptionsFactory.create();
     }
 
     public static RuntimeOptions currentRuntimeOptions() {
@@ -78,10 +75,10 @@ public class CucumberWithSerenity extends Cucumber {
                                                        RuntimeOptions runtimeOptions,
                                                        Configuration systemConfiguration) {
         ClassFinder classFinder = new ResourceLoaderClassFinder(resourceLoader, classLoader);
-        SerenityReporter reporter = new SerenityReporter(systemConfiguration);
         RUNTIME_OPTIONS = runtimeOptions;
         Runtime runtime = new Runtime(resourceLoader, classFinder, classLoader, runtimeOptions);
         //the order here is important, add plugin after the runtime is created
+        SerenityReporter reporter = new SerenityReporter(systemConfiguration, resourceLoader);
         runtimeOptions.addPlugin(reporter);
         return runtime;
     }

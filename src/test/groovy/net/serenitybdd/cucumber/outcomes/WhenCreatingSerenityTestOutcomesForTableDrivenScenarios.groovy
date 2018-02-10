@@ -338,7 +338,7 @@ class WhenCreatingSerenityTestOutcomesForTableDrivenScenarios extends Specificat
 
     def "should handle example tables with tag on first example"() {
         given:
-        def runtime = serenityRunnerForCucumberTestRunner(TablesAndExamplesTagsSingleDigitsScenario.class, outputDirectory);
+        def runtime = serenityRunnerForCucumberTestRunner(RunOnlyFirstExampleTableRows.class, outputDirectory);
 
         when:
         runtime.run();
@@ -346,13 +346,13 @@ class WhenCreatingSerenityTestOutcomesForTableDrivenScenarios extends Specificat
         def testOutcome = recordedTestOutcomes[0]
 
         then:
-        testOutcome.getTags().collect{testTag-> testTag.normalisedName()}.contains("single_digits")
+        testOutcome.getTags().collect{testTag-> testTag.normalisedName()}.contains("example_one")
         testOutcome.dataTable.rows.collect { it.result } == [SUCCESS, SUCCESS]
     }
 
     def "should handle example tables with tag on second example"() {
         given:
-        def runtime = serenityRunnerForCucumberTestRunner(TablesAndExamplesTagsDoubleDigitsScenario.class, outputDirectory);
+        def runtime = serenityRunnerForCucumberTestRunner(RunOnlySecondExampleTableRows.class, outputDirectory);
 
         when:
         runtime.run();
@@ -360,13 +360,13 @@ class WhenCreatingSerenityTestOutcomesForTableDrivenScenarios extends Specificat
         def testOutcome = recordedTestOutcomes[0]
 
         then:
-        testOutcome.getTags().collect{testTag-> testTag.normalisedName()}.contains("double_digits")
+        testOutcome.getTags().collect{testTag-> testTag.normalisedName()}.contains("example_two")
         testOutcome.dataTable.rows.collect { it.result } == [SUCCESS, SUCCESS, SUCCESS]
     }
 
     def "should handle example tables with tags on scenario outline"() {
         given:
-        def runtime = serenityRunnerForCucumberTestRunner(TablesAndExamplesTagsManyAdditionsScenario.class, outputDirectory);
+        def runtime = serenityRunnerForCucumberTestRunner(RunAllExamplesThatInheritsScenarioOutlineTagOnly.class, outputDirectory);
 
         when:
         runtime.run();
@@ -375,14 +375,14 @@ class WhenCreatingSerenityTestOutcomesForTableDrivenScenarios extends Specificat
 
         then:
         def testTagNames = testOutcome.getTags().collect{testTag-> testTag.normalisedName()};
-        testTagNames.contains("single_digits")
-        testTagNames.contains("double_digits")
+        testTagNames.contains("example_one")
+        testTagNames.contains("example_two")
         testOutcome.dataTable.rows.collect { it.result } == [SUCCESS, SUCCESS, SUCCESS, SUCCESS, SUCCESS]
     }
 
     def "should handle example tables with tags on scenario outline and on example"() {
         given:
-        def runtime = serenityRunnerForCucumberTestRunner(TablesAndExamplesTagsOutlineAndExampleScenario.class, outputDirectory);
+        def runtime = serenityRunnerForCucumberTestRunner(RunExampleMatchingBothScenarioOutlineAndSecondExampleTagOnly.class, outputDirectory);
 
         when:
         runtime.run();
@@ -391,15 +391,15 @@ class WhenCreatingSerenityTestOutcomesForTableDrivenScenarios extends Specificat
 
         then:
         def testTagNames = testOutcome.getTags().collect{testTag-> testTag.normalisedName()};
-        testTagNames.contains("many_additions")
-        testTagNames.contains("double_digits")
+        testTagNames.contains("scenario_outline")
+        testTagNames.contains("example_two")
         testOutcome.dataTable.rows.collect { it.result } == [SUCCESS, SUCCESS, SUCCESS]
 
     }
 
 	def "should run all the examples that inherits a feature tag"() {
 		given:
-		def runtime = serenityRunnerForCucumberTestRunner(RunExamplesMatchingFeatureTag.class, outputDirectory);
+		def runtime = serenityRunnerForCucumberTestRunner(RunAllExamplesThatInheritsFeatureTag.class, outputDirectory);
 
 		when:
 		runtime.run();
@@ -408,8 +408,8 @@ class WhenCreatingSerenityTestOutcomesForTableDrivenScenarios extends Specificat
 
 		then:
 		def testTagNames = testOutcome.getTags().collect{testTag-> testTag.normalisedName()};
-		testTagNames.contains("single_digits")
-		testTagNames.contains("double_digits")
+		testTagNames.contains("example_one")
+		testTagNames.contains("example_two")
 		testOutcome.dataTable.rows.collect { it.result } == [SUCCESS, SUCCESS, SUCCESS, SUCCESS, SUCCESS]
 	}
 
@@ -424,8 +424,8 @@ class WhenCreatingSerenityTestOutcomesForTableDrivenScenarios extends Specificat
 
 		then:
 		def testTagNames = testOutcome.getTags().collect{testTag-> testTag.normalisedName()};
-		testTagNames.contains("single_digits")
-		testTagNames.contains("double_digits")
+		testTagNames.contains("example_one")
+		testTagNames.contains("example_two")
 		testOutcome.dataTable.rows.collect { it.result } == [SUCCESS, SUCCESS, SUCCESS, SUCCESS, SUCCESS]
 	}
 
@@ -440,7 +440,7 @@ class WhenCreatingSerenityTestOutcomesForTableDrivenScenarios extends Specificat
 
 		then:
 		def testTagNames = testOutcome.getTags().collect{testTag-> testTag.normalisedName()};
-		testTagNames.contains("single_digits")
+		testTagNames.contains("example_one")
 		testOutcome.dataTable.rows.collect { it.result } == [SUCCESS, SUCCESS]
 	}
 
@@ -455,8 +455,8 @@ class WhenCreatingSerenityTestOutcomesForTableDrivenScenarios extends Specificat
 
         then:
         def testTagNames = testOutcome.getTags().collect{testTag-> testTag.normalisedName()};
-        testTagNames.contains("single_digits")
-        testTagNames.contains("double_digits")
+        testTagNames.contains("example_one")
+        testTagNames.contains("example_two")
         testOutcome.dataTable.rows.collect { it.result } == [SUCCESS, SUCCESS, SUCCESS, SUCCESS, SUCCESS]
    }
 
@@ -471,8 +471,8 @@ class WhenCreatingSerenityTestOutcomesForTableDrivenScenarios extends Specificat
 
         then:
         def testTagNames = testOutcome.getTags().collect{testTag-> testTag.normalisedName()};
-        testTagNames.contains("single_digits")
-        testTagNames.contains("double_digits")
+        testTagNames.contains("example_one")
+        testTagNames.contains("example_two")
         testOutcome.dataTable.rows.collect { it.result } == [SUCCESS, SUCCESS, SUCCESS, SUCCESS, SUCCESS]
    }
 
@@ -487,7 +487,7 @@ class WhenCreatingSerenityTestOutcomesForTableDrivenScenarios extends Specificat
 
 		then:
 		def testTagNames = testOutcome.getTags().collect{testTag-> testTag.normalisedName()};
-		testTagNames.contains("double_digits")
+		testTagNames.contains("example_two")
 		testOutcome.dataTable.rows.collect { it.result } == [SUCCESS, SUCCESS, SUCCESS]
 	}
 
@@ -502,7 +502,7 @@ class WhenCreatingSerenityTestOutcomesForTableDrivenScenarios extends Specificat
 
         then:
         def testTagNames = testOutcome.getTags().collect{testTag-> testTag.normalisedName()};
-        testTagNames.contains("double_digits")
+        testTagNames.contains("example_two")
         testOutcome.dataTable.rows.collect { it.result } == [SUCCESS, SUCCESS, SUCCESS]
    }
 
@@ -516,8 +516,39 @@ class WhenCreatingSerenityTestOutcomesForTableDrivenScenarios extends Specificat
 		def testOutcome = recordedTestOutcomes[0]
 
 		then:
+        recordedTestOutcomes.size() == 1
 		def testTagNames = testOutcome.getTags().collect{testTag-> testTag.normalisedName()};
-		testTagNames.contains("single_digits")
+		testTagNames.contains("example_one")
+		testOutcome.dataTable.rows.collect { it.result } == [SUCCESS, SUCCESS]
+	}
+
+    def "should also run the examples without tags"() {
+        given:
+        def runtime = serenityRunnerForCucumberTestRunner(RunExamplesWithoutTags.class, outputDirectory);
+
+        when:
+        runtime.run();
+        def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory);
+        def firstTestOutcome = recordedTestOutcomes[0]
+        def secondTestOutcome = recordedTestOutcomes[1]
+        then:
+        recordedTestOutcomes.size() == 2
+        firstTestOutcome.dataTable.rows.collect { it.result } == [SUCCESS, SUCCESS]
+        secondTestOutcome.dataTable.rows.collect { it.result } == [SUCCESS, SUCCESS,SUCCESS, SUCCESS, SUCCESS]
+    }
+
+	def "should generate correct test outcome when only root directory of feature file is provided"() {
+		given:
+		def runtime = serenityRunnerForCucumberTestRunner(ScenarioWithOnlyFeatureFileRootDirectoryPath.class, outputDirectory);
+
+		when:
+		runtime.run();
+		def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory);
+		def testOutcome = recordedTestOutcomes[0]
+
+		then:
+		def testTagNames = testOutcome.getTags().collect{testTag-> testTag.normalisedName()};
+		testTagNames.contains("example_one")
 		testOutcome.dataTable.rows.collect { it.result } == [SUCCESS, SUCCESS]
 	}
 
