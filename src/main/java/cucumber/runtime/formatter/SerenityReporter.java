@@ -234,12 +234,25 @@ public class SerenityReporter implements Formatter {
             handleResult(event.result);
         }
 
-        StepEventBus.eventBusFor(event.testCase.getUri()).testFinished();
+        if (event.result.is(Result.Type.FAILED) && noAnnotatedResultIdDefinedFor(event)) {
+            StepEventBus.eventBusFor(event.testCase.getUri()).testFailed(event.result.getError());
+        } else {
+            StepEventBus.eventBusFor(event.testCase.getUri()).testFinished();
+        }
 
         stepQueue.clear();
         if (examplesRunning) {
             finishExample();
         }
+    }
+
+    private boolean noAnnotatedResultIdDefinedFor(TestCaseFinished event) {
+        BaseStepListener baseStepListener = StepEventBus.eventBusFor(event.testCase.getUri()).getBaseStepListener();
+        return (baseStepListener.getTestOutcomes().isEmpty() || (latestOf(baseStepListener.getTestOutcomes()).getAnnotatedResult() == null));
+    }
+
+    private TestOutcome latestOf(List<TestOutcome> testOutcomes) {
+        return testOutcomes.get(testOutcomes.size() - 1);
     }
 
     private List<String> createCellList(PickleRow row) {

@@ -3,6 +3,7 @@ package net.serenitybdd.cucumber.smoketests;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
+import net.serenitybdd.core.Serenity;
 import net.thucydides.core.annotations.Step;
 import net.thucydides.core.annotations.Steps;
 
@@ -109,5 +110,23 @@ public class SmokeTestStepDefinitions {
     @Then("^both should refer to the same instance$")
     public void bothShouldReferToTheSameInstance() throws Throwable {
         assertThat(aSharedStepLibrary, is(sameInstance(anotherSharedStepLibrary)));
+    }
+
+    @When("^I store information the session state$")
+    public void storeSessionState() {
+        Serenity.setSessionVariable("color").to("red");
+
+    }
+
+    @Then("^the session state information should be available in subsequent steps$")
+    public void retrieveSessionState() {
+        assertThat(Serenity.sessionVariableCalled("color"), is("red"));
+
+    }
+
+    @Then("^the session state information from previous scenarios should be cleared$")
+    public void clearedSessionState() {
+        assertThat(Serenity.sessionVariableCalled("color"), isEmptyOrNullString());
+
     }
 }

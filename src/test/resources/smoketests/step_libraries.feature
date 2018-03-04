@@ -24,3 +24,13 @@ Feature: Using Serenity step libraries in Cucumber step definitions
     Given I have two Serenity step libraries
     When they are annotated with @Steps(shared=true)
     Then both should refer to the same instance
+
+  Scenario: Storig information in the Serenity session state
+    Given I have a Serenity step library
+    When I store information the session state
+    Then the session state information should be available in subsequent steps
+
+  Scenario: Serenity session state should be reset for each scenario
+    Given I have a Serenity step library
+    When I start a new scenario
+    Then the session state information from previous scenarios should be cleared
