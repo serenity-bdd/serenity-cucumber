@@ -23,10 +23,10 @@ public class Main {
         RuntimeOptions runtimeOptions = new RuntimeOptions(Arrays.asList(argv));
         ResourceLoader resourceLoader = new MultiLoader(classLoader);
         ClassFinder classFinder = new ResourceLoaderClassFinder(resourceLoader, classLoader);
-
+        CucumberWithSerenity.setRuntimeOptions(runtimeOptions);
         Runtime runtime =  CucumberWithSerenityRuntime.using(resourceLoader, classLoader, classFinder, runtimeOptions);
 
-        CucumberWithSerenity.setRuntimeOptions(runtimeOptions);
+
         runtime.run();
         return runtime.exitStatus();
     }
