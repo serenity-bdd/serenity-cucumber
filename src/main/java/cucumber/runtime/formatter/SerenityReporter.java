@@ -199,6 +199,7 @@ public class SerenityReporter implements Formatter {
         currentFeaturePathIs(event.testCase.getUri());
         StepEventBus.setCurrentBusToEventBusFor(event.testCase.getUri());
 
+        String scenarioName = event.testCase.getName();
         TestSourcesModel.AstNode astNode = testSources.getAstNode(currentFeaturePath(), event.testCase.getLine());
         if (astNode != null) {
             currentScenarioDefinition = TestSourcesModel.getScenarioDefinition(astNode);
@@ -215,7 +216,7 @@ public class SerenityReporter implements Formatter {
                     addingScenarioOutlineSteps = true;
                     examples(currentFeature, ((ScenarioOutline) currentScenarioDefinition).getTags(), currentScenarioDefinition.getName(), ((ScenarioOutline) currentScenarioDefinition).getExamples());
                 }
-                startOfScenarioLifeCycle(currentFeature, currentScenarioDefinition, event.testCase.getLine());
+                startOfScenarioLifeCycle(currentFeature, scenarioName, currentScenarioDefinition, event.testCase.getLine());
                 currentScenario = scenarioIdFrom(currentFeature.getName(), TestSourcesModel.convertToId(currentScenarioDefinition.getName()));
             } else {
                 if (currentScenarioDefinition instanceof ScenarioOutline) {
@@ -347,8 +348,7 @@ public class SerenityReporter implements Formatter {
         addingScenarioOutlineSteps = false;
         initializeExamples();
         for (Examples examples : examplesList) {
-            if (examplesAreNotExcludedByTags(examples, scenarioOutlineTags, currentFeatureTags) &&
-                    examplesAreNotExcludedByLinesFilter(examples)) {
+            if (examplesAreNotExcludedByTags(examples, scenarioOutlineTags, currentFeatureTags) &&  examplesAreNotExcludedByLinesFilter(examples)) {
                 List<TableRow> examplesTableRows = examples.getTableBody().stream().filter(
                         tableRow -> tableRowIsNotExcludedByLinesFilter(tableRow)).collect(Collectors.toList());
                 List<String> headers = getHeadersFrom(examples.getTableHeader());
@@ -531,29 +531,28 @@ public class SerenityReporter implements Formatter {
                 .collect(toList());
     }
 
-    private void startOfScenarioLifeCycle(Feature feature, ScenarioDefinition scenario, Integer currentLine) {
+    private void startOfScenarioLifeCycle(Feature feature, String scenarioName, ScenarioDefinition scenario, Integer currentLine) {
 
         boolean newScenario = !scenarioIdFrom(TestSourcesModel.convertToId(feature.getName()), TestSourcesModel.convertToId(scenario.getName())).equals(currentScenario);
         currentScenario = scenarioIdFrom(TestSourcesModel.convertToId(feature.getName()), TestSourcesModel.convertToId(scenario.getName()));
         if (examplesRunning) {
             if (newScenario) {
-                startScenario(feature, scenario);
+                startScenario(feature, scenario, scenarioName);
                 StepEventBus.eventBusFor(currentFeaturePath()).useExamplesFrom(table);
             } else {
                 StepEventBus.eventBusFor(currentFeaturePath()).addNewExamplesFrom(table);
             }
             startExample(currentLine);
         } else {
-            startScenario(feature, scenario);
+            startScenario(feature, scenario, scenarioName);
         }
     }
 
 
-    private void startScenario(Feature currentFeature, ScenarioDefinition scenarioDefinition) {
+    private void startScenario(Feature currentFeature, ScenarioDefinition scenarioDefinition, String scenarioName) {
         StepEventBus.eventBusFor(currentFeaturePath()).setTestSource(StepEventBus.TEST_SOURCE_CUCUMBER);
-        StepEventBus.eventBusFor(currentFeaturePath()).testStarted(scenarioDefinition.getName(),
-                scenarioIdFrom(TestSourcesModel.convertToId(currentFeature.getName()),
-                        TestSourcesModel.convertToId(scenarioDefinition.getName())));
+        StepEventBus.eventBusFor(currentFeaturePath()).testStarted(scenarioName,
+                scenarioIdFrom(TestSourcesModel.convertToId(currentFeature.getName()), TestSourcesModel.convertToId(scenarioName)));
         StepEventBus.eventBusFor(currentFeaturePath()).addDescriptionToCurrentTest(scenarioDefinition.getDescription());
         StepEventBus.eventBusFor(currentFeaturePath()).addTagsToCurrentTest(convertCucumberTags(currentFeature.getTags()));
 
