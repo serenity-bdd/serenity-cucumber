@@ -7,7 +7,7 @@ import net.thucydides.core.model.TestStep
 import net.thucydides.core.model.TestTag
 import net.thucydides.core.reports.OutcomeFormat
 import net.thucydides.core.reports.TestOutcomeLoader
-import net.thucydides.core.steps.StepEventBus
+import net.thucydides.core.steps.TestSourceType
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
@@ -506,6 +506,6 @@ Feature: A simple feature with tags
         testOutcome.result == TestResult.SUCCESS
 
         and:
-        testOutcome.getTestSource() == StepEventBus.TEST_SOURCE_CUCUMBER
+        testOutcome.getTestSource() == TestSourceType.TEST_SOURCE_CUCUMBER.getValue()
     }
 }
