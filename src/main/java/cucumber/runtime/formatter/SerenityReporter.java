@@ -1,13 +1,12 @@
 package cucumber.runtime.formatter;
 
-import cucumber.api.PendingException;
 import cucumber.api.Result;
 import cucumber.api.TestStep;
 import cucumber.api.event.*;
 import cucumber.api.formatter.Formatter;
 import cucumber.runner.PickleTestStep;
-import gherkin.ast.*;
 import cucumber.runtime.io.ResourceLoader;
+import gherkin.ast.*;
 import gherkin.pickles.Argument;
 import gherkin.pickles.PickleCell;
 import gherkin.pickles.PickleRow;
@@ -22,10 +21,7 @@ import net.thucydides.core.model.DataTable;
 import net.thucydides.core.model.*;
 import net.thucydides.core.model.stacktrace.RootCauseAnalyzer;
 import net.thucydides.core.reports.ReportService;
-import net.thucydides.core.steps.BaseStepListener;
-import net.thucydides.core.steps.ExecutedStepDescription;
-import net.thucydides.core.steps.StepEventBus;
-import net.thucydides.core.steps.StepFailure;
+import net.thucydides.core.steps.*;
 import net.thucydides.core.util.Inflector;
 import net.thucydides.core.webdriver.Configuration;
 import net.thucydides.core.webdriver.ThucydidesWebDriverSupport;
@@ -35,7 +31,10 @@ import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static cucumber.runtime.formatter.TaggedScenario.*;
+import static cucumber.runtime.formatter.TaggedScenario.isIgnored;
+import static cucumber.runtime.formatter.TaggedScenario.isManual;
+import static cucumber.runtime.formatter.TaggedScenario.isPending;
+import static cucumber.runtime.formatter.TaggedScenario.isSkippedOrWIP;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
@@ -550,7 +549,7 @@ public class SerenityReporter implements Formatter {
 
 
     private void startScenario(Feature currentFeature, ScenarioDefinition scenarioDefinition, String scenarioName) {
-        StepEventBus.eventBusFor(currentFeaturePath()).setTestSource(StepEventBus.TEST_SOURCE_CUCUMBER);
+        StepEventBus.eventBusFor(currentFeaturePath()).setTestSource(TestSourceType.TEST_SOURCE_CUCUMBER.getValue());
         StepEventBus.eventBusFor(currentFeaturePath()).testStarted(scenarioName,
                 scenarioIdFrom(TestSourcesModel.convertToId(currentFeature.getName()), TestSourcesModel.convertToId(scenarioName)));
         StepEventBus.eventBusFor(currentFeaturePath()).addDescriptionToCurrentTest(scenarioDefinition.getDescription());
