@@ -32,7 +32,7 @@ public class CucumberTagProviderStrategy implements TagProviderStrategy {
 
     @Override
     public Iterable<? extends TagProvider> getTagProviders() {
-        String rootDirectory = ThucydidesSystemProperty.THUCYDIDES_REQUIREMENTS_DIR.from(environmentVariables,"features");
+        String rootDirectory = ThucydidesSystemProperty.SERENITY_REQUIREMENTS_DIR.from(environmentVariables,"features");
         return Arrays.asList(
                 new FileSystemRequirementsTagProvider(environmentVariables, rootDirectory),
                 new InjectedTagProvider(environmentVariables),
