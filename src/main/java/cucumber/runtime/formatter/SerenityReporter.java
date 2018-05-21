@@ -17,6 +17,7 @@ import net.serenitybdd.core.Serenity;
 import net.serenitybdd.core.SerenityListeners;
 import net.serenitybdd.core.SerenityReports;
 import net.serenitybdd.cucumber.CucumberWithSerenity;
+import net.serenitybdd.cucumber.model.FeatureFileContents;
 import net.thucydides.core.model.DataTable;
 import net.thucydides.core.model.*;
 import net.thucydides.core.model.stacktrace.RootCauseAnalyzer;
@@ -26,6 +27,8 @@ import net.thucydides.core.util.Inflector;
 import net.thucydides.core.webdriver.Configuration;
 import net.thucydides.core.webdriver.ThucydidesWebDriverSupport;
 import org.junit.internal.AssumptionViolatedException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.*;
@@ -89,6 +92,9 @@ public class SerenityReporter implements Formatter {
     private Map<String, List<Long>> lineFilters;
 
     private List<Tag> scenarioTags;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SerenityReporter.class);
+
 //    private Map<String, String> data;
 
     public SerenityReporter(Configuration systemConfiguration, ResourceLoader resourceLoader) {
@@ -146,16 +152,22 @@ public class SerenityReporter implements Formatter {
 
         String featurePath = event.uri;
 
-        Feature feature = featureFrom(featurePath);
-        featureTags = new ArrayList<>(feature.getTags());
+        Optional<Feature> possibleFeature = featureFrom(featurePath);
 
-        resetEventBusFor(featurePath);
-        initialiseThucydidesListenersFor(featurePath);
-        configureDriver(feature, featurePath);
+        possibleFeature.ifPresent(
+                feature -> {
+                    featureTags = new ArrayList<>(feature.getTags());
 
-        Story userStory = userStoryFrom(feature, relativeUriFrom(event.uri));
+                    resetEventBusFor(featurePath);
+                    initialiseThucydidesListenersFor(featurePath);
+                    configureDriver(feature, featurePath);
 
-        StepEventBus.eventBusFor(event.uri).testSuiteStarted(userStory);
+                    Story userStory = userStoryFrom(feature, relativeUriFrom(event.uri));
+
+                    StepEventBus.eventBusFor(event.uri).testSuiteStarted(userStory);
+
+                }
+        );
     }
 
     private void resetEventBusFor(String featurePath) {
@@ -171,16 +183,30 @@ public class SerenityReporter implements Formatter {
         }
     }
 
-    private Feature featureFrom(String featureFileUri) {
+    private Optional<Feature> featureFrom(String featureFileUri) {
 
         String defaultFeatureId = new File(featureFileUri).getName().replace(".feature", "");
         String defaultFeatureName = Inflector.getInstance().humanize(defaultFeatureId);
+
+        parseGherkinIn(featureFileUri);
+
+        if (isEmpty(testSources.getFeatureName(featureFileUri))) {
+            return Optional.empty();
+        }
 
         Feature feature = testSources.getFeature(featureFileUri);
         if (feature.getName().isEmpty()) {
             feature = featureWithDefaultName(feature, defaultFeatureName);
         }
-        return feature;
+        return Optional.of(feature);
+    }
+
+    private void parseGherkinIn(String featureFileUri) {
+        try {
+            testSources.getFeature(featureFileUri);
+        } catch(Throwable ignoreParsingErrors) {
+            LOGGER.warn("Could not parse the Gherkin in feature file " + featureFileUri + ": file ignored");
+        }
     }
 
     private Story userStoryFrom(Feature feature, String featureFileUri) {
@@ -200,23 +226,25 @@ public class SerenityReporter implements Formatter {
 
         String scenarioName = event.testCase.getName();
         TestSourcesModel.AstNode astNode = testSources.getAstNode(currentFeaturePath(), event.testCase.getLine());
-        if (astNode != null) {
+
+
+        Optional<Feature> currentFeature = featureFrom(event.testCase.getUri());
+
+        if ((astNode != null) && currentFeature.isPresent()) {
             currentScenarioDefinition = TestSourcesModel.getScenarioDefinition(astNode);
 
-            Feature currentFeature = featureFrom(event.testCase.getUri());
-
             //the sources are read in parallel, global current feature cannot be used
-            String scenarioId = scenarioIdFrom(currentFeature.getName(), TestSourcesModel.convertToId(currentScenarioDefinition.getName()));
+            String scenarioId = scenarioIdFrom(currentFeature.get().getName(), TestSourcesModel.convertToId(currentScenarioDefinition.getName()));
             boolean newScenario = !scenarioId.equals(currentScenario);
             if (newScenario) {
-                configureDriver(currentFeature, currentFeaturePath());
+                configureDriver(currentFeature.get(), currentFeaturePath());
                 if (currentScenarioDefinition instanceof ScenarioOutline) {
                     examplesRunning = true;
                     addingScenarioOutlineSteps = true;
-                    examples(currentFeature, ((ScenarioOutline) currentScenarioDefinition).getTags(), currentScenarioDefinition.getName(), ((ScenarioOutline) currentScenarioDefinition).getExamples());
+                    examples(currentFeature.get(), ((ScenarioOutline) currentScenarioDefinition).getTags(), currentScenarioDefinition.getName(), ((ScenarioOutline) currentScenarioDefinition).getExamples());
                 }
-                startOfScenarioLifeCycle(currentFeature, scenarioName, currentScenarioDefinition, event.testCase.getLine());
-                currentScenario = scenarioIdFrom(currentFeature.getName(), TestSourcesModel.convertToId(currentScenarioDefinition.getName()));
+                startOfScenarioLifeCycle(currentFeature.get(), scenarioName, currentScenarioDefinition, event.testCase.getLine());
+                currentScenario = scenarioIdFrom(currentFeature.get().getName(), TestSourcesModel.convertToId(currentScenarioDefinition.getName()));
             } else {
                 if (currentScenarioDefinition instanceof ScenarioOutline) {
                     startExample(event.testCase.getLine());
@@ -347,7 +375,7 @@ public class SerenityReporter implements Formatter {
         addingScenarioOutlineSteps = false;
         initializeExamples();
         for (Examples examples : examplesList) {
-            if (examplesAreNotExcludedByTags(examples, scenarioOutlineTags, currentFeatureTags) &&  examplesAreNotExcludedByLinesFilter(examples)) {
+            if (examplesAreNotExcludedByTags(examples, scenarioOutlineTags, currentFeatureTags) && examplesAreNotExcludedByLinesFilter(examples)) {
                 List<TableRow> examplesTableRows = examples.getTableBody().stream().filter(
                         tableRow -> tableRowIsNotExcludedByLinesFilter(tableRow)).collect(Collectors.toList());
                 List<String> headers = getHeadersFrom(examples.getTableHeader());
@@ -370,15 +398,14 @@ public class SerenityReporter implements Formatter {
             }
         }
     }
-    
+
     private void initLineFilters(ResourceLoader resourceLoader) {
         if (lineFilters == null) {
             Map<String, List<Long>> lineFiltersFromRuntime = CucumberWithSerenity.currentRuntimeOptions()
                     .getLineFilters(resourceLoader);
             if (lineFiltersFromRuntime == null) {
                 lineFilters = new HashMap<>();
-            }
-            else {
+            } else {
                 lineFilters = lineFiltersFromRuntime;
             }
         }
@@ -391,10 +418,9 @@ public class SerenityReporter implements Formatter {
 
         if (!lineFilters.containsKey(currentFeaturePath())) {
             return false;
-        }
-        else {
+        } else {
             return examples.getTableBody().stream().anyMatch(
-                    row -> lineFilters.get(currentFeaturePath()).contains((long)row.getLocation().getLine()));
+                    row -> lineFilters.get(currentFeaturePath()).contains((long) row.getLocation().getLine()));
         }
     }
 
@@ -405,9 +431,8 @@ public class SerenityReporter implements Formatter {
 
         if (!lineFilters.containsKey(currentFeaturePath())) {
             return false;
-        }
-        else {
-            return lineFilters.get(currentFeaturePath()).contains((long)tableRow.getLocation().getLine());
+        } else {
+            return lineFilters.get(currentFeaturePath()).contains((long) tableRow.getLocation().getLine());
         }
     }
 
@@ -447,8 +472,8 @@ public class SerenityReporter implements Formatter {
             allTags.addAll(exampleTags);
         if (scenarioOutlineTags != null)
             allTags.addAll(scenarioOutlineTags);
-        if (currentFeatureTags !=null)
-	        allTags.addAll(currentFeatureTags);
+        if (currentFeatureTags != null)
+            allTags.addAll(currentFeatureTags);
         return allTags;
     }
 
