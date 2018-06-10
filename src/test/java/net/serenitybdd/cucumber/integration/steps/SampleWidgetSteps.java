@@ -28,17 +28,17 @@ public class SampleWidgetSteps {
     @Steps
     WidgetSteps widgetSteps;
 
-    @Given("I have \\$(\\d+)")
+    @Given("I have ${int}")
     public void iHaveMoney(int money) {
 
     }
 
-    @Given("I want to purchase (\\d+) widgets")
+    @Given("I want to purchase {int} widgets")
     public void wantToPurchaseWidgets(int quantity) {
         this.quantity = quantity;
     }
 
-    @Given("a widget costs \\$(.*)")
+    @Given("a widget costs ${int}")
     public void widgetsCost(int cost) {
         if (cost < 0) {
             throw new RuntimeException("Oh Crap!");
@@ -46,7 +46,7 @@ public class SampleWidgetSteps {
         this.cost = cost;
     }
 
-    @Given("at a cost of (.*)")
+    @Given("at a cost of {int}")
     public void widgetsCostAt(int cost) {
         if (cost < 0) {
             throw new RuntimeException("Oh Crap!");
@@ -59,7 +59,7 @@ public class SampleWidgetSteps {
         billedPrice = cost * quantity;
     }
 
-    @Then("I should be billed \\$(.*)")
+    @Then("I should be billed ${int}")
     public void shouldBeBilled(int totalPrice) {
         widgetSteps.shouldBeBilled(billedPrice, totalPrice);
     }
@@ -123,12 +123,12 @@ public class SampleWidgetSteps {
         }
     }
 
-    @Given("I want to purchase (.*) gizmos")
+    @Given("I want to purchase {int} gizmos")
     public void wantToPurchaseGizmos(int quantity) {
         this.quantity = quantity;
     }
 
-    @Given("a gizmo costs \\$(.*)")
+    @Given("a gizmo costs ${int}")
     public void gizmosCost(int cost) {
         if (cost < 0) {
             throw new RuntimeException("Oh crap!");
@@ -149,7 +149,7 @@ public class SampleWidgetSteps {
         billedPrice = cost * quantity;
     }
 
-    @Then("I should pay \\$(\\d+)")
+    @Then("I should pay ${int}")
     public void shouldPay(int totalPrice) {
         john.should(seeThat(TheTotalPrice.ofTheGizmos(billedPrice), equalTo(totalPrice)));
     }

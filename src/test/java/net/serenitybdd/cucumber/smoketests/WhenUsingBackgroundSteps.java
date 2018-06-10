@@ -5,5 +5,5 @@ import net.serenitybdd.cucumber.CucumberWithSerenity;
 import org.junit.runner.RunWith;
 
 @RunWith(CucumberWithSerenity.class)
-@CucumberOptions(features="src/test/resources/smoketests/using_background_steps.feature")
+@CucumberOptions(plugin="cucumber.runtime.formatter.SerenityReporter",features="src/test/resources/smoketests/using_background_steps.feature")
 public class WhenUsingBackgroundSteps {}
