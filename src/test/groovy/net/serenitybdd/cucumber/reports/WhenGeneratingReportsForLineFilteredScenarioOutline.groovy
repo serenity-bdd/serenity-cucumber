@@ -1,5 +1,6 @@
 package net.serenitybdd.cucumber.reports
 
+import cucumber.api.Result
 import net.serenitybdd.cucumber.integration.SimpleTableScenarioWithLineFilters
 import net.thucydides.core.reports.OutcomeFormat
 import net.thucydides.core.reports.TestOutcomeLoader
@@ -29,7 +30,7 @@ class WhenGeneratingReportsForLineFilteredScenarioOutline extends Specification 
         def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory)
 
         then:
-        runtime.getErrors().isEmpty()
+        runtime.exitStatus.results[0].is(Result.Type.PASSED)
 
         and:
         !recordedTestOutcomes.isEmpty()

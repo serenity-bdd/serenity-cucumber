@@ -35,13 +35,13 @@ public class SmokeTestStepDefinitions {
     @Steps
     private SomeStepLibrary someStepLibrary;
 
-    @Given("^I want to use a step library$")
+    @Given("I want to use a step library")
     public void iWantToUseAStepLibrary() {}
 
-    @When("^I add a step library field annotated with @Steps$")
+    @When("I add a step library field annotated with @Steps")
     public void iAddAStepLibraryFieldAnnotatedWithSteps() {}
 
-    @Then("^Serenity should instantiate the field$")
+    @Then("Serenity should instantiate the field")
     public void serenityShouldInstantiateTheField() throws Throwable {
         assertThat(someStepLibrary, notNullValue());
     }
@@ -50,15 +50,15 @@ public class SmokeTestStepDefinitions {
     @Steps
     private SomeStepLibrary someOtherStepLibrary;
 
-    @Given("^I want to use several step library fields of the same type$")
+    @Given("I want to use several step library fields of the same type")
     public void iWantToUseSeveralStepLibraryFieldsOfTheSameType() {
     }
 
-    @When("^I add a step library fields to each of them$")
+    @When("I add a step library fields to each of them")
     public void iAddAStepLibraryFieldsToEachOfThem(){
     }
 
-    @Then("^Serenity should instantiate a different library for each field$")
+    @Then("Serenity should instantiate a different library for each field")
     public void serenityShouldInstantiateADifferentLibraryForEachField() {
         assertThat(someOtherStepLibrary, is(not(sameInstance(someStepLibrary))));
     }
@@ -67,27 +67,27 @@ public class SmokeTestStepDefinitions {
     @Steps
     private SomeStepLibrary myStepLibrary;
 
-    @Given("^I have a Serenity step library$")
+    @Given("I have a Serenity step library")
     public void iHaveASerenityStepLibrary() throws Throwable {
     }
 
-    @When("^I do something with the library$")
+    @When("I do something with the library")
     public void iDoSomethingWithTheLibrary() throws Throwable {
         myStepLibrary.doSomething();
     }
 
-    @Then("^the state of the library should be updated$")
+    @Then("the state of the library should be updated")
     public void theStateOfTheLibraryShouldBeUpdated() throws Throwable {
         assertThat(myStepLibrary.stepRunCount, is(1));
     }
 
     ////
 
-    @When("^I start a new scenario$")
+    @When("I start a new scenario")
     public void iStartANewScenario() throws Throwable {
     }
 
-    @Then("^the step library should be reinitialised$")
+    @Then("the step library should be reinitialised")
     public void theStepLibraryShouldBeReinitialised() throws Throwable {
         assertThat(myStepLibrary.stepRunCount, is(0));
     }
@@ -99,7 +99,7 @@ public class SmokeTestStepDefinitions {
     @Steps(shared = true)
     private SomeStepLibrary anotherSharedStepLibrary;
 
-    @Given("^I have two Serenity step libraries$")
+    @Given("I have two Serenity step libraries")
     public void iHaveTwoSerenityStepLibraries() throws Throwable {
     }
 
@@ -107,24 +107,24 @@ public class SmokeTestStepDefinitions {
     public void theyAreAnnotatedWithStepsSharedTrue() throws Throwable {
     }
 
-    @Then("^both should refer to the same instance$")
+    @Then("both should refer to the same instance")
     public void bothShouldReferToTheSameInstance() throws Throwable {
         assertThat(aSharedStepLibrary, is(sameInstance(anotherSharedStepLibrary)));
     }
 
-    @When("^I store information the session state$")
+    @When("I store information the session state")
     public void storeSessionState() {
         Serenity.setSessionVariable("color").to("red");
 
     }
 
-    @Then("^the session state information should be available in subsequent steps$")
+    @Then("the session state information should be available in subsequent steps")
     public void retrieveSessionState() {
         assertThat(Serenity.sessionVariableCalled("color"), is("red"));
 
     }
 
-    @Then("^the session state information from previous scenarios should be cleared$")
+    @Then("the session state information from previous scenarios should be cleared")
     public void clearedSessionState() {
         assertThat(Serenity.sessionVariableCalled("color"), isEmptyOrNullString());
 
