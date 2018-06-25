@@ -5,5 +5,5 @@ import net.serenitybdd.cucumber.CucumberWithSerenity;
 import org.junit.runner.RunWith;
 
 @RunWith(CucumberWithSerenity.class)
-@CucumberOptions(plugin="cucumber.runtime.formatter.SerenityReporter",features="src/test/resources/smoketests/undefined_scenarios.feature")
+@CucumberOptions(features="src/test/resources/smoketests/undefined_scenarios.feature")
 public class WhenUsingUndefinedScenarios {}
