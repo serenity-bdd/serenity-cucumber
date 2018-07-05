@@ -105,7 +105,6 @@ dependencies {
     compile("io.cucumber:cucumber-junit:${cucumberJVMVersion}") {
             exclude group: "junit"
     }
-    compile "io.cucumber:datatable-matchers:${cucumberDatatableMatchers}"
 
     compile("commons-logging:commons-logging:${commonsLoggingVersion}")
 

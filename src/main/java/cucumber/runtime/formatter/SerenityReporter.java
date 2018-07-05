@@ -1,11 +1,10 @@
 package cucumber.runtime.formatter;
 
-import cucumber.api.HookTestStep;
 import cucumber.api.Result;
 import cucumber.api.TestStep;
 import cucumber.api.event.*;
 import cucumber.api.formatter.Formatter;
-import cucumber.runtime.io.MultiLoader;
+import cucumber.runner.PickleTestStep;
 import cucumber.runtime.io.ResourceLoader;
 import gherkin.ast.*;
 import gherkin.pickles.Argument;
@@ -18,7 +17,6 @@ import net.serenitybdd.core.Serenity;
 import net.serenitybdd.core.SerenityListeners;
 import net.serenitybdd.core.SerenityReports;
 import net.serenitybdd.cucumber.CucumberWithSerenity;
-import net.thucydides.core.guice.Injectors;
 import net.thucydides.core.model.DataTable;
 import net.thucydides.core.model.*;
 import net.thucydides.core.model.stacktrace.RootCauseAnalyzer;
@@ -96,22 +94,13 @@ public class SerenityReporter implements Formatter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SerenityReporter.class);
 
-    /**
-     * Constructor automatically called by cucumber when class is specified as plugin
-     * in @CucumberOptions.
-     */
-    public SerenityReporter() {
-        this.systemConfiguration = Injectors.getInjector().getInstance(Configuration.class);
-        this.stepQueue = new LinkedList<>();
-        this.testStepQueue = new LinkedList<>();
-        baseStepListeners = Collections.synchronizedList(new ArrayList<>());
-    }
 
     public SerenityReporter(Configuration systemConfiguration, ResourceLoader resourceLoader) {
         this.systemConfiguration = systemConfiguration;
         this.stepQueue = new LinkedList<>();
         this.testStepQueue = new LinkedList<>();
         baseStepListeners = Collections.synchronizedList(new ArrayList<>());
+        initLineFilters(resourceLoader);
     }
 
     private void initialiseThucydidesListenersFor(String featurePath) {
@@ -157,7 +146,6 @@ public class SerenityReporter implements Formatter {
     }
 
     private void handleTestSourceRead(TestSourceRead event) {
-
         testSources.addTestSourceReadEvent(event.uri, event);
 
         String featurePath = event.uri;
@@ -230,7 +218,7 @@ public class SerenityReporter implements Formatter {
     }
 
     private void handleTestCaseStarted(TestCaseStarted event) {
-        initLineFilters(new MultiLoader(SerenityReporter.class.getClassLoader()));
+
         currentFeaturePathIs(event.testCase.getUri());
         StepEventBus.setCurrentBusToEventBusFor(event.testCase.getUri());
 
@@ -302,7 +290,7 @@ public class SerenityReporter implements Formatter {
     }
 
     private void handleTestStepStarted(TestStepStarted event) {
-        if (!(event.testStep instanceof HookTestStep)) {
+        if (event.testStep instanceof PickleTestStep) {
             TestSourcesModel.AstNode astNode = testSources.getAstNode(currentFeaturePath(), event.testStep.getStepLine());
             if (astNode != null) {
                 Step step = (Step) astNode.node;
@@ -324,7 +312,7 @@ public class SerenityReporter implements Formatter {
     }
 
     private void handleTestStepFinished(TestStepFinished event) {
-        if (!(event.testStep instanceof HookTestStep)) {
+        if (event.testStep instanceof PickleTestStep) {
             handleResult(event.result);
         }
     }
