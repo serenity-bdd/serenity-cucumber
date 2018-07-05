@@ -3,7 +3,6 @@ package cucumber.runtime;
 import cucumber.runtime.io.ResourceLoader;
 import cucumber.runtime.snippets.FunctionNameGenerator;
 import gherkin.pickles.PickleStep;
-import io.cucumber.stepexpression.TypeRegistry;
 import net.thucydides.core.steps.StepEventBus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,11 +14,9 @@ public class SerenityBackend implements Backend {
     private static final Logger LOGGER = LoggerFactory.getLogger(SerenityBackend.class);
 
     private final ResourceLoader resourceLoader;
-    private final TypeRegistry typeRegistry;
 
-    public SerenityBackend(ResourceLoader resourceLoader,TypeRegistry typeRegistry) {
+    public SerenityBackend(ResourceLoader resourceLoader) {
         this.resourceLoader = resourceLoader;
-        this.typeRegistry = typeRegistry;
     }
 
     @Override
@@ -27,6 +24,10 @@ public class SerenityBackend implements Backend {
 
     }
 
+    @Override
+    public void setUnreportedStepExecutor(UnreportedStepExecutor executor) {
+
+    }
 
     @Override
     public void buildWorld() {
