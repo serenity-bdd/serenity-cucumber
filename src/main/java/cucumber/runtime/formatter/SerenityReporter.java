@@ -727,6 +727,7 @@ public class SerenityReporter implements Formatter {
         java.util.Optional.ofNullable(currentFeaturePath()).ifPresent(
                 featurePath -> {
                     StepEventBus.eventBusFor(featurePath).testSuiteFinished();
+                    StepEventBus.eventBusFor(featurePath).dropAllListeners();
                     StepEventBus.eventBusFor(featurePath).clear();
                     StepEventBus.clearEventBusFor(featurePath);
                 }
@@ -755,9 +756,10 @@ public class SerenityReporter implements Formatter {
             StepEventBus.eventBusFor(currentFeaturePath()).stepIgnored();
         } else if (Result.Type.PENDING.equals(result.getStatus())) {
             StepEventBus.eventBusFor(currentFeaturePath()).stepPending();
-        } else if (Result.Type.UNDEFINED.equals(result.getStatus())) {
-            StepEventBus.eventBusFor(currentFeaturePath()).stepPending();
         }
+//        else if (Result.Type.UNDEFINED.equals(result.getStatus())) {
+//            StepEventBus.eventBusFor(currentFeaturePath()).stepPending();
+//        }
     }
 
     private void recordFinalResult() {
