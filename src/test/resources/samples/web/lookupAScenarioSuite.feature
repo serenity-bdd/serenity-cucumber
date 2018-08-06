@@ -1,4 +1,4 @@
-@driver:firefox
+@driver:phantomjs
 @driver-options:--headless
 Feature: Looking up a scenario suite
 
