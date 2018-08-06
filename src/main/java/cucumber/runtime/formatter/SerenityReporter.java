@@ -344,8 +344,10 @@ public class SerenityReporter implements Formatter {
         StepEventBus.eventBusFor(featurePath).setUniqueSession(systemConfiguration.shouldUseAUniqueBrowser());
         List<String> tags = getTagNamesFrom(feature.getTags());
         String requestedDriver = getDriverFrom(tags);
+        String requestedDriverOptions = getDriverOptionsFrom(tags);
         if (isNotEmpty(requestedDriver)) {
             ThucydidesWebDriverSupport.useDefaultDriver(requestedDriver);
+            //TODO: ThucydidesWebDriverSupport.useDriverOptions(requestedDriverOptions);
         }
     }
 
@@ -362,6 +364,16 @@ public class SerenityReporter implements Formatter {
         for (String tag : tags) {
             if (tag.startsWith("@driver:")) {
                 requestedDriver = tag.substring(8);
+            }
+        }
+        return requestedDriver;
+    }
+
+    private String getDriverOptionsFrom(List<String> tags) {
+        String requestedDriver = null;
+        for (String tag : tags) {
+            if (tag.startsWith("@driver-options:")) {
+                requestedDriver = tag.substring(16);
             }
         }
         return requestedDriver;

@@ -1,4 +1,4 @@
-@driver:phantomjs
+@driver:chrome
 Feature: Using Background Steps
 
   Background:

@@ -26,7 +26,8 @@ class WhenRunningWebCucumberStories extends Specification {
 
     def setup() {
         outputDirectory = temporaryFolder.newFolder()
-        environmentVariables.setProperty("webdriver.driver", "phantomjs");
+        environmentVariables.setProperty("webdriver.driver", "chrome")
+        environmentVariables.setProperty("headless.mode", "true")
     }
 
     def "should run table-driven scenarios successfully"() {

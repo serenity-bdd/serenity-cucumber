@@ -1,4 +1,4 @@
-@driver:phantomjs
+@driver:chrome
 Feature: A scenario that uses selenium
 
   @UniqueBrowser

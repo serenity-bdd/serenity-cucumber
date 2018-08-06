@@ -1,4 +1,4 @@
-@driver:phantomjs
+@driver:chrome
 Feature: Looking up a scenario suite
 
 Scenario: Looking up the definition of 'apple'

@@ -1,4 +1,4 @@
-@driver:phantomjs
+@driver:chrome
 Feature: Skipping Scenarios
 
   @pending

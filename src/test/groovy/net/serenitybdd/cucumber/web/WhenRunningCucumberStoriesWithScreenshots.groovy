@@ -27,7 +27,7 @@ public class WhenRunningCucumberStoriesWithScreenshots extends Specification {
 
     def setup() {
         outputDirectory = temporaryFolder.newFolder()
-        environmentVariables.setProperty("webdriver.driver", "phantomjs");
+        environmentVariables.setProperty("webdriver.driver", "chrome")
     }
 
 
