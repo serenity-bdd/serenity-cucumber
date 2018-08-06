@@ -1,4 +1,5 @@
-@driver:chrome
+@driver:firefox
+@driver-options:--headless
 Feature: A scenario that uses selenium
 
   @UniqueBrowser

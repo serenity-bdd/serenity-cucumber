@@ -1,4 +1,5 @@
 @driver:chrome
+@driver-options:--headless
 Feature: Looking up a scenario suite
 
 Scenario: Looking up the definition of 'apple'

@@ -109,6 +109,7 @@ dependencies {
     compile("commons-logging:commons-logging:${commonsLoggingVersion}")
 
     compile "junit:junit:${junitVersion}"
+    compile "com.google.code.gson:gson:${gsonVersion}"
 
     compile("org.seleniumhq.selenium:htmlunit-driver:2.28") {
         exclude group: "org.seleniumhq.selenium"

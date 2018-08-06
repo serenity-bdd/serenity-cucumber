@@ -1,4 +1,5 @@
 @driver:chrome
+@driver-options:--headless
 Feature: Skipping Scenarios
 
   @pending

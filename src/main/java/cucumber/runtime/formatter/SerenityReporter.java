@@ -347,7 +347,7 @@ public class SerenityReporter implements Formatter {
         String requestedDriverOptions = getDriverOptionsFrom(tags);
         if (isNotEmpty(requestedDriver)) {
             ThucydidesWebDriverSupport.useDefaultDriver(requestedDriver);
-            //TODO: ThucydidesWebDriverSupport.useDriverOptions(requestedDriverOptions);
+            ThucydidesWebDriverSupport.useDriverOptions(requestedDriverOptions);
         }
     }
 
