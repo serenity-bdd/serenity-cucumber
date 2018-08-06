@@ -1,4 +1,4 @@
-@driver:chrome
+@driver:firefox
 @driver-options:--headless
 
 Feature: Passing web test sample with nested steps
