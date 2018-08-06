@@ -17,6 +17,7 @@ import net.serenitybdd.core.Serenity;
 import net.serenitybdd.core.SerenityListeners;
 import net.serenitybdd.core.SerenityReports;
 import net.serenitybdd.cucumber.CucumberWithSerenity;
+import net.serenitybdd.cucumber.formatting.ScenarioOutlineDescription;
 import net.thucydides.core.model.DataTable;
 import net.thucydides.core.model.*;
 import net.thucydides.core.model.stacktrace.RootCauseAnalyzer;
@@ -573,6 +574,7 @@ public class SerenityReporter implements Formatter {
             if (newScenario) {
                 startScenario(feature, scenario, scenarioName);
                 StepEventBus.eventBusFor(currentFeaturePath()).useExamplesFrom(table);
+                StepEventBus.eventBusFor(currentFeaturePath()).useScenarioOutline(ScenarioOutlineDescription.from(scenario).getDescription());
             } else {
                 StepEventBus.eventBusFor(currentFeaturePath()).addNewExamplesFrom(table);
             }
@@ -581,7 +583,6 @@ public class SerenityReporter implements Formatter {
             startScenario(feature, scenario, scenarioName);
         }
     }
-
 
     private void startScenario(Feature currentFeature, ScenarioDefinition scenarioDefinition, String scenarioName) {
         StepEventBus.eventBusFor(currentFeaturePath()).setTestSource(TestSourceType.TEST_SOURCE_CUCUMBER.getValue());
