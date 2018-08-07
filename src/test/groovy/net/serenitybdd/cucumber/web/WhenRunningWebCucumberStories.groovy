@@ -1,6 +1,6 @@
 package net.serenitybdd.cucumber.web
 
-import com.github.goldin.spock.extensions.tempdir.TempDir
+
 import net.serenitybdd.cucumber.integration.*
 import net.thucydides.core.ThucydidesSystemProperty
 import net.thucydides.core.configuration.SystemPropertiesConfiguration

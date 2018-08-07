@@ -1,6 +1,6 @@
-package net.serenitybdd.cucumber.web;
+package net.serenitybdd.cucumber.web
 
-import com.github.goldin.spock.extensions.tempdir.TempDir;
+
 import net.thucydides.core.model.TestOutcome
 import net.thucydides.core.model.TestStep;
 import net.thucydides.core.reports.OutcomeFormat;
