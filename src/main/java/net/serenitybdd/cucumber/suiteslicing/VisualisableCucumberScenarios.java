@@ -3,10 +3,6 @@ package net.serenitybdd.cucumber.suiteslicing;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-import java.util.List;
-import java.util.stream.IntStream;
-
-import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals;
 
 public class VisualisableCucumberScenarios extends WeightedCucumberScenarios {
@@ -37,12 +33,6 @@ public class VisualisableCucumberScenarios extends WeightedCucumberScenarios {
     @Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this);
-    }
-
-    public static List<VisualisableCucumberScenarios> visualise(int forkCount, List<WeightedCucumberScenarios> slices) {
-        return slices.stream()
-            .map(slice -> IntStream.rangeClosed(1, forkCount).mapToObj(forkNumber -> create(slices.indexOf(slice) + 1, forkNumber, slice.slice(forkNumber).of(forkCount)))
-                .collect(toList())).flatMap(List::stream).collect(toList());
     }
 
 }

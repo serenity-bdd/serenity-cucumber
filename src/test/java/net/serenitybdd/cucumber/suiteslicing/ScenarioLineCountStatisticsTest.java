@@ -36,7 +36,12 @@ public class ScenarioLineCountStatisticsTest {
 
     @Test
     public void scenarioWeightForScenarioWithBackgroundAndScenarioOutline() {
-        assertThat(stats.scenarioWeightFor("Buying things", "Buying more widgets"), is(new BigDecimal("15")));
+        assertThat(stats.scenarioWeightFor("Buying things - with tables", "Buying more widgets"), is(new BigDecimal("15")));
+    }
+
+    @Test
+    public void scenarioWeightForScenarioOutlineWithMultipleExamples() {
+        assertThat(stats.scenarioWeightFor("Buying things - with tables", "Buying lots of widgets"), is(new BigDecimal("35")));
     }
 
     @Test

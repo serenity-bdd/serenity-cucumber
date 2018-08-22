@@ -1,4 +1,4 @@
-Feature: Buying things
+Feature: Buying things - with tables
 
   Background: I already have some cash
     Given I have $100

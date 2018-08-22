@@ -1,11 +1,7 @@
 package net.serenitybdd.cucumber.suiteslicing;
 
 import net.serenitybdd.cucumber.CucumberWithSerenity;
-import net.thucydides.core.ThucydidesSystemProperty;
-import net.thucydides.core.guice.Injectors;
-import net.thucydides.core.util.EnvironmentVariables;
 
-import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 
 import cucumber.api.CucumberOptions;
@@ -14,22 +10,18 @@ import cucumber.api.CucumberOptions;
 @CucumberOptions(glue = "net.serenitybdd.cucumber.smoketests", features="classpath:smoketests")
 public class SlicedTestRunner {
 
-//    @BeforeClass
-//    public static void setUp() {
-//        EnvironmentVariables environmentVariables = Injectors.getInjector().getInstance(EnvironmentVariables.class);
-//        environmentVariables.setProperty(ThucydidesSystemProperty.SERENITY_BATCH_SIZE);
-//        ThucydidesSystemProperty.SERENITY_BATCH_SIZE.
-//        System.setProperty("BAT_FORK_NUMBER", System.getenv("BAT_ENV_fork_number"));
-//        System.setProperty("BAT_TOTAL_FORKS", System.getenv("BAT_ENV_fork_count"));
-//        BeforeAll.configureOptions();
-//        String bat_fork_number = System.getProperty("BAT_FORK_NUMBER");
-//        if ("0".equals(bat_fork_number) && TestEnvironmentConfig.TEST_ENV.isDevOrPreview()) {
-//            TimeMachineClient timeMachineClient = new TimeMachineClient();
-//            timeMachineClient.resetTime(true);
-//            clearDownDb();
-//        }
-//
-//        ensureAgentAccount(bat_fork_number);
-//    }
+/*
+
+Experimental test runner where parameters can changed in order to run specific portions of the test suite. For instance create a run configuration and paste the following into the VM Options:
+
+-Dserenity.batch.count=3 -Dserenity.batch.number=2 -Dserenity.fork.number=2 -Dserenity.fork.count=1 -Dserenity.test.statistics.dir=/statistics
+
+And you should see the following logged in the console:
+
+16:49:18.551 [main] INFO  n.s.cucumber.CucumberWithSerenity - Running slice 2 of 3 using fork 1 of 2 from feature paths [classpath:smoketests]
+
+The Test output should show some features selected and some scenarios run and some not run. This is expected!
+
+*/
 
 }

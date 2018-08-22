@@ -1,4 +1,4 @@
-Feature: Buying things
+Feature: Buying things - data driven
 
   Scenario: Buying lots of widgets
     Given I want to purchase the following gizmos:
