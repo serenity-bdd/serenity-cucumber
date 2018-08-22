@@ -11,9 +11,9 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <serenity.version>1.9.0-rc.3</serenity.version>
-        <serenity.maven.version>1.9.0-rc.3</serenity.maven.version>
-        <serenity.cucumber.version>1.6.11-SNAPSHOT</serenity.cucumber.version>
+        <serenity.version>1.9.37</serenity.version>
+        <serenity.maven.version>1.9.6</serenity.maven.version>
+        <serenity.cucumber.version>1.9.16-SNAPSHOT</serenity.cucumber.version>
         <encoding>UTF-8</encoding>
         <parallel.tests>4</parallel.tests>
     </properties>
@@ -98,7 +98,7 @@
                 </configuration>
             </plugin>
             <plugin>
-                <artifactId>maven-failsafe-plugin</artifactId>
+                    <artifactId>maven-failsafe-plugin</artifactId>
                 <version>2.20</version>
                 <configuration>
                     <includes>
@@ -106,6 +106,7 @@
                     </includes>
                     <systemPropertyVariables>
                         <webdriver.base.url>${webdriver.base.url}</webdriver.base.url>
+                        <fork.count>5</fork.count>
                     </systemPropertyVariables>
                     <parallel>classes</parallel>
                     <threadCount>${parallel.tests}</threadCount>

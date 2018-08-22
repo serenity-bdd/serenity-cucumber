@@ -71,7 +71,7 @@ public class CucumberScenarioLoader {
 
     private int scenarioCountFor(ScenarioDefinition scenarioDefinition) {
         if (scenarioDefinition instanceof ScenarioOutline) {
-            return ((ScenarioOutline) scenarioDefinition).getExamples().get(0).getTableBody().size();
+            return ((ScenarioOutline) scenarioDefinition).getExamples().stream().map(examples -> examples.getTableBody().size()).mapToInt(Integer::intValue).sum();
         } else {
             return 1;
         }

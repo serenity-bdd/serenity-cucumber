@@ -71,7 +71,8 @@ public class ScenarioLineCountStatistics implements TestStatistics {
         final int stepCount;
         if (scenarioDefinition instanceof ScenarioOutline) {
             ScenarioOutline outline = (ScenarioOutline) scenarioDefinition;
-            stepCount = outline.getExamples().get(0).getTableBody().size() * (backgroundStepCount + outline.getSteps().size());
+            Integer exampleCount = outline.getExamples().stream().map(examples -> examples.getTableBody().size()).mapToInt(Integer::intValue).sum();
+            stepCount = exampleCount * (backgroundStepCount + outline.getSteps().size());
         } else {
             stepCount = backgroundStepCount + scenarioDefinition.getSteps().size();
         }

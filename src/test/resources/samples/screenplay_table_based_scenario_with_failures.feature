@@ -1,4 +1,4 @@
-Feature: Buying things
+Feature: Buying things - with tables and failures
 
   Scenario Outline: Buying lots of widgets
     Given I want to purchase <amount> gizmos

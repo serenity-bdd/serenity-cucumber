@@ -1,4 +1,4 @@
-Feature: Buying things
+Feature: Buying things - with tables and failures screenplay
 
   Scenario Outline: Buying lots of widgets
     An error is thrown when the cost is negative
