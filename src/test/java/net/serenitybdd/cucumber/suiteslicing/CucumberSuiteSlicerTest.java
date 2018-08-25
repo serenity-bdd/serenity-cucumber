@@ -21,13 +21,13 @@ public class CucumberSuiteSlicerTest {
         cucumberSuiteSlicer = new CucumberSuiteSlicer(asList("classpath:samples/simple_table_based_scenario.feature"), testStatistics);
         expectedScenario1 = MatchingCucumberScenario.with()
             .featurePath("simple_table_based_scenario.feature")
-            .feature("Buying things")
+            .feature("Buying things - with tables")
             .scenario("Buying lots of widgets")
             .tags("@shouldPass");
 
         expectedScenario2 = MatchingCucumberScenario.with()
             .featurePath("simple_table_based_scenario.feature")
-            .feature("Buying things")
+            .feature("Buying things - with tables")
             .scenario("Buying more widgets");
     }
 

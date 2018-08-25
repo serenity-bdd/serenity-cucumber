@@ -100,7 +100,7 @@ dependencies {
             exclude group: "junit"
     }
     compile("commons-logging:commons-logging:${commonsLoggingVersion}")
-
+    compile("org.apache.commons:commons-csv:${commonsCsvVersion}")
     compile "junit:junit:${junitVersion}"
     compile "com.google.code.gson:gson:${gsonVersion}"
 
