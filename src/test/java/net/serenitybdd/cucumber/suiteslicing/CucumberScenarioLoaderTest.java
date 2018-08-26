@@ -23,11 +23,11 @@ public class CucumberScenarioLoaderTest {
         WeightedCucumberScenarios weightedCucumberScenarios = new CucumberScenarioLoader(newArrayList("classpath:samples/simple_table_based_scenario.feature"), testStatistics).load();
         assertThat(weightedCucumberScenarios.scenarios, containsInAnyOrder(MatchingCucumberScenario.with()
                                                                                .featurePath("simple_table_based_scenario.feature")
-                                                                               .feature("Buying things")
+                                                                               .feature("Buying things - with tables")
                                                                                .scenario("Buying lots of widgets"),
                                                                            MatchingCucumberScenario.with()
                                                                                .featurePath("simple_table_based_scenario.feature")
-                                                                               .feature("Buying things")
+                                                                               .feature("Buying things - with tables")
                                                                                .scenario("Buying more widgets")));
     }
 
@@ -37,12 +37,12 @@ public class CucumberScenarioLoaderTest {
 
         assertThat(weightedCucumberScenarios.scenarios, contains(MatchingCucumberScenario.with()
                                                                      .featurePath("simple_table_based_scenario.feature")
-                                                                     .feature("Buying things")
+                                                                     .feature("Buying things - with tables")
                                                                      .scenario("Buying lots of widgets")
                                                                      .tags("@shouldPass"),
                                                                  MatchingCucumberScenario.with()
                                                                      .featurePath("simple_table_based_scenario.feature")
-                                                                     .feature("Buying things")
+                                                                     .feature("Buying things - with tables")
                                                                      .scenario("Buying more widgets")
                                                                      .tags()));
     }

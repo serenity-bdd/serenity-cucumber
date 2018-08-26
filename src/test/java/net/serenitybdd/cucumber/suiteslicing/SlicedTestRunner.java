@@ -14,7 +14,7 @@ public class SlicedTestRunner {
 
 Experimental test runner where parameters can changed in order to run specific portions of the test suite. For instance create a run configuration and paste the following into the VM Options:
 
--Dserenity.batch.count=3 -Dserenity.batch.number=2 -Dserenity.fork.number=2 -Dserenity.fork.count=1 -Dserenity.test.statistics.dir=/statistics
+-Dserenity.batch.count=3 -Dserenity.batch.number=2 -Dserenity.fork.number=1 -Dserenity.fork.count=2 -Dserenity.test.statistics.dir=/statistics
 
 And you should see the following logged in the console:
 
