@@ -15,26 +15,25 @@ import static org.junit.Assert.assertEquals;
 public class RpnCalculatorStepdefs {
     private RpnCalculator calc;
 
-    @Given("^a calculator I just turned on$")
+    @Given("a calculator I just turned on")
     public void a_calculator_I_just_turned_on() {
         calc = new RpnCalculator();
     }
 
-    @When("^I add (\\d+) and (\\d+)$")
+    @When("I add {int} and {int}")
     public void adding(int arg1, int arg2) {
         calc.push(arg1);
         calc.push(arg2);
         calc.push("+");
     }
 
-    @Given("^I press (.+)$")
+    @Given("I press (.+)")
     public void I_press(String what) {
         calc.push(what);
     }
 
-    @Then("^the result is (\\d+)$")
+    @Then("the result is {int}")
     public void the_result_is(Integer expected) {
-        System.out.println("Expecting a result of " + expected);
         assertEquals(expected, calc.value());
     }
 
@@ -49,7 +48,7 @@ public class RpnCalculatorStepdefs {
     public void after(Scenario scenario) {
     }
 
-    @Given("^the previous entries:$")
+    @Given("the previous entries:")
     public void thePreviousEntries(List<Entry> entries) {
         for (Entry entry : entries) {
             calc.push(entry.first);
@@ -58,16 +57,22 @@ public class RpnCalculatorStepdefs {
         }
     }
 
-    @When("^I enter (\\d+) and (\\d+)$")
+    @When("I enter {int} and {int}")
     public void entering(int arg1, int arg2) {
         calc.push(arg1);
         calc.push(arg2);
     }
 
 
-    public class Entry {
+    public static class Entry {
         Integer first;
         Integer second;
         String operation;
+
+        public Entry(Integer first,Integer second, String operation){
+            this.first = first;
+            this.second = second;
+            this.operation = operation;
+        }
     }
 }

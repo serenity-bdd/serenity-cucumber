@@ -97,8 +97,10 @@ dependencies {
     compile ("net.serenity-bdd:serenity-screenplay-webdriver:${serenityCoreVersion}")
     compile "io.cucumber:cucumber-java:${cucumberJVMVersion}"
     compile("io.cucumber:cucumber-junit:${cucumberJVMVersion}") {
-            exclude group: "junit"
+        exclude group: "junit"
     }
+    compile "io.cucumber:datatable-matchers:${cucumberDatatableMatchers}"
+
     compile("commons-logging:commons-logging:${commonsLoggingVersion}")
     compile("org.apache.commons:commons-csv:${commonsCsvVersion}")
     compile "junit:junit:${junitVersion}"
