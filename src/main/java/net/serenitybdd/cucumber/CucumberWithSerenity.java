@@ -1,14 +1,11 @@
 package net.serenitybdd.cucumber;
 
-import com.google.common.collect.Iterables;
-
 import net.serenitybdd.cucumber.suiteslicing.CucumberSuiteSlicer;
 import net.serenitybdd.cucumber.suiteslicing.ScenarioFilter;
 import net.serenitybdd.cucumber.suiteslicing.TestStatistics;
 import net.serenitybdd.cucumber.suiteslicing.WeightedCucumberScenarios;
 import net.serenitybdd.cucumber.util.FeatureRunnerExtractors;
-import net.serenitybdd.cucumber.util.Splitter;
-import net.thucydides.core.ThucydidesSystemProperty;
+import net.serenitybdd.cucumber.util.TagParser;
 import net.thucydides.core.guice.Injectors;
 import net.thucydides.core.util.EnvironmentVariables;
 import net.thucydides.core.webdriver.Configuration;
@@ -20,13 +17,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import cucumber.api.junit.Cucumber;
 import cucumber.runtime.ClassFinder;
@@ -37,7 +32,6 @@ import cucumber.runtime.io.ResourceLoader;
 import cucumber.runtime.io.ResourceLoaderClassFinder;
 import cucumber.runtime.junit.FeatureRunner;
 
-import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static net.thucydides.core.ThucydidesSystemProperty.SERENITY_BATCH_COUNT;
 import static net.thucydides.core.ThucydidesSystemProperty.SERENITY_BATCH_NUMBER;
@@ -47,8 +41,6 @@ import static net.thucydides.core.ThucydidesSystemProperty.SERENITY_FORK_NUMBER;
 /**
  * Glue code for running Cucumber via Serenity.
  * Sets up Serenity reporting and instrumentation.
- *
- * @author L.Carausu (liviu.carausu@gmail.com)
  */
 public class CucumberWithSerenity extends Cucumber {
 
@@ -73,25 +65,12 @@ public class CucumberWithSerenity extends Cucumber {
     protected Runtime createRuntime(ResourceLoader resourceLoader,
                                                      ClassLoader classLoader,
                                                      RuntimeOptions runtimeOptions) {
-        runtimeOptions.getTagFilters().addAll(environmentSpecifiedTags(runtimeOptions.getTagFilters()));
+
+        EnvironmentVariables environmentVariables = Injectors.getInjector().getInstance(EnvironmentVariables.class);
+
+        runtimeOptions.getTagFilters().addAll(TagParser.additionalTagsSuppliedFrom(environmentVariables, runtimeOptions.getTagFilters()));
         RUNTIME_OPTIONS = runtimeOptions;
         return CucumberWithSerenityRuntime.using(resourceLoader, classLoader, runtimeOptions);
-    }
-
-    private Collection<String> environmentSpecifiedTags(List<? extends Object> existingTags) {
-        EnvironmentVariables environmentVariables = Injectors.getInjector().getInstance(EnvironmentVariables.class);
-        String tagsExpression = ThucydidesSystemProperty.TAGS.from(environmentVariables,"");
-        List<String> existingTagsValues = existingTags.stream().map(Object::toString).collect(Collectors.toList());
-        return Splitter.on(",").trimResults().omitEmptyStrings().splitToList(tagsExpression).stream()
-                .map(this::toCucumberTag).filter(t -> !existingTagsValues.contains(t)).collect(Collectors.toList());
-    }
-
-    private String toCucumberTag(String from) {
-        String tag = from.replaceAll(":","=");
-        if (tag.startsWith("~@") || tag.startsWith("@")) { return tag; }
-        if (tag.startsWith("~")) { return "~@" + tag.substring(1); }
-
-        return "@" + tag;
     }
 
     public static Runtime createSerenityEnabledRuntime(ResourceLoader resourceLoader,
@@ -173,7 +152,7 @@ public class CucumberWithSerenity extends Cucumber {
                 return Optional.of(featureRunner);
             } catch (NoTestsRemainException e) {
                 LOGGER.info("Filtered out all {} scenarios for feature '{}'", initialScenarioCount, featureName);
-                return Optional.<FeatureRunner>empty();
+                return Optional.empty();
             }
         };
     }
