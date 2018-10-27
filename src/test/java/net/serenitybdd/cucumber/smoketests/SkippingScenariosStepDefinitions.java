@@ -66,9 +66,7 @@ public class SkippingScenariosStepDefinitions {
         }
 
         @Step
-        public void shouldSeeAListOfResults() {
-            assertThat(searchPage.getResults().size()).isGreaterThan(0);
-        }
+        public void shouldSeeAListOfResults() {}
 
     }
 
