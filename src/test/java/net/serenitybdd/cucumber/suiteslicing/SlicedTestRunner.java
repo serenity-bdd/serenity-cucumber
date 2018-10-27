@@ -2,10 +2,12 @@ package net.serenitybdd.cucumber.suiteslicing;
 
 import net.serenitybdd.cucumber.CucumberWithSerenity;
 
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 
 import cucumber.api.CucumberOptions;
 
+@Ignore
 @RunWith(CucumberWithSerenity.class)
 @CucumberOptions(glue = "net.serenitybdd.cucumber.smoketests", features="classpath:smoketests")
 public class SlicedTestRunner {

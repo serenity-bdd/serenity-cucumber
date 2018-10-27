@@ -40,4 +40,13 @@ public class CucumberSuiteSlicerTest {
     public void noSuppliedTagsMeansReturnAllScenarios() {
         assertThat(cucumberSuiteSlicer.scenarios(1, 1, 1, 1, asList()).scenarios, contains(expectedScenario1, expectedScenario2));
     }
+
+    @Test
+    public void shouldSupportNotInTheTagExpression() {
+        assertThat(cucumberSuiteSlicer.scenarios(1, 1, 1, 1, asList("not @shouldPass")).scenarios, contains(expectedScenario2));
+    }
+    @Test
+    public void shouldSupportOldExclusionSyntaxInTheTagExpression() {
+        assertThat(cucumberSuiteSlicer.scenarios(1, 1, 1, 1, asList("~@shouldPass")).scenarios, contains(expectedScenario2));
+    }
 }
