@@ -836,6 +836,11 @@ public class SerenityReporter implements Formatter {
     }
 
     private Optional<TestOutcome> latestTestOutcome() {
+
+        if (!StepEventBus.eventBusFor(currentFeaturePath()).isBaseStepListenerRegistered()) {
+            return Optional.empty();
+        }
+
         List<TestOutcome> recordedOutcomes = StepEventBus.eventBusFor(currentFeaturePath()).getBaseStepListener().getTestOutcomes();
         return (recordedOutcomes.isEmpty()) ? Optional.empty()
                 : Optional.of(recordedOutcomes.get(recordedOutcomes.size() - 1));

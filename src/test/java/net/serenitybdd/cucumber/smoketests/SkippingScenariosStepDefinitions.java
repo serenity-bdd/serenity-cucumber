@@ -85,6 +85,10 @@ public class SkippingScenariosStepDefinitions {
         connor.searchesFor(searchTerm);
     }
 
+    @When("I view the home page details")
+    public void viewHomePage() {
+    }
+
     @Then("I should see \"(.*)\" in the page title")
     public void thenIShouldSeeTitle(String title) {
         connor.shouldSeeTitle(title);
