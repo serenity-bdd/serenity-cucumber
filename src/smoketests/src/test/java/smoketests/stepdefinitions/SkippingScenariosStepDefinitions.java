@@ -41,7 +41,7 @@ public class SkippingScenariosStepDefinitions {
         }
 
         public List<String> getResults() {
-            return results.stream().map(element -> element.getText()).collect(Collectors.toList());
+            return results.stream().map(element -> element.getAttribute("textContent")).collect(Collectors.toList());
         }
     }
 
