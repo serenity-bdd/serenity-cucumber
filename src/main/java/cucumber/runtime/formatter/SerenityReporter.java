@@ -348,7 +348,7 @@ public class SerenityReporter implements Formatter {
         String requestedDriverOptions = getDriverOptionsFrom(tags);
         if (isNotEmpty(requestedDriver)) {
             ThucydidesWebDriverSupport.useDefaultDriver(requestedDriver);
-            //TODO: ThucydidesWebDriverSupport.useDriverOptions(requestedDriverOptions);
+            ThucydidesWebDriverSupport.useDriverOptions(requestedDriverOptions);
         }
     }
 
@@ -361,23 +361,17 @@ public class SerenityReporter implements Formatter {
     }
 
     private String getDriverFrom(List<String> tags) {
-        String requestedDriver = null;
-        for (String tag : tags) {
-            if (tag.startsWith("@driver:")) {
-                requestedDriver = tag.substring(8);
-            }
-        }
-        return requestedDriver;
+        return tags.stream().filter(tag -> tag.startsWith("@driver:"))
+                .map(tag -> tag.substring(8))
+                .findFirst()
+                .orElse(null);
     }
 
     private String getDriverOptionsFrom(List<String> tags) {
-        String requestedDriver = null;
-        for (String tag : tags) {
-            if (tag.startsWith("@driver-options:")) {
-                requestedDriver = tag.substring(16);
-            }
-        }
-        return requestedDriver;
+        return tags.stream().filter(tag -> tag.startsWith("@driver-options:"))
+                .map(tag -> tag.substring(16))
+                .findFirst()
+                .orElse(null);
     }
 
     private void examples(Feature currentFeature, List<Tag> scenarioOutlineTags, String id, List<Examples> examplesList) {
