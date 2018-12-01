@@ -134,7 +134,7 @@ public class UsingStepLibrariesStepDefinitions {
         aSharedStepLibrary.doSomethingElse();
     }
 
-    @When("they are annotated with @Steps\\(shared=true\\)")
+    @When("they are annotated with @Steps(shared=true)")
     public void whenTheyAreAnnotatedWithStepssharedtrue() {
     }
 

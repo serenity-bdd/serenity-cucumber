@@ -1,14 +1,18 @@
 package net.serenitybdd.cucumber.integration.steps;
 
-import cucumber.api.DataTable;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
+import io.cucumber.datatable.DataTable;
 
-;import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import static io.cucumber.datatable.matchers.DataTableHasTheSameRowsAs.hasTheSameRowsAs;
+import static org.hamcrest.MatcherAssert.assertThat;
+
+;
 
 public class SampleDataDrivenGizmoSteps {
 
@@ -42,7 +46,7 @@ public class SampleDataDrivenGizmoSteps {
     }
 
     private List<Map<String, String>> examples;
-    private List<Map<String, String>> costs;
+    private List<List<String>> costs;
     private void given(DataTable examples) {
         this.examples = mapped(examples);
         throw new AssertionError("crap");
@@ -53,11 +57,12 @@ public class SampleDataDrivenGizmoSteps {
     class BuyAGizmo implements ExampleTask {
 
         @Override
-        public Map<String, String> performWithValuesFrom(Map<String, String> exampleData) {
-            Map<String,String> map = new HashMap<>();
-            map.put("item",exampleData.get("item"));
-            map.put("total",exampleData.get("100"));
-            return map;
+        public List<String> performWithValuesFrom(Map<String, String> exampleData) {
+            List<String> list = new ArrayList<>();
+            list.add(exampleData.get("item"));
+            list.add(exampleData.get("total"));
+            //list.add(exampleData.get("100"));
+            return list;
         }
     }
 
@@ -72,8 +77,8 @@ public class SampleDataDrivenGizmoSteps {
             this.examples = examples;
         }
 
-        public List<Map<String, String>> perform(ExampleTask example) {
-            List<Map<String,String>> outcomes = new ArrayList<>();
+        public List<List<String>> perform(ExampleTask example) {
+            List<List<String>> outcomes = new ArrayList<>();
             for(Map<String, String> exampleData : examples) {
                 outcomes.add(example.performWithValuesFrom(exampleData));
             }
@@ -81,31 +86,33 @@ public class SampleDataDrivenGizmoSteps {
         }
 
 
-        public ExampleVerifier verifyThat(List<Map<String, String>> outcomes) {
+        public ExampleVerifier verifyThat(List<List<String>> outcomes) {
             return new ExampleVerifier(outcomes);
         }
     }
 
     class ExampleVerifier {
-        private final List<Map<String, String>> actualOutcomes;
+        private final List<List<String>> actualOutcomes;
 
-        ExampleVerifier(List<Map<String, String>> actualOutcomes) {
+        ExampleVerifier(List<List<String>> actualOutcomes) {
             this.actualOutcomes = actualOutcomes;
         }
 
-        public void match(List<Map<String, String>> expectedOutcomes) {
+        public void match(List<List<String>> expectedOutcomes) {
             DataTable actualOutcomesTable = DataTable.create(actualOutcomes);
             DataTable expectedOutcomesTable = DataTable.create(expectedOutcomes);
-            actualOutcomesTable.diff(expectedOutcomesTable);
+            //actualOutcomesTable.diff(expectedOutcomesTable);
+            assertThat(actualOutcomesTable, hasTheSameRowsAs(expectedOutcomesTable));
         }
 
         public void match(DataTable expectedOutcomes) {
-            DataTable.create(actualOutcomes).diff(expectedOutcomes);
+            //DataTable.create(actualOutcomes).diff(expectedOutcomes);
+            assertThat(DataTable.create(actualOutcomes), hasTheSameRowsAs(expectedOutcomes));
         }
     }
 
     interface ExampleTask {
-        Map<String, String> performWithValuesFrom(Map<String, String> exampleData);
+        List<String> performWithValuesFrom(Map<String, String> exampleData);
     }
 
     private List<Map<String,String>> mapped(DataTable expectedCost) {

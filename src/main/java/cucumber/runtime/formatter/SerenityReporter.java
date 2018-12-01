@@ -1,10 +1,11 @@
 package cucumber.runtime.formatter;
 
+import cucumber.api.HookTestStep;
+import cucumber.api.PickleStepTestStep;
+import cucumber.api.Plugin;
 import cucumber.api.Result;
-import cucumber.api.TestStep;
 import cucumber.api.event.*;
-import cucumber.api.formatter.Formatter;
-import cucumber.runner.PickleTestStep;
+import cucumber.runtime.io.MultiLoader;
 import cucumber.runtime.io.ResourceLoader;
 import gherkin.ast.*;
 import gherkin.pickles.Argument;
@@ -18,6 +19,7 @@ import net.serenitybdd.core.SerenityListeners;
 import net.serenitybdd.core.SerenityReports;
 import net.serenitybdd.cucumber.CucumberWithSerenity;
 import net.serenitybdd.cucumber.formatting.ScenarioOutlineDescription;
+import net.thucydides.core.guice.Injectors;
 import net.thucydides.core.model.DataTable;
 import net.thucydides.core.model.*;
 import net.thucydides.core.model.stacktrace.RootCauseAnalyzer;
@@ -47,7 +49,7 @@ import static org.apache.commons.lang3.StringUtils.isNotEmpty;
  *
  * @author L.Carausu (liviu.carausu@gmail.com)
  */
-public class SerenityReporter implements Formatter {
+public class SerenityReporter implements  Plugin,ConcurrentEventListener {
 
     private static final String OPEN_PARAM_CHAR = "\uff5f";
     private static final String CLOSE_PARAM_CHAR = "\uff60";
@@ -55,7 +57,7 @@ public class SerenityReporter implements Formatter {
     private static final String SCENARIO_OUTLINE_NOT_KNOWN_YET = "";
 
     private final Queue<Step> stepQueue;
-    private final Queue<TestStep> testStepQueue;
+    private final Queue<cucumber.api.TestStep> testStepQueue;
 
     private Configuration systemConfiguration;
 
@@ -96,12 +98,22 @@ public class SerenityReporter implements Formatter {
     private static final Logger LOGGER = LoggerFactory.getLogger(SerenityReporter.class);
 
 
+    /**
+     * Constructor automatically called by cucumber when class is specified as plugin
+     * in @CucumberOptions.
+     */
+    public SerenityReporter() {
+        this.systemConfiguration = Injectors.getInjector().getInstance(Configuration.class);
+        this.stepQueue = new LinkedList<>();
+        this.testStepQueue = new LinkedList<>();
+        baseStepListeners = Collections.synchronizedList(new ArrayList<>());
+    }
+
     public SerenityReporter(Configuration systemConfiguration, ResourceLoader resourceLoader) {
         this.systemConfiguration = systemConfiguration;
         this.stepQueue = new LinkedList<>();
         this.testStepQueue = new LinkedList<>();
         baseStepListeners = Collections.synchronizedList(new ArrayList<>());
-        initLineFilters(resourceLoader);
     }
 
     private void initialiseThucydidesListenersFor(String featurePath) {
@@ -220,6 +232,7 @@ public class SerenityReporter implements Formatter {
 
     private void handleTestCaseStarted(TestCaseStarted event) {
 
+        initLineFilters(new MultiLoader(SerenityReporter.class.getClassLoader()));
         currentFeaturePathIs(event.testCase.getUri());
         StepEventBus.setCurrentBusToEventBusFor(event.testCase.getUri());
 
@@ -291,18 +304,21 @@ public class SerenityReporter implements Formatter {
     }
 
     private void handleTestStepStarted(TestStepStarted event) {
-        if (event.testStep instanceof PickleTestStep) {
-            TestSourcesModel.AstNode astNode = testSources.getAstNode(currentFeaturePath(), event.testStep.getStepLine());
-            if (astNode != null) {
-                Step step = (Step) astNode.node;
-                if (!addingScenarioOutlineSteps) {
-                    stepQueue.add(step);
-                    testStepQueue.add(event.testStep);
+        if (!(event.testStep instanceof HookTestStep)) {
+            if(event.testStep instanceof PickleStepTestStep) {
+                PickleStepTestStep pickleTestStep = (PickleStepTestStep)event.testStep;
+                TestSourcesModel.AstNode astNode = testSources.getAstNode(currentFeaturePath(), pickleTestStep.getStepLine());
+                if (astNode != null) {
+                    Step step = (Step) astNode.node;
+                    if (!addingScenarioOutlineSteps) {
+                        stepQueue.add(step);
+                        testStepQueue.add(event.testStep);
+                    }
+                    Step currentStep = stepQueue.peek();
+                    String stepTitle = stepTitleFrom(currentStep, pickleTestStep);
+                    StepEventBus.eventBusFor(currentFeaturePath()).stepStarted(ExecutedStepDescription.withTitle(stepTitle));
+                    StepEventBus.eventBusFor(currentFeaturePath()).updateCurrentStepTitle(normalized(stepTitle));
                 }
-                Step currentStep = stepQueue.peek();
-                String stepTitle = stepTitleFrom(currentStep, event.testStep);
-                StepEventBus.eventBusFor(currentFeaturePath()).stepStarted(ExecutedStepDescription.withTitle(stepTitle));
-                StepEventBus.eventBusFor(currentFeaturePath()).updateCurrentStepTitle(normalized(stepTitle));
             }
         }
     }
@@ -313,7 +329,7 @@ public class SerenityReporter implements Formatter {
     }
 
     private void handleTestStepFinished(TestStepFinished event) {
-        if (event.testStep instanceof PickleTestStep) {
+        if (!(event.testStep instanceof HookTestStep)) {
             handleResult(event.result);
         }
     }
@@ -413,7 +429,7 @@ public class SerenityReporter implements Formatter {
     private void initLineFilters(ResourceLoader resourceLoader) {
         if (lineFilters == null) {
             Map<String, List<Long>> lineFiltersFromRuntime = CucumberWithSerenity.currentRuntimeOptions()
-                    .getLineFilters(resourceLoader);
+                    .getLineFilters();
             if (lineFiltersFromRuntime == null) {
                 lineFilters = new HashMap<>();
             } else {
@@ -737,7 +753,7 @@ public class SerenityReporter implements Formatter {
         stepQueue.clear();
         testStepQueue.clear();
 
-        java.util.Optional.ofNullable(currentFeaturePath()).ifPresent(
+        Optional.ofNullable(currentFeaturePath()).ifPresent(
                 featurePath -> {
                     StepEventBus.eventBusFor(featurePath).testSuiteFinished();
                     StepEventBus.eventBusFor(featurePath).dropAllListeners();
@@ -753,14 +769,14 @@ public class SerenityReporter implements Formatter {
 
     private void handleResult(Result result) {
         Step currentStep = stepQueue.poll();
-        TestStep currentTestStep = testStepQueue.poll();
+        cucumber.api.TestStep currentTestStep = testStepQueue.poll();
         recordStepResult(result, currentStep, currentTestStep);
         if (stepQueue.isEmpty()) {
             recordFinalResult();
         }
     }
 
-    private void recordStepResult(Result result, Step currentStep, TestStep currentTestStep) {
+    private void recordStepResult(Result result, Step currentStep, cucumber.api.TestStep currentTestStep) {
         if (Result.Type.PASSED.equals(result.getStatus())) {
             StepEventBus.eventBusFor(currentFeaturePath()).stepFinished();
         } else if (Result.Type.FAILED.equals(result.getStatus())) {
@@ -827,7 +843,7 @@ public class SerenityReporter implements Formatter {
         if (!latestTestOutcome().get().testStepWithDescription(stepTitle).isPresent()) {
             return false;
         }
-        Optional<net.thucydides.core.model.TestStep> matchingTestStep = latestTestOutcome().get().testStepWithDescription(stepTitle);
+        Optional<TestStep> matchingTestStep = latestTestOutcome().get().testStepWithDescription(stepTitle);
         if (matchingTestStep.isPresent() && matchingTestStep.get().getException() != null) {
             return (matchingTestStep.get().getException().getOriginalCause() == cause);
         }
@@ -850,17 +866,15 @@ public class SerenityReporter implements Formatter {
         return (AssumptionViolatedException.class.isAssignableFrom(rootCause.getClass()));
     }
 
-    private String stepTitleFrom(Step currentStep, TestStep testStep) {
-
-        if (currentStep != null)
+    private String stepTitleFrom(Step currentStep, cucumber.api.TestStep testStep) {
+        if (currentStep != null && testStep instanceof PickleStepTestStep)
             return currentStep.getKeyword()
-                    //TODO get Name
-                    + testStep.getPickleStep().getText()
-                    + embeddedTableDataIn(testStep);
+                    + ((PickleStepTestStep)testStep).getPickleStep().getText()
+                    + embeddedTableDataIn((PickleStepTestStep) testStep);
         return "";
     }
 
-    private String embeddedTableDataIn(TestStep currentStep) {
+    private String embeddedTableDataIn(PickleStepTestStep currentStep) {
         if (!currentStep.getStepArgument().isEmpty()) {
             Argument argument = currentStep.getStepArgument().get(0);
             if (argument instanceof PickleTable) {

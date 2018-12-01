@@ -1,7 +1,14 @@
 package net.serenitybdd.cucumber.suiteslicing;
 
 import com.google.common.collect.FluentIterable;
-
+import cucumber.runtime.io.MultiLoader;
+import cucumber.runtime.io.ResourceLoader;
+import cucumber.runtime.model.CucumberFeature;
+import cucumber.runtime.model.FeatureLoader;
+import gherkin.ast.Scenario;
+import gherkin.ast.ScenarioDefinition;
+import gherkin.ast.ScenarioOutline;
+import gherkin.ast.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,14 +18,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
-
-import cucumber.runtime.io.MultiLoader;
-import cucumber.runtime.io.ResourceLoader;
-import cucumber.runtime.model.CucumberFeature;
-import gherkin.ast.Scenario;
-import gherkin.ast.ScenarioDefinition;
-import gherkin.ast.ScenarioOutline;
-import gherkin.ast.Tag;
 
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
@@ -41,7 +40,7 @@ public class CucumberScenarioLoader {
     public WeightedCucumberScenarios load() {
         LOGGER.debug("Feature paths are {}", featurePaths);
         ResourceLoader resourceLoader = new MultiLoader(CucumberSuiteSlicer.class.getClassLoader());
-        List<WeightedCucumberScenario> weightedCucumberScenarios = CucumberFeature.load(resourceLoader, featurePaths).stream()
+        List<WeightedCucumberScenario> weightedCucumberScenarios = new FeatureLoader(resourceLoader).load(featurePaths).stream()
             .map(getScenarios())
             .flatMap(List::stream)
             .collect(toList());

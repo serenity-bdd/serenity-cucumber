@@ -3,10 +3,12 @@ package cucumber.runtime;
 import cucumber.runtime.io.ResourceLoader;
 import cucumber.runtime.snippets.FunctionNameGenerator;
 import gherkin.pickles.PickleStep;
+import io.cucumber.stepexpression.TypeRegistry;
 import net.thucydides.core.steps.StepEventBus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class SerenityBackend implements Backend {
@@ -14,18 +16,15 @@ public class SerenityBackend implements Backend {
     private static final Logger LOGGER = LoggerFactory.getLogger(SerenityBackend.class);
 
     private final ResourceLoader resourceLoader;
+    private final TypeRegistry typeRegistry;
 
-    public SerenityBackend(ResourceLoader resourceLoader) {
+    public SerenityBackend(ResourceLoader resourceLoader, TypeRegistry typeRegistry) {
         this.resourceLoader = resourceLoader;
+        this.typeRegistry = typeRegistry;
     }
 
     @Override
     public void loadGlue(Glue glue, List<String> gluePaths) {
-
-    }
-
-    @Override
-    public void setUnreportedStepExecutor(UnreportedStepExecutor executor) {
 
     }
 
@@ -42,8 +41,8 @@ public class SerenityBackend implements Backend {
     }
 
     @Override
-    public String getSnippet(PickleStep step, String keyword, FunctionNameGenerator functionNameGenerator) {
-        return "";
+    public  List<String>  getSnippet(PickleStep step, String keyword, FunctionNameGenerator functionNameGenerator) {
+        return new ArrayList<>();
     }
 
 }
