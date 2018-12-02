@@ -66,9 +66,7 @@ public class SkippingScenariosStepDefinitions {
         }
 
         @Step
-        public void shouldSeeAListOfResults() {
-            assertThat(searchPage.getResults().size()).isGreaterThan(0);
-        }
+        public void shouldSeeAListOfResults() {}
 
     }
 
@@ -83,6 +81,10 @@ public class SkippingScenariosStepDefinitions {
     @When("I lookup (.*)")
     public void whenILookup(String searchTerm) {
         connor.searchesFor(searchTerm);
+    }
+
+    @When("I view the home page details")
+    public void viewHomePage() {
     }
 
     @Then("I should see \"(.*)\" in the page title")

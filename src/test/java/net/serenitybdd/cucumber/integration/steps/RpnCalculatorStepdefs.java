@@ -65,9 +65,15 @@ public class RpnCalculatorStepdefs {
     }
 
 
-    public class Entry {
+    public static class Entry {
         Integer first;
         Integer second;
         String operation;
+
+        public Entry(Integer first,Integer second, String operation){
+            this.first = first;
+            this.second = second;
+            this.operation = operation;
+        }
     }
 }

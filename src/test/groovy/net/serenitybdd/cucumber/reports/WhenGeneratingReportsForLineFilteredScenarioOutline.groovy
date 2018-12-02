@@ -1,13 +1,13 @@
 package net.serenitybdd.cucumber.reports
 
+import cucumber.api.Result
 import net.serenitybdd.cucumber.integration.SimpleTableScenarioWithLineFilters
+import net.serenitybdd.cucumber.util.CucumberRunner
 import net.thucydides.core.reports.OutcomeFormat
 import net.thucydides.core.reports.TestOutcomeLoader
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
-
-import static net.serenitybdd.cucumber.util.CucumberRunner.serenityRunnerForCucumberTestRunner
 
 class WhenGeneratingReportsForLineFilteredScenarioOutline extends Specification {
 
@@ -22,14 +22,14 @@ class WhenGeneratingReportsForLineFilteredScenarioOutline extends Specification 
 
     def "should generate a Thucydides report for each executed Cucumber scenario"() {
         given:
-        def runtime = serenityRunnerForCucumberTestRunner(SimpleTableScenarioWithLineFilters.class, outputDirectory)
+        def runtime = CucumberRunner.serenityRunnerForCucumberTestRunner(SimpleTableScenarioWithLineFilters.class, outputDirectory)
 
         when:
         runtime.run()
         def recordedTestOutcomes = new TestOutcomeLoader().forFormat(OutcomeFormat.JSON).loadFrom(outputDirectory)
 
         then:
-        runtime.getErrors().isEmpty()
+        runtime.exitStatus.results[0].is(Result.Type.PASSED)
 
         and:
         !recordedTestOutcomes.isEmpty()

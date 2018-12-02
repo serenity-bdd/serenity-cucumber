@@ -13,8 +13,6 @@ import java.util.Optional;
 
 public class CucumberWithSerenityRuntime {
 
-
-
     public static Runtime using(ResourceLoader resourceLoader,
                                 ClassLoader classLoader,
                                 ClassFinder classFinder,
@@ -29,14 +27,17 @@ public class CucumberWithSerenityRuntime {
     }
 
     private static Runtime createSerenityEnabledRuntime(ResourceLoader resourceLoader,
-                                                       ClassLoader classLoader,
-                                                       ClassFinder classFinder,
-                                                       RuntimeOptions runtimeOptions,
-                                                       Configuration systemConfiguration) {
+                                                        ClassLoader classLoader,
+                                                        ClassFinder classFinder,
+                                                        RuntimeOptions runtimeOptions,
+                                                        Configuration systemConfiguration) {
         ClassFinder resolvedClassFinder = Optional.ofNullable(classFinder).orElse(new ResourceLoaderClassFinder(resourceLoader, classLoader));
         SerenityReporter reporter = new SerenityReporter(systemConfiguration, resourceLoader);
-        Runtime runtime =  new Runtime(resourceLoader, resolvedClassFinder, classLoader, runtimeOptions);
-        runtimeOptions.addPlugin(reporter);
+        //Runtime runtime =  new Runtime(resourceLoader, resolvedClassFinder, classLoader, runtimeOptions);
+        Runtime runtime = Runtime.builder().withResourceLoader(resourceLoader).withClassFinder(classFinder).
+                withClassLoader(classLoader).withRuntimeOptions(runtimeOptions).build();
+        //TODO
+        //runtimeOptions.addPlugin(reporter);
         return runtime;
     }
 }

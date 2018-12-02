@@ -54,17 +54,17 @@ public class LifecycleStepDefinitions {
 
     }
 
-    @Given("I add (.*)")
+    @Given("I add {int}")
     public void givenIAdd(int amount) {
         calculations.add(amount);
     }
 
-    @When("I substract (.*)")
+    @When("I substract {int}")
     public void whenISubstract(int amount) {
         calculations.substract(amount);
     }
 
-    @Then("the total should be (.*)")
+    @Then("the total should be {int}")
     public void thenTheTotalShouldBe(int total) {
         assertThat(calculations.total).isEqualTo(total);
     }

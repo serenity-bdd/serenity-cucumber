@@ -1,8 +1,11 @@
 package net.serenitybdd.cucumber.suiteslicing;
 
+import net.serenitybdd.cucumber.util.TagParser;
 
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.function.Predicate;
+
+import static com.google.common.collect.Lists.newArrayList;
 
 public class CucumberSuiteSlicer {
 
@@ -16,10 +19,12 @@ public class CucumberSuiteSlicer {
 
     public WeightedCucumberScenarios scenarios(int batchNumber, int batchCount, int forkNumber, int forkCount, List<String> tagFilters) {
         return new CucumberScenarioLoader(featurePaths, statistics).load()
-            .filter(cucumberScenario -> tagFilters.isEmpty() || !cucumberScenario.tags.stream()
-                .filter(tagFilters::contains)
-                .collect(Collectors.toList()).isEmpty())
+            .filter(forSuppliedTags(tagFilters))
             .slice(batchNumber).of(batchCount).slice(forkNumber).of(forkCount);
+    }
+
+    private Predicate<WeightedCucumberScenario> forSuppliedTags(List<String> tagFilters) {
+        return cucumberScenario -> TagParser.parseFromTagFilters(tagFilters).evaluate(newArrayList(cucumberScenario.tags));
     }
 
 }
