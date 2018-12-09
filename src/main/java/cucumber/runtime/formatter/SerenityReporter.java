@@ -104,11 +104,25 @@ public class SerenityReporter implements Formatter {
         initLineFilters(resourceLoader);
     }
 
+    private StepEventBus getStepEventBus(String featurePath){
+        if(lineFilters.containsKey(featurePath)){
+            featurePath += ":"+lineFilters.get(featurePath).get(0).longValue();
+        }
+        return StepEventBus.eventBusFor(featurePath);
+    }
+
+    private void setStepEventBus(String featurePath){
+        if(lineFilters.containsKey(featurePath)){
+            featurePath += ":"+lineFilters.get(featurePath).get(0).longValue();
+        }
+        StepEventBus.setCurrentBusToEventBusFor(featurePath);
+    }
+
     private void initialiseThucydidesListenersFor(String featurePath) {
-        if (StepEventBus.eventBusFor(featurePath).isBaseStepListenerRegistered()) {
+        if (getStepEventBus(featurePath).isBaseStepListenerRegistered()) {
             return;
         }
-        SerenityListeners listeners = new SerenityListeners(StepEventBus.eventBusFor(featurePath), systemConfiguration);
+        SerenityListeners listeners = new SerenityListeners(getStepEventBus(featurePath), systemConfiguration);
         baseStepListeners.add(listeners.getBaseStepListener());
     }
 
@@ -163,7 +177,7 @@ public class SerenityReporter implements Formatter {
 
                     Story userStory = userStoryFrom(feature, relativeUriFrom(event.uri));
 
-                    StepEventBus.eventBusFor(event.uri).testSuiteStarted(userStory);
+                    getStepEventBus(event.uri).testSuiteStarted(userStory);
 
                 }
         );
@@ -221,7 +235,7 @@ public class SerenityReporter implements Formatter {
     private void handleTestCaseStarted(TestCaseStarted event) {
 
         currentFeaturePathIs(event.testCase.getUri());
-        StepEventBus.setCurrentBusToEventBusFor(event.testCase.getUri());
+        setStepEventBus(event.testCase.getUri());
 
         String scenarioName = event.testCase.getName();
         TestSourcesModel.AstNode astNode = testSources.getAstNode(currentFeaturePath(), event.testCase.getLine());
@@ -262,9 +276,9 @@ public class SerenityReporter implements Formatter {
         }
 
         if (event.result.is(Result.Type.FAILED) && noAnnotatedResultIdDefinedFor(event)) {
-            StepEventBus.eventBusFor(event.testCase.getUri()).testFailed(event.result.getError());
+            getStepEventBus(event.testCase.getUri()).testFailed(event.result.getError());
         } else {
-            StepEventBus.eventBusFor(event.testCase.getUri()).testFinished();
+            getStepEventBus(event.testCase.getUri()).testFinished();
         }
 
         stepQueue.clear();
@@ -274,7 +288,7 @@ public class SerenityReporter implements Formatter {
     }
 
     private boolean noAnnotatedResultIdDefinedFor(TestCaseFinished event) {
-        BaseStepListener baseStepListener = StepEventBus.eventBusFor(event.testCase.getUri()).getBaseStepListener();
+        BaseStepListener baseStepListener = getStepEventBus(event.testCase.getUri()).getBaseStepListener();
         return (baseStepListener.getTestOutcomes().isEmpty() || (latestOf(baseStepListener.getTestOutcomes()).getAnnotatedResult() == null));
     }
 
@@ -301,15 +315,15 @@ public class SerenityReporter implements Formatter {
                 }
                 Step currentStep = stepQueue.peek();
                 String stepTitle = stepTitleFrom(currentStep, event.testStep);
-                StepEventBus.eventBusFor(currentFeaturePath()).stepStarted(ExecutedStepDescription.withTitle(stepTitle));
-                StepEventBus.eventBusFor(currentFeaturePath()).updateCurrentStepTitle(normalized(stepTitle));
+                getStepEventBus(currentFeaturePath()).stepStarted(ExecutedStepDescription.withTitle(stepTitle));
+                getStepEventBus(currentFeaturePath()).updateCurrentStepTitle(normalized(stepTitle));
             }
         }
     }
 
     private void handleWrite(WriteEvent event) {
-        StepEventBus.eventBusFor(currentFeaturePath()).stepStarted(ExecutedStepDescription.withTitle(event.text));
-        StepEventBus.eventBusFor(currentFeaturePath()).stepFinished();
+        getStepEventBus(currentFeaturePath()).stepStarted(ExecutedStepDescription.withTitle(event.text));
+        getStepEventBus(currentFeaturePath()).stepFinished();
     }
 
     private void handleTestStepFinished(TestStepFinished event) {
@@ -342,7 +356,7 @@ public class SerenityReporter implements Formatter {
     }
 
     private void configureDriver(Feature feature, String featurePath) {
-        StepEventBus.eventBusFor(featurePath).setUniqueSession(systemConfiguration.shouldUseAUniqueBrowser());
+        getStepEventBus(featurePath).setUniqueSession(systemConfiguration.shouldUseAUniqueBrowser());
         List<String> tags = getTagNamesFrom(feature.getTags());
         String requestedDriver = getDriverFrom(tags);
         String requestedDriverOptions = getDriverOptionsFrom(tags);
@@ -567,10 +581,10 @@ public class SerenityReporter implements Formatter {
         if (examplesRunning) {
             if (newScenario) {
                 startScenario(feature, scenario, scenarioName);
-                StepEventBus.eventBusFor(currentFeaturePath()).useExamplesFrom(table);
-                StepEventBus.eventBusFor(currentFeaturePath()).useScenarioOutline(ScenarioOutlineDescription.from(scenario).getDescription());
+                getStepEventBus(currentFeaturePath()).useExamplesFrom(table);
+                getStepEventBus(currentFeaturePath()).useScenarioOutline(ScenarioOutlineDescription.from(scenario).getDescription());
             } else {
-                StepEventBus.eventBusFor(currentFeaturePath()).addNewExamplesFrom(table);
+                getStepEventBus(currentFeaturePath()).addNewExamplesFrom(table);
             }
             startExample(currentLine);
         } else {
@@ -579,16 +593,16 @@ public class SerenityReporter implements Formatter {
     }
 
     private void startScenario(Feature currentFeature, ScenarioDefinition scenarioDefinition, String scenarioName) {
-        StepEventBus.eventBusFor(currentFeaturePath()).setTestSource(TestSourceType.TEST_SOURCE_CUCUMBER.getValue());
-        StepEventBus.eventBusFor(currentFeaturePath()).testStarted(scenarioName,
+        getStepEventBus(currentFeaturePath()).setTestSource(TestSourceType.TEST_SOURCE_CUCUMBER.getValue());
+        getStepEventBus(currentFeaturePath()).testStarted(scenarioName,
                 scenarioIdFrom(TestSourcesModel.convertToId(currentFeature.getName()), TestSourcesModel.convertToId(scenarioName)));
-        StepEventBus.eventBusFor(currentFeaturePath()).addDescriptionToCurrentTest(scenarioDefinition.getDescription());
-        StepEventBus.eventBusFor(currentFeaturePath()).addTagsToCurrentTest(convertCucumberTags(currentFeature.getTags()));
+        getStepEventBus(currentFeaturePath()).addDescriptionToCurrentTest(scenarioDefinition.getDescription());
+        getStepEventBus(currentFeaturePath()).addTagsToCurrentTest(convertCucumberTags(currentFeature.getTags()));
 
         if (isScenario(scenarioDefinition)) {
-            StepEventBus.eventBusFor(currentFeaturePath()).addTagsToCurrentTest(convertCucumberTags(((Scenario) scenarioDefinition).getTags()));
+            getStepEventBus(currentFeaturePath()).addTagsToCurrentTest(convertCucumberTags(((Scenario) scenarioDefinition).getTags()));
         } else if (isScenarioOutline(scenarioDefinition)) {
-            StepEventBus.eventBusFor(currentFeaturePath()).addTagsToCurrentTest(convertCucumberTags(((ScenarioOutline) scenarioDefinition).getTags()));
+            getStepEventBus(currentFeaturePath()).addTagsToCurrentTest(convertCucumberTags(((ScenarioOutline) scenarioDefinition).getTags()));
         }
 
         registerFeatureJiraIssues(currentFeature.getTags());
@@ -607,20 +621,20 @@ public class SerenityReporter implements Formatter {
 
     private void updateResultsFromTagsIn(List<Tag> tags) {
         if (isManual(tags)) {
-            StepEventBus.eventBusFor(currentFeaturePath()).testIsManual();
+            getStepEventBus(currentFeaturePath()).testIsManual();
         }
 
         if (isPending(tags)) {
-            StepEventBus.eventBusFor(currentFeaturePath()).testPending();
-            StepEventBus.eventBusFor(currentFeaturePath()).getBaseStepListener().overrideResultTo(TestResult.PENDING);
+            getStepEventBus(currentFeaturePath()).testPending();
+            getStepEventBus(currentFeaturePath()).getBaseStepListener().overrideResultTo(TestResult.PENDING);
         }
         if (isSkippedOrWIP(tags)) {
-            StepEventBus.eventBusFor(currentFeaturePath()).testSkipped();
-            StepEventBus.eventBusFor(currentFeaturePath()).getBaseStepListener().overrideResultTo(TestResult.SKIPPED);
+            getStepEventBus(currentFeaturePath()).testSkipped();
+            getStepEventBus(currentFeaturePath()).getBaseStepListener().overrideResultTo(TestResult.SKIPPED);
         }
         if (isIgnored(tags)) {
-            StepEventBus.eventBusFor(currentFeaturePath()).testIgnored();
-            StepEventBus.eventBusFor(currentFeaturePath()).getBaseStepListener().overrideResultTo(TestResult.IGNORED);
+            getStepEventBus(currentFeaturePath()).testIgnored();
+            getStepEventBus(currentFeaturePath()).getBaseStepListener().overrideResultTo(TestResult.IGNORED);
         }
     }
 
@@ -645,14 +659,14 @@ public class SerenityReporter implements Formatter {
     private void registerFeatureJiraIssues(List<Tag> tags) {
         List<String> issues = extractJiraIssueTags(tags);
         if (!issues.isEmpty()) {
-            StepEventBus.eventBusFor(currentFeaturePath()).addIssuesToCurrentStory(issues);
+            getStepEventBus(currentFeaturePath()).addIssuesToCurrentStory(issues);
         }
     }
 
     private void registerScenarioJiraIssues(List<Tag> tags) {
         List<String> issues = extractJiraIssueTags(tags);
         if (!issues.isEmpty()) {
-            StepEventBus.eventBusFor(currentFeaturePath()).addIssuesToCurrentTest(issues);
+            getStepEventBus(currentFeaturePath()).addIssuesToCurrentTest(issues);
         }
     }
 
@@ -681,16 +695,16 @@ public class SerenityReporter implements Formatter {
 
     private void startExample(Integer lineNumber) {
         Map<String, String> data = exampleRows().get(lineNumber);
-        StepEventBus.eventBusFor(currentFeaturePath()).clearStepFailures();
-        StepEventBus.eventBusFor(currentFeaturePath()).exampleStarted(data);
+        getStepEventBus(currentFeaturePath()).clearStepFailures();
+        getStepEventBus(currentFeaturePath()).exampleStarted(data);
         if (exampleTags().containsKey(lineNumber)) {
             List<Tag> currentExampleTags = exampleTags().get(lineNumber);
-            StepEventBus.eventBusFor(currentFeaturePath()).addTagsToCurrentTest(convertCucumberTags(currentExampleTags));
+            getStepEventBus(currentFeaturePath()).addTagsToCurrentTest(convertCucumberTags(currentExampleTags));
         }
     }
 
     private void finishExample() {
-        StepEventBus.eventBusFor(currentFeaturePath()).exampleFinished();
+        getStepEventBus(currentFeaturePath()).exampleFinished();
         exampleCount--;
         if (exampleCount == 0) {
             examplesRunning = false;
@@ -718,13 +732,13 @@ public class SerenityReporter implements Formatter {
         waitingToProcessBackgroundSteps = true;
         String backgroundName = background.getName();
         if (backgroundName != null) {
-            StepEventBus.eventBusFor(currentFeaturePath()).setBackgroundTitle(backgroundName);
+            getStepEventBus(currentFeaturePath()).setBackgroundTitle(backgroundName);
         }
         String backgroundDescription = background.getDescription();
         if (backgroundDescription == null) {
             backgroundDescription = "";
         }
-        StepEventBus.eventBusFor(currentFeaturePath()).setBackgroundDescription(backgroundDescription);
+        getStepEventBus(currentFeaturePath()).setBackgroundDescription(backgroundDescription);
     }
 
     private void assureTestSuiteFinished() {
@@ -733,9 +747,9 @@ public class SerenityReporter implements Formatter {
 
         java.util.Optional.ofNullable(currentFeaturePath()).ifPresent(
                 featurePath -> {
-                    StepEventBus.eventBusFor(featurePath).testSuiteFinished();
-                    StepEventBus.eventBusFor(featurePath).dropAllListeners();
-                    StepEventBus.eventBusFor(featurePath).clear();
+                    getStepEventBus(featurePath).testSuiteFinished();
+                    getStepEventBus(featurePath).dropAllListeners();
+                    getStepEventBus(featurePath).clear();
                     StepEventBus.clearEventBusFor(featurePath);
                 }
         );
@@ -756,15 +770,15 @@ public class SerenityReporter implements Formatter {
 
     private void recordStepResult(Result result, Step currentStep, TestStep currentTestStep) {
         if (Result.Type.PASSED.equals(result.getStatus())) {
-            StepEventBus.eventBusFor(currentFeaturePath()).stepFinished();
+            getStepEventBus(currentFeaturePath()).stepFinished();
         } else if (Result.Type.FAILED.equals(result.getStatus())) {
             failed(stepTitleFrom(currentStep, currentTestStep), result.getError());
         } else if (Result.Type.SKIPPED.equals(result.getStatus())) {
-            StepEventBus.eventBusFor(currentFeaturePath()).stepIgnored();
+            getStepEventBus(currentFeaturePath()).stepIgnored();
         } else if (Result.Type.PENDING.equals(result.getStatus())) {
-            StepEventBus.eventBusFor(currentFeaturePath()).stepPending();
+            getStepEventBus(currentFeaturePath()).stepPending();
         } else if (Result.Type.UNDEFINED.equals(result.getStatus())) {
-            StepEventBus.eventBusFor(currentFeaturePath()).stepPending();
+            getStepEventBus(currentFeaturePath()).stepPending();
         }
     }
 
@@ -778,40 +792,40 @@ public class SerenityReporter implements Formatter {
 
     private void updateResultFromTags(List<Tag> scenarioTags) {
         if (isManual(scenarioTags)) {
-            StepEventBus.eventBusFor(currentFeaturePath()).testIsManual();
+            getStepEventBus(currentFeaturePath()).testIsManual();
         }
 
         if (isPending(scenarioTags)) {
-            StepEventBus.eventBusFor(currentFeaturePath()).testPending();
+            getStepEventBus(currentFeaturePath()).testPending();
         }
 
         if (isSkippedOrWIP(scenarioTags)) {
-            StepEventBus.eventBusFor(currentFeaturePath()).testSkipped();
-            StepEventBus.eventBusFor(currentFeaturePath()).getBaseStepListener().overrideResultTo(TestResult.SKIPPED);
+            getStepEventBus(currentFeaturePath()).testSkipped();
+            getStepEventBus(currentFeaturePath()).getBaseStepListener().overrideResultTo(TestResult.SKIPPED);
         }
 
         if (isIgnored(scenarioTags)) {
-            StepEventBus.eventBusFor(currentFeaturePath()).testIgnored();
-            StepEventBus.eventBusFor(currentFeaturePath()).getBaseStepListener().overrideResultTo(TestResult.IGNORED);
+            getStepEventBus(currentFeaturePath()).testIgnored();
+            getStepEventBus(currentFeaturePath()).getBaseStepListener().overrideResultTo(TestResult.IGNORED);
         }
     }
 
     private void failed(String stepTitle, Throwable cause) {
         if (!errorOrFailureRecordedForStep(stepTitle, cause)) {
             if (!isEmpty(stepTitle)) {
-                StepEventBus.eventBusFor(currentFeaturePath()).updateCurrentStepTitle(stepTitle);
+                getStepEventBus(currentFeaturePath()).updateCurrentStepTitle(stepTitle);
             }
             Throwable rootCause = new RootCauseAnalyzer(cause).getRootCause().toException();
             if (isAssumptionFailure(rootCause)) {
-                StepEventBus.eventBusFor(currentFeaturePath()).assumptionViolated(rootCause.getMessage());
+                getStepEventBus(currentFeaturePath()).assumptionViolated(rootCause.getMessage());
             } else {
-                StepEventBus.eventBusFor(currentFeaturePath()).stepFailed(new StepFailure(ExecutedStepDescription.withTitle(normalized(currentStepTitle())), rootCause));
+                getStepEventBus(currentFeaturePath()).stepFailed(new StepFailure(ExecutedStepDescription.withTitle(normalized(currentStepTitle())), rootCause));
             }
         }
     }
 
     private String currentStepTitle() {
-        return StepEventBus.eventBusFor(currentFeaturePath()).getCurrentStep().isPresent() ? StepEventBus.eventBusFor(currentFeaturePath()).getCurrentStep().get().getDescription() : "";
+        return getStepEventBus(currentFeaturePath()).getCurrentStep().isPresent() ? getStepEventBus(currentFeaturePath()).getCurrentStep().get().getDescription() : "";
     }
 
     private boolean errorOrFailureRecordedForStep(String stepTitle, Throwable cause) {
@@ -831,11 +845,11 @@ public class SerenityReporter implements Formatter {
 
     private Optional<TestOutcome> latestTestOutcome() {
 
-        if (!StepEventBus.eventBusFor(currentFeaturePath()).isBaseStepListenerRegistered()) {
+        if (!getStepEventBus(currentFeaturePath()).isBaseStepListenerRegistered()) {
             return Optional.empty();
         }
 
-        List<TestOutcome> recordedOutcomes = StepEventBus.eventBusFor(currentFeaturePath()).getBaseStepListener().getTestOutcomes();
+        List<TestOutcome> recordedOutcomes = getStepEventBus(currentFeaturePath()).getBaseStepListener().getTestOutcomes();
         return (recordedOutcomes.isEmpty()) ? Optional.empty()
                 : Optional.of(recordedOutcomes.get(recordedOutcomes.size() - 1));
     }
