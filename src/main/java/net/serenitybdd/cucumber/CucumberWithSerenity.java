@@ -45,9 +45,9 @@ import static net.thucydides.core.ThucydidesSystemProperty.SERENITY_FORK_NUMBER;
 public class CucumberWithSerenity extends Cucumber {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CucumberWithSerenity.class);
-    private static RuntimeOptions RUNTIME_OPTIONS;
+    private static ThreadLocal<RuntimeOptions> RUNTIME_OPTIONS = new ThreadLocal<>();
     public static void setRuntimeOptions(RuntimeOptions runtimeOptions) {
-        RUNTIME_OPTIONS = runtimeOptions;
+        RUNTIME_OPTIONS.set(runtimeOptions);
     }
 
     public CucumberWithSerenity(Class clazz) throws InitializationError, IOException {
@@ -55,7 +55,7 @@ public class CucumberWithSerenity extends Cucumber {
     }
 
     public static RuntimeOptions currentRuntimeOptions() {
-        return RUNTIME_OPTIONS;
+        return RUNTIME_OPTIONS.get();
     }
 
     /**
@@ -63,13 +63,13 @@ public class CucumberWithSerenity extends Cucumber {
      */
     @Override
     protected Runtime createRuntime(ResourceLoader resourceLoader,
-                                                     ClassLoader classLoader,
-                                                     RuntimeOptions runtimeOptions) {
+                                    ClassLoader classLoader,
+                                    RuntimeOptions runtimeOptions) {
 
         EnvironmentVariables environmentVariables = Injectors.getInjector().getInstance(EnvironmentVariables.class);
 
         runtimeOptions.getTagFilters().addAll(TagParser.additionalTagsSuppliedFrom(environmentVariables, runtimeOptions.getTagFilters()));
-        RUNTIME_OPTIONS = runtimeOptions;
+        setRuntimeOptions(runtimeOptions);
         return CucumberWithSerenityRuntime.using(resourceLoader, classLoader, runtimeOptions);
     }
 
@@ -78,7 +78,7 @@ public class CucumberWithSerenity extends Cucumber {
                                                        RuntimeOptions runtimeOptions,
                                                        Configuration systemConfiguration) {
         ClassFinder classFinder = new ResourceLoaderClassFinder(resourceLoader, classLoader);
-        RUNTIME_OPTIONS = runtimeOptions;
+        setRuntimeOptions(runtimeOptions);
         Runtime runtime = new Runtime(resourceLoader, classFinder, classLoader, runtimeOptions);
         //the order here is important, add plugin after the runtime is created
         SerenityReporter reporter = new SerenityReporter(systemConfiguration, resourceLoader);
@@ -103,22 +103,22 @@ public class CucumberWithSerenity extends Cucumber {
                 LOGGER.info("Running slice {} of {} using fork {} of {} from feature paths {}", batchNumber, batchCount, forkNumber, forkCount, featurePaths);
 
                 WeightedCucumberScenarios weightedCucumberScenarios = new CucumberSuiteSlicer(featurePaths, TestStatistics.from(environmentVariables, featurePaths))
-                    .scenarios(batchNumber, batchCount, forkNumber, forkCount, tagFilters);
+                        .scenarios(batchNumber, batchCount, forkNumber, forkCount, tagFilters);
 
                 List<FeatureRunner> unfilteredChildren = super.getChildren();
                 AtomicInteger filteredInScenarioCount = new AtomicInteger();
                 List<FeatureRunner> filteredChildren = unfilteredChildren.stream()
-                    .filter(forIncludedFeatures(weightedCucumberScenarios))
-                    .map(toPossibleFeatureRunner(weightedCucumberScenarios, filteredInScenarioCount))
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)
-                    .collect(toList());
+                        .filter(forIncludedFeatures(weightedCucumberScenarios))
+                        .map(toPossibleFeatureRunner(weightedCucumberScenarios, filteredInScenarioCount))
+                        .filter(Optional::isPresent)
+                        .map(Optional::get)
+                        .collect(toList());
 
                 if (filteredInScenarioCount.get() != weightedCucumberScenarios.totalScenarioCount()) {
                     LOGGER.warn(
-                        "There is a mismatch between the number of scenarios included in this test run ({}) and the expected number of scenarios loaded ({}). This suggests that the scenario filtering is not working correctly or feature file(s) of an unexpected structure are being run",
-                        filteredInScenarioCount.get(),
-                        weightedCucumberScenarios.scenarios.size());
+                            "There is a mismatch between the number of scenarios included in this test run ({}) and the expected number of scenarios loaded ({}). This suggests that the scenario filtering is not working correctly or feature file(s) of an unexpected structure are being run",
+                            filteredInScenarioCount.get(),
+                            weightedCucumberScenarios.scenarios.size());
                 }
 
                 LOGGER.info("Running {} of {} features", filteredChildren.size(), unfilteredChildren.size());
