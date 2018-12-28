@@ -1,6 +1,7 @@
 Feature: Add two numbers
 
-  @manual
+  @manual-passed:2018-10-10
+
   Scenario Outline: This scenario should be marked as pending
 
     Given the amount <a> and the amount <b>

@@ -34,10 +34,7 @@ import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static cucumber.runtime.formatter.TaggedScenario.isIgnored;
-import static cucumber.runtime.formatter.TaggedScenario.isManual;
-import static cucumber.runtime.formatter.TaggedScenario.isPending;
-import static cucumber.runtime.formatter.TaggedScenario.isSkippedOrWIP;
+import static cucumber.runtime.formatter.TaggedScenario.*;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
@@ -104,16 +101,16 @@ public class SerenityReporter implements Formatter {
         initLineFilters(resourceLoader);
     }
 
-    private StepEventBus getStepEventBus(String featurePath){
-        if(lineFilters.containsKey(featurePath)){
-            featurePath += ":"+lineFilters.get(featurePath).get(0).longValue();
+    private StepEventBus getStepEventBus(String featurePath) {
+        if (lineFilters.containsKey(featurePath)) {
+            featurePath += ":" + lineFilters.get(featurePath).get(0).longValue();
         }
         return StepEventBus.eventBusFor(featurePath);
     }
 
-    private void setStepEventBus(String featurePath){
-        if(lineFilters.containsKey(featurePath)){
-            featurePath += ":"+lineFilters.get(featurePath).get(0).longValue();
+    private void setStepEventBus(String featurePath) {
+        if (lineFilters.containsKey(featurePath)) {
+            featurePath += ":" + lineFilters.get(featurePath).get(0).longValue();
         }
         StepEventBus.setCurrentBusToEventBusFor(featurePath);
     }
@@ -217,7 +214,7 @@ public class SerenityReporter implements Formatter {
     private void parseGherkinIn(String featureFileUri) {
         try {
             testSources.getFeature(featureFileUri);
-        } catch(Throwable ignoreParsingErrors) {
+        } catch (Throwable ignoreParsingErrors) {
             LOGGER.warn("Could not parse the Gherkin in feature file " + featureFileUri + ": file ignored");
         }
     }
@@ -610,7 +607,7 @@ public class SerenityReporter implements Formatter {
         registerScenarioJiraIssues(tags);
 
         scenarioTags = tagsForScenario(scenarioDefinition);
-        updateResultsFromTagsIn(scenarioTags);
+        updateResultFromTags(scenarioTags);
     }
 
     private List<Tag> tagsForScenario(ScenarioDefinition scenarioDefinition) {
@@ -619,24 +616,6 @@ public class SerenityReporter implements Formatter {
         return scenarioTags;
     }
 
-    private void updateResultsFromTagsIn(List<Tag> tags) {
-        if (isManual(tags)) {
-            getStepEventBus(currentFeaturePath()).testIsManual();
-        }
-
-        if (isPending(tags)) {
-            getStepEventBus(currentFeaturePath()).testPending();
-            getStepEventBus(currentFeaturePath()).getBaseStepListener().overrideResultTo(TestResult.PENDING);
-        }
-        if (isSkippedOrWIP(tags)) {
-            getStepEventBus(currentFeaturePath()).testSkipped();
-            getStepEventBus(currentFeaturePath()).getBaseStepListener().overrideResultTo(TestResult.SKIPPED);
-        }
-        if (isIgnored(tags)) {
-            getStepEventBus(currentFeaturePath()).testIgnored();
-            getStepEventBus(currentFeaturePath()).getBaseStepListener().overrideResultTo(TestResult.IGNORED);
-        }
-    }
 
     private boolean isScenario(ScenarioDefinition scenarioDefinition) {
         return scenarioDefinition instanceof Scenario;
@@ -769,7 +748,10 @@ public class SerenityReporter implements Formatter {
     }
 
     private void recordStepResult(Result result, Step currentStep, TestStep currentTestStep) {
-        if (Result.Type.PASSED.equals(result.getStatus())) {
+
+        if (StepEventBus.getEventBus().currentTestIsSuspended()) {
+            getStepEventBus(currentFeaturePath()).stepIgnored();
+        } else if (Result.Type.PASSED.equals(result.getStatus())) {
             getStepEventBus(currentFeaturePath()).stepFinished();
         } else if (Result.Type.FAILED.equals(result.getStatus())) {
             failed(stepTitleFrom(currentStep, currentTestStep), result.getError());
@@ -777,6 +759,8 @@ public class SerenityReporter implements Formatter {
             getStepEventBus(currentFeaturePath()).stepIgnored();
         } else if (Result.Type.PENDING.equals(result.getStatus())) {
             getStepEventBus(currentFeaturePath()).stepPending();
+        } else if (Result.Type.SKIPPED.equals(result.getStatus())) {
+            getStepEventBus(currentFeaturePath()).stepIgnored();
         } else if (Result.Type.UNDEFINED.equals(result.getStatus())) {
             getStepEventBus(currentFeaturePath()).stepPending();
         }
@@ -792,21 +776,43 @@ public class SerenityReporter implements Formatter {
 
     private void updateResultFromTags(List<Tag> scenarioTags) {
         if (isManual(scenarioTags)) {
-            getStepEventBus(currentFeaturePath()).testIsManual();
-        }
-
-        if (isPending(scenarioTags)) {
+            updateManualResultsFrom(scenarioTags);
+        } else if (isPending(scenarioTags)) {
             getStepEventBus(currentFeaturePath()).testPending();
-        }
-
-        if (isSkippedOrWIP(scenarioTags)) {
+        } else if (isSkippedOrWIP(scenarioTags)) {
             getStepEventBus(currentFeaturePath()).testSkipped();
             getStepEventBus(currentFeaturePath()).getBaseStepListener().overrideResultTo(TestResult.SKIPPED);
-        }
-
-        if (isIgnored(scenarioTags)) {
+        } else if (isIgnored(scenarioTags)) {
             getStepEventBus(currentFeaturePath()).testIgnored();
             getStepEventBus(currentFeaturePath()).getBaseStepListener().overrideResultTo(TestResult.IGNORED);
+        }
+    }
+
+    private void updateManualResultsFrom(List<Tag> scenarioTags) {
+        getStepEventBus(currentFeaturePath()).testIsManual();
+        manualResultDefinedIn(scenarioTags).ifPresent(
+                result -> {
+                    if (result == TestResult.FAILURE) {
+
+                        String failureMessage = failureMessageFrom(currentScenarioDefinition.getDescription()).orElse("Failed manual test");
+
+                        getStepEventBus(currentFeaturePath()).getBaseStepListener()
+                                .latestTestOutcome().ifPresent( outcome -> outcome.setTestFailureMessage(failureMessage));
+                    }
+                    getStepEventBus(currentFeaturePath()).getBaseStepListener().overrideResultTo(result);
+                }
+        );
+    }
+
+    private Optional<String> failureMessageFrom(String description) {
+        if (description == null || description.isEmpty()) {
+            return Optional.empty();
+        }
+        String firstLine = description.split("\r?\n")[0];
+        if (firstLine.trim().toLowerCase().startsWith("failure:")) {
+            return Optional.of("Failed manual test: " + firstLine.trim().substring(8).trim());
+        } else {
+            return Optional.empty();
         }
     }
 
