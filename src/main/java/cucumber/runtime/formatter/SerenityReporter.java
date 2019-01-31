@@ -330,11 +330,7 @@ public class SerenityReporter implements Formatter {
     }
 
     private void handleTestRunFinished(TestRunFinished event) {
-        if (examplesRunning) {
-            finishExample();
-        } else {
-            generateReports();
-        }
+        generateReports();
         assureTestSuiteFinished();
     }
 
@@ -688,7 +684,6 @@ public class SerenityReporter implements Formatter {
         if (exampleCount == 0) {
             examplesRunning = false;
             setTableScenarioOutline();
-            generateReports();
         } else {
             examplesRunning = true;
         }
