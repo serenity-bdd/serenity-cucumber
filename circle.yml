@@ -8,6 +8,7 @@ jobs:
     docker:
       - image: circleci/openjdk:11.0.2-jdk-stretch-node-browsers-legacy
 
+
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
       # documented at https://circleci.com/docs/2.0/circleci-images/
@@ -24,17 +25,18 @@ jobs:
       - checkout
 
       # Download and cache dependencies
-    - restore_cache:
-        keys:
-          - v1-dependencies-{{ checksum "build.gradle" }}
-          - v1-dependencies-
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "build.gradle" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
 
-    - run: gradle dependencies
+      - run: gradle dependencies
 
-    - save_cache:
-        paths:
-          - ~/.m2
-        key: v1-dependencies-{{ checksum "build.gradle" }}
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: v1-dependencies-{{ checksum "build.gradle" }}
 
-    # run tests!
-    - run: gradle test
+      # run tests!
+      - run: gradle test
