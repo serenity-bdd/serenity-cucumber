@@ -73,8 +73,10 @@ test {
     exclude '**/samples/**'
     exclude '**/*Sample*'
     maxParallelForks = Runtime.runtime.availableProcessors()
+    maxHeapSize '512m'
+    forkEvery 100
+    jvmArgs '-Xmx512m', '-Xms512m'
 }
-
 
 configurations.all {
     resolutionStrategy {
