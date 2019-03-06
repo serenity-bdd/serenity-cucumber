@@ -82,8 +82,6 @@ public class SerenityReporter implements Formatter {
 
     private String currentScenario;
 
-    private List<Tag> featureTags;
-
     private boolean addingScenarioOutlineSteps = false;
 
     private Map<String, List<Long>> lineFilters;
@@ -166,8 +164,6 @@ public class SerenityReporter implements Formatter {
 
         possibleFeature.ifPresent(
                 feature -> {
-                    featureTags = new ArrayList<>(feature.getTags());
-
                     resetEventBusFor(featurePath);
                     initialiseThucydidesListenersFor(featurePath);
                     configureDriver(feature, featurePath);
@@ -602,11 +598,11 @@ public class SerenityReporter implements Formatter {
         List<Tag> tags = getTagsOfScenarioDefinition(scenarioDefinition);
         registerScenarioJiraIssues(tags);
 
-        scenarioTags = tagsForScenario(scenarioDefinition);
+        scenarioTags = tagsForScenario(scenarioDefinition, currentFeature.getTags());
         updateResultFromTags(scenarioTags);
     }
 
-    private List<Tag> tagsForScenario(ScenarioDefinition scenarioDefinition) {
+    private List<Tag> tagsForScenario(ScenarioDefinition scenarioDefinition, List<Tag> featureTags) {
         List<Tag> scenarioTags = new ArrayList<>(featureTags);
         scenarioTags.addAll(getTagsOfScenarioDefinition(scenarioDefinition));
         return scenarioTags;
