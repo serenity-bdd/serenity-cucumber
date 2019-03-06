@@ -70,6 +70,17 @@ public class SkippingScenariosStepDefinitions {
 
     }
 
+    public static class Prepare {
+        @Step
+        public void forTheCommute() {}
+
+        @Step
+        public void forWork() {}
+
+        @Step
+        public void toGoHome() {}
+    }
+
     @Steps
     CuriousSurfer connor;
 
@@ -83,6 +94,14 @@ public class SkippingScenariosStepDefinitions {
         connor.searchesFor(searchTerm);
     }
 
+    @Steps
+    Prepare prepare;
+
+    @When("I prepare for work")
+    public void whenIPrepareForWork() {
+        prepare.forWork();
+    }
+
     @When("I view the home page details")
     public void viewHomePage() {
     }
@@ -94,11 +113,11 @@ public class SkippingScenariosStepDefinitions {
 
     @Before("@do_something_before")
     public void doSomethingBefore() {
-        connor.opensTheSearchApp();
+        prepare.forTheCommute();
     }
 
     @After("@do_something_after")
     public void doSomethingAfter() {
-        connor.shouldSeeAListOfResults();
+        prepare.toGoHome();
     }
 }
