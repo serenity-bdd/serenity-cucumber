@@ -75,7 +75,7 @@ test {
     maxParallelForks = Runtime.runtime.availableProcessors()
     maxHeapSize '512m'
     forkEvery 100
-    jvmArgs '-Xmx512m', '-Xms512m'
+    jvmArgs '-Xmx256m'
 }
 
 configurations.all {
