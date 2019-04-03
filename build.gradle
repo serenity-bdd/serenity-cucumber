@@ -7,6 +7,7 @@ buildscript {
         maven {
             url 'https://geonet.artifactoryonline.com/geonet/public-releases'
         }
+
     }
     dependencies {
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.5'
@@ -36,7 +37,7 @@ ext {
     bintrayBaseUrl = 'https://api.bintray.com/maven'
     bintrayRepository = 'maven'
     bintrayPackage = 'serenity-cucumber'
-    projectDescription = 'Serenity Cucumber integration'
+    projectDescription = 'Serenity Cucumber 2.x integration'
 
     if (!project.hasProperty("bintrayUsername")) {
         bintrayUsername = 'wakaleo'
@@ -66,6 +67,10 @@ task tagNewVersion() {
     dependsOn pushVersionTag
 }
 
+//task wrapper(type: Wrapper) {
+//    gradleVersion = '4.0'
+//}
+
 test {
     include '**/When*'
     exclude '**/*$*'
@@ -73,19 +78,17 @@ test {
     exclude '**/samples/**'
     exclude '**/*Sample*'
     maxParallelForks = Runtime.runtime.availableProcessors()
-    maxHeapSize '512m'
-    forkEvery 100
-    jvmArgs '-Xmx256m'
 }
+
 
 configurations.all {
     resolutionStrategy {
         // fail fast on dependency convergence problems
         //failOnVersionConflict()
         force  "commons-collections:commons-collections:${commonsCollectionsVersion}",
-        "xml-apis:xml-apis:${xmlApiVersion}",
+                "xml-apis:xml-apis:${xmlApiVersion}",
                 "commons-codec:commons-codec:${commonsCodecVersion}",
-        "com.google.code.gson:gson:${gsonVersion}"
+                "com.google.code.gson:gson:${gsonVersion}"
     }
 }
 
@@ -120,7 +123,7 @@ dependencies {
 jar {
     manifest {
         attributes("Implementation-Title": "Serenity Cucumber Plugin",
-                   "Implementation-Version": project.version.toString())
+                "Implementation-Version": project.version.toString())
     }
 }
 
