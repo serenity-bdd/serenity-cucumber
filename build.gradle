@@ -7,7 +7,6 @@ buildscript {
         maven {
             url 'https://geonet.artifactoryonline.com/geonet/public-releases'
         }
-
     }
     dependencies {
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.5'
@@ -67,9 +66,9 @@ task tagNewVersion() {
     dependsOn pushVersionTag
 }
 
-//task wrapper(type: Wrapper) {
-//    gradleVersion = '4.0'
-//}
+task wrapper(type: Wrapper) {
+    gradleVersion = '4.0'
+}
 
 test {
     include '**/When*'
@@ -86,9 +85,9 @@ configurations.all {
         // fail fast on dependency convergence problems
         //failOnVersionConflict()
         force  "commons-collections:commons-collections:${commonsCollectionsVersion}",
-                "xml-apis:xml-apis:${xmlApiVersion}",
+        "xml-apis:xml-apis:${xmlApiVersion}",
                 "commons-codec:commons-codec:${commonsCodecVersion}",
-                "com.google.code.gson:gson:${gsonVersion}"
+        "com.google.code.gson:gson:${gsonVersion}"
     }
 }
 
@@ -123,7 +122,7 @@ dependencies {
 jar {
     manifest {
         attributes("Implementation-Title": "Serenity Cucumber Plugin",
-                "Implementation-Version": project.version.toString())
+                   "Implementation-Version": project.version.toString())
     }
 }
 
