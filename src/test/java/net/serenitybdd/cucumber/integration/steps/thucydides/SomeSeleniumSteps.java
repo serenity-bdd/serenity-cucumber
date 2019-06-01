@@ -76,9 +76,9 @@ public class SomeSeleniumSteps {
         assertThat(page.lastName().getValue(), is($expectedLastname));
     }
 
-    @Then("I should be using HtmlUnit")
+    @Then("I should be using Firefox")
     public void andIShouldBeUsingHtmlUnit() {
-        assertThat(((WebDriverFacade)webDriver).getDriverClass().getName(), containsString("HtmlUnitDriver"));
+        assertThat(((WebDriverFacade)webDriver).getDriverClass().getName(), containsString("Firefox"));
     }
 
     @Given("the scenario throws an exception")
