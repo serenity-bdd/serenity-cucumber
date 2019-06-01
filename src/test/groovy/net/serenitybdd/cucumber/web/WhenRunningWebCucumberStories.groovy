@@ -15,7 +15,7 @@ import spock.lang.Specification
 
 import static net.serenitybdd.cucumber.util.CucumberRunner.serenityRunnerForCucumberTestRunner
 
-class WhenRunningWebCucumberStories extends Specification {
+gitclass WhenRunningWebCucumberStories extends Specification {
 
     @Rule
     TemporaryFolder temporaryFolder
