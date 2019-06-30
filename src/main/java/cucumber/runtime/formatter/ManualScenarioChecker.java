@@ -78,5 +78,4 @@ public class ManualScenarioChecker {
         return evidenceTag.trim().substring("@manual-test-evidence:".length()).trim();
 
     }
-
 }

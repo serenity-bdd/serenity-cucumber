@@ -1,5 +1,6 @@
 package cucumber.runtime.formatter;
 
+import com.google.common.collect.Lists;
 import cucumber.api.Result;
 import cucumber.api.TestStep;
 import cucumber.api.event.*;
@@ -643,17 +644,30 @@ public class SerenityReporter implements Formatter {
     }
 
     private List<TestTag> convertCucumberTags(List<Tag> cucumberTags) {
+
+        cucumberTags = completeManualTagsIn(cucumberTags);
+
         return cucumberTags.stream()
-                .map(this::expandManual)
                 .map(tag -> TestTag.withValue(tag.getName().substring(1)))
                 .collect(toList());
     }
 
-    private Tag expandManual(Tag tag) {
-        if (tag.getName().equalsIgnoreCase("@manual")) {
-            return new Tag(tag.getLocation(),"@manual:pending");
+    private List<Tag> completeManualTagsIn(List<Tag> cucumberTags) {
+        if (unqualifiedManualTag(cucumberTags).isPresent() && doesNotContainResultTag(cucumberTags)) {
+            List<Tag> updatedTags = Lists.newArrayList(cucumberTags);
+            updatedTags.add(new Tag(unqualifiedManualTag(cucumberTags).get().getLocation(),"@manual:pending"));
+            return updatedTags;
+        } else {
+            return cucumberTags;
         }
-        return tag;
+    }
+
+    private boolean doesNotContainResultTag(List<Tag> tags) {
+        return !tags.stream().noneMatch(tag -> tag.getName().startsWith("@manual:"));
+    }
+
+    private Optional<Tag> unqualifiedManualTag(List<Tag> tags) {
+        return tags.stream().filter(tag -> tag.getName().equalsIgnoreCase("@manual")).findFirst();
     }
 
     private List<String> extractJiraIssueTags(List<Tag> cucumberTags) {

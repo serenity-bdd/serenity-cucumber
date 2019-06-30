@@ -1,17 +1,17 @@
 package cucumber.runtime.formatter;
 
-import com.google.common.collect.ImmutableMap;
 import gherkin.ast.Tag;
 import net.thucydides.core.model.TestResult;
 
 import java.util.*;
 
 
-class TaggedScenario {
+public class TaggedScenario {
     private static final List<String> SKIPPED_TAGS = Arrays.asList("@skip", "@wip");
     private static final List<String> IGNORED_TAGS = Arrays.asList("@ignore", "@ignored");
 
     private static Map<String, TestResult> MANUAL_TEST_RESULTS;
+
     static {
         MANUAL_TEST_RESULTS = new HashMap<>();
         MANUAL_TEST_RESULTS.put("pass", TestResult.SUCCESS);
@@ -20,6 +20,7 @@ class TaggedScenario {
         MANUAL_TEST_RESULTS.put("successful", TestResult.SUCCESS);
         MANUAL_TEST_RESULTS.put("failure", TestResult.FAILURE);
         MANUAL_TEST_RESULTS.put("failed", TestResult.FAILURE);
+        MANUAL_TEST_RESULTS.put("fail", TestResult.FAILURE);
         MANUAL_TEST_RESULTS.put("compromised", TestResult.COMPROMISED);
     }
 
@@ -31,16 +32,21 @@ class TaggedScenario {
         return tags.stream().anyMatch(tag -> tag.getName().toLowerCase().startsWith("@manual"));
     }
 
-    static Optional<TestResult> manualResultDefinedIn(List<Tag> tags) {
+    public static Optional<TestResult> manualResultDefinedIn(List<Tag> tags) {
         if (!isManual(tags)) {
             return Optional.empty();
         }
-        Optional<Tag> manualTagWithResult = tags.stream().filter(tag -> tag.getName().toLowerCase().startsWith("@manual:")).findFirst();
+        Optional<Tag> manualTagWithResult
+                = tags.stream()
+                .filter(tag -> tag.getName().toLowerCase().startsWith("@manual:") || tag.getName().toLowerCase().startsWith("@manual-result:"))
+                .findFirst();
         if (manualTagWithResult.isPresent()) {
-            String result = manualTagWithResult.get().getName().substring(8);
+            String tagName = manualTagWithResult.get().getName();
+            int resultIndex = tagName.indexOf(":") + 1;
+            String result = manualTagWithResult.get().getName().substring(resultIndex);
             return Optional.of(MANUAL_TEST_RESULTS.getOrDefault(result.toLowerCase(), TestResult.PENDING));
         } else {
-            return Optional.empty();
+            return Optional.of(TestResult.PENDING);
         }
     }
 

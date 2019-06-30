@@ -46,7 +46,7 @@ public class UpdateManualScenario {
                                                                  Boolean manualTestIsUpToDate,
                                                                  Optional<String> testEvidence) {
         String failureMessage = failureMessageFrom(scenarioDescription)
-                                .orElse(result.getAdjective() + " manual test");
+                .orElse(result.getAdjective() + " manual test");
 
         baseStepListener.latestTestOutcome().ifPresent(
                 outcome -> outcome.setTestFailureMessage(failureMessage)
