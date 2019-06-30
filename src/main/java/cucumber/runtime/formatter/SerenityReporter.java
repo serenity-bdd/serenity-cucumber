@@ -643,11 +643,17 @@ public class SerenityReporter implements Formatter {
     }
 
     private List<TestTag> convertCucumberTags(List<Tag> cucumberTags) {
-        List<TestTag> tags = new ArrayList<>();
-        for (Tag tag : cucumberTags) {
-            tags.add(TestTag.withValue(tag.getName().substring(1)));
+        return cucumberTags.stream()
+                .map(this::expandManual)
+                .map(tag -> TestTag.withValue(tag.getName().substring(1)))
+                .collect(toList());
+    }
+
+    private Tag expandManual(Tag tag) {
+        if (tag.getName().equalsIgnoreCase("@manual")) {
+            return new Tag(tag.getLocation(),"@manual:pending");
         }
-        return new ArrayList(tags);
+        return tag;
     }
 
     private List<String> extractJiraIssueTags(List<Tag> cucumberTags) {
@@ -782,30 +788,13 @@ public class SerenityReporter implements Formatter {
 
     private void updateManualResultsFrom(List<Tag> scenarioTags) {
         getStepEventBus(currentFeaturePath()).testIsManual();
+
         manualResultDefinedIn(scenarioTags).ifPresent(
-                result -> {
-                    if (result == TestResult.FAILURE) {
-
-                        String failureMessage = failureMessageFrom(currentScenarioDefinition.getDescription()).orElse("Failed manual test");
-
-                        getStepEventBus(currentFeaturePath()).getBaseStepListener()
-                                .latestTestOutcome().ifPresent( outcome -> outcome.setTestFailureMessage(failureMessage));
-                    }
-                    getStepEventBus(currentFeaturePath()).getBaseStepListener().overrideResultTo(result);
-                }
+                testResult ->
+                        UpdateManualScenario.forScenario(currentScenarioDefinition.getDescription())
+                                .inContext(getStepEventBus(currentFeaturePath()).getBaseStepListener(), systemConfiguration.getEnvironmentVariables())
+                                .updateManualScenario(testResult, scenarioTags)
         );
-    }
-
-    private Optional<String> failureMessageFrom(String description) {
-        if (description == null || description.isEmpty()) {
-            return Optional.empty();
-        }
-        String firstLine = description.split("\r?\n")[0];
-        if (firstLine.trim().toLowerCase().startsWith("failure:")) {
-            return Optional.of("Failed manual test: " + firstLine.trim().substring(8).trim());
-        } else {
-            return Optional.empty();
-        }
     }
 
     private void failed(String stepTitle, Throwable cause) {

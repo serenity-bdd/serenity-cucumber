@@ -4,24 +4,24 @@ import com.google.common.collect.ImmutableMap;
 import gherkin.ast.Tag;
 import net.thucydides.core.model.TestResult;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 
 class TaggedScenario {
     private static final List<String> SKIPPED_TAGS = Arrays.asList("@skip", "@wip");
     private static final List<String> IGNORED_TAGS = Arrays.asList("@ignore", "@ignored");
 
-    private static Map<String, TestResult> MANUAL_TEST_RESULTS =
-            ImmutableMap.of(
-                    "pass", TestResult.SUCCESS,
-                    "passed", TestResult.SUCCESS,
-                    "success", TestResult.SUCCESS,
-                    "failure", TestResult.FAILURE,
-                    "failed", TestResult.FAILURE
-            );
+    private static Map<String, TestResult> MANUAL_TEST_RESULTS;
+    static {
+        MANUAL_TEST_RESULTS = new HashMap<>();
+        MANUAL_TEST_RESULTS.put("pass", TestResult.SUCCESS);
+        MANUAL_TEST_RESULTS.put("passed", TestResult.SUCCESS);
+        MANUAL_TEST_RESULTS.put("success", TestResult.SUCCESS);
+        MANUAL_TEST_RESULTS.put("successful", TestResult.SUCCESS);
+        MANUAL_TEST_RESULTS.put("failure", TestResult.FAILURE);
+        MANUAL_TEST_RESULTS.put("failed", TestResult.FAILURE);
+        MANUAL_TEST_RESULTS.put("compromised", TestResult.COMPROMISED);
+    }
 
     static boolean isPending(List<Tag> tags) {
         return hasTag("@pending", tags);
