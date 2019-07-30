@@ -134,10 +134,7 @@ class WhenRunningWebCucumberStories extends Specification {
 
     def "should be able to set thucydides properties in the base test"() {
         given:
-        environmentVariables.setProperty(ThucydidesSystemProperty.DRIVER.getPropertyName(), "htmlunit");
-        environmentVariables.setProperty(ThucydidesSystemProperty.THUCYDIDES_USE_UNIQUE_BROWSER.getPropertyName(),"true");
         environmentVariables.setProperty(ThucydidesSystemProperty.WEBDRIVER_BASE_URL.getPropertyName(),"some-base-url")
-        environmentVariables.setProperty(ThucydidesSystemProperty.THUCYDIDES_TIMEOUT.getPropertyName(),"5")
         Configuration systemConfiguration = new SystemPropertiesConfiguration(environmentVariables);
         systemConfiguration.setOutputDirectory(outputDirectory);
         def runtime = serenityRunnerForCucumberTestRunner(SimpleSeleniumFailingAndPassingScenario, systemConfiguration)
@@ -147,8 +144,6 @@ class WhenRunningWebCucumberStories extends Specification {
 
         then:
         systemConfiguration.getBaseUrl() == "some-base-url"
-        systemConfiguration.getElementTimeout() == 5
-        systemConfiguration.shouldUseAUniqueBrowser() == true
 
     }
 
