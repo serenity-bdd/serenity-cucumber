@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static cucumber.runtime.formatter.TaggedScenario.*;
@@ -390,17 +391,22 @@ public class SerenityReporter implements Formatter {
                         tableRow -> tableRowIsNotExcludedByLinesFilter(tableRow)).collect(Collectors.toList());
                 List<String> headers = getHeadersFrom(examples.getTableHeader());
                 List<Map<String, String>> rows = getValuesFrom(examplesTableRows, headers);
+
+                Map<Integer, Integer> lineNumbersOfEachRow = new HashMap<>();
                 for (int i = 0; i < examplesTableRows.size(); i++) {
-                    addRow(exampleRows(), headers, examplesTableRows.get(i));
+                    TableRow tableRow = examplesTableRows.get(i);
+                    lineNumbersOfEachRow.put(i, tableRow.getLocation().getLine());
+                    addRow(exampleRows(), headers, tableRow);
                     if (examples.getTags() != null) {
                         exampleTags().put(examplesTableRows.get(i).getLocation().getLine(), examples.getTags());
                     }
                 }
+
                 String scenarioId = scenarioIdFrom(featureName, id);
                 boolean newScenario = !scenarioId.equals(currentScenarioId);
                 table = (newScenario) ?
-                        thucydidesTableFrom(SCENARIO_OUTLINE_NOT_KNOWN_YET, headers, rows, trim(examples.getName()), trim(examples.getDescription()))
-                        : addTableRowsTo(table, headers, rows, trim(examples.getName()), trim(examples.getDescription()));
+                        dataTableFrom(SCENARIO_OUTLINE_NOT_KNOWN_YET, headers, rows, trim(examples.getName()), trim(examples.getDescription()), lineNumbersOfEachRow)
+                        : addTableRowsTo(table, headers, rows, trim(examples.getName()), trim(examples.getDescription()), lineNumbersOfEachRow);
 
                 table.addTagsToLatestDataSet(examples.getTags().stream().map(tag -> TestTag.withValue(tag.getName().substring(1))).collect(Collectors.toList()));
                 exampleCount = table.getSize();
@@ -540,24 +546,57 @@ public class SerenityReporter implements Formatter {
         return exampleTags;
     }
 
-    private DataTable thucydidesTableFrom(String scenarioOutline,
-                                          List<String> headers,
-                                          List<Map<String, String>> rows,
-                                          String name,
-                                          String description) {
-        return DataTable.withHeaders(headers).andScenarioOutline(scenarioOutline).andMappedRows(rows).andTitle(name).andDescription(description).build();
+    private DataTable dataTableFrom(String scenarioOutline,
+                                    List<String> headers,
+                                    List<Map<String, String>> rows,
+                                    String name,
+                                    String description,
+                                    Map<Integer, Integer> lineNumbersOfEachRow) {
+        return DataTable.withHeaders(headers)
+                .andScenarioOutline(scenarioOutline)
+                .andMappedRows(rows, lineNumbersOfEachRow)
+                .andTitle(name)
+                .andDescription(description).build();
     }
 
-    private DataTable addTableRowsTo(DataTable table, List<String> headers,
-                                     List<Map<String, String>> rows,
-                                     String name,
-                                     String description) {
+//    private DataTable addTableRowsTo(DataTable table, List<String> headers,
+//                                     List<Map<String, String>> rows,
+//                                     String name,
+//                                     String description,
+//                                     Map<Integer, Integer> lineNumbersOfEachRow) {
+//        table.startNewDataSet(name, description);
+//        for (Map<String, String> row : rows) {
+//            table.appendRow(rowValuesFrom(headers, row));
+//        }
+//        return table;
+//    }
+
+    public DataTable addTableRowsTo(DataTable table,
+                                  List<String> headers,
+                                  List<Map<String, String>> rows,
+                                  String name,
+                                  String description,
+                                  Map<Integer, Integer> lineNumbersOfEachRow) {
         table.startNewDataSet(name, description);
-        for (Map<String, String> row : rows) {
-            table.appendRow(rowValuesFrom(headers, row));
-        }
+
+        AtomicInteger rowNumber = new AtomicInteger();
+        rows.forEach(
+                row -> table.appendRow(newRow(headers, lineNumbersOfEachRow, rowNumber.getAndIncrement(), row))
+        );
+        table.updateLineNumbers(lineNumbersOfEachRow);
+        exampleCount = table.getSize();
         return table;
     }
+
+    private DataTableRow newRow(List<String> headers,
+                                Map<Integer, Integer> lineNumbersOfEachRow,
+                                int rowNumber,
+                                Map<String, String> row) {
+        return new DataTableRow(
+                rowValuesFrom(headers, row),
+                lineNumbersOfEachRow.getOrDefault(rowNumber, 0));
+    }
+
 
     private List<String> rowValuesFrom(List<String> headers, Map<String, String> row) {
         return headers.stream()
@@ -655,7 +694,7 @@ public class SerenityReporter implements Formatter {
     private List<Tag> completeManualTagsIn(List<Tag> cucumberTags) {
         if (unqualifiedManualTag(cucumberTags).isPresent() && doesNotContainResultTag(cucumberTags)) {
             List<Tag> updatedTags = Lists.newArrayList(cucumberTags);
-            updatedTags.add(new Tag(unqualifiedManualTag(cucumberTags).get().getLocation(),"@manual:pending"));
+            updatedTags.add(new Tag(unqualifiedManualTag(cucumberTags).get().getLocation(), "@manual:pending"));
             return updatedTags;
         } else {
             return cucumberTags;
