@@ -309,6 +309,11 @@ public class SerenityReporter implements Formatter {
                     stepQueue.add(step);
                     testStepQueue.add(event.testStep);
                 }
+                if (currentScenarioDefinition instanceof ScenarioOutline) {
+                    event.testStep.getPickleStep().getLocations().stream().findFirst().ifPresent(
+                        lineLocation -> getStepEventBus(currentFeaturePath()).updateExampleLineNumber(lineLocation.getLine())
+                    );
+                }
                 Step currentStep = stepQueue.peek();
                 String stepTitle = stepTitleFrom(currentStep, event.testStep);
                 getStepEventBus(currentFeaturePath()).stepStarted(ExecutedStepDescription.withTitle(stepTitle));
@@ -610,7 +615,7 @@ public class SerenityReporter implements Formatter {
         currentScenario = scenarioIdFrom(TestSourcesModel.convertToId(feature.getName()), TestSourcesModel.convertToId(scenario.getName()));
         if (examplesRunning) {
             if (newScenario) {
-                startScenario(feature, scenario, scenarioName);
+                startScenario(feature, scenario, scenario.getName());
                 getStepEventBus(currentFeaturePath()).useExamplesFrom(table);
                 getStepEventBus(currentFeaturePath()).useScenarioOutline(ScenarioOutlineDescription.from(scenario).getDescription());
             } else {
