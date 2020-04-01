@@ -1,3 +1,7 @@
+## DEPRECATED
+
+This library only supports the older Cucumber 2.x versions of Cucumber. For the most recent version refer to https://github.com/serenity-bdd/serenity-cucumber5
+
 ## Serenity Cucumber Integration
 
 This module lets you produce Serenity reports using Cucumber. You run your tests as normal, 
